@@ -5,11 +5,11 @@ import { useTokenMeta } from "gamba-react-ui-v2";
 
 // Solana address you wish to receive fees
 export const PLATFORM_CREATOR_ADDRESS = new PublicKey(
-  "GzzWXXDjLD4FDwDkWB5sARjC2aaLSfCQDjx3dmpoTY7K",
+  "FWDfscAynsxLRwyxJDtof3nxbSjcAHrT96QZxZDwVvmx",
 );
 
 // Platform URL - Appears in ShareModal
-export const PLATFORM_SHARABLE_URL = "play-gamba.vercel.app";
+export const PLATFORM_SHARABLE_URL = "";
 
 // Toggle all live events acrossed gamba toast
 export const LIVE_EVENT_TOAST = true;
@@ -44,24 +44,24 @@ export const TOKENS = [
     baseWager: 1e6,
   },
   // GUAC:
-  {
-    mint: new PublicKey("AZsHEMXd36Bj1EMNXhowJajpUXzrKcK57wW4ZGXVa7yR"),
-    symbol: "GUAC",
-    name: "Guacamole",
-    image:
-      "https://bafkreiccbqs4jty2yjvuxp5x7gzgepquvv657ttauaqgxfhxghuz5us54u.ipfs.nftstorage.link/",
-    decimals: 5,
-    baseWager: 2000000e5,
-  },
+  // {
+  //   mint: new PublicKey("AZsHEMXd36Bj1EMNXhowJajpUXzrKcK57wW4ZGXVa7yR"),
+  //   symbol: "GUAC",
+  //   name: "Guacamole",
+  //   image:
+  //     "https://bafkreiccbqs4jty2yjvuxp5x7gzgepquvv657ttauaqgxfhxghuz5us54u.ipfs.nftstorage.link/",
+  //   decimals: 5,
+  //   baseWager: 2000000e5,
+  // },
   // TSTCOIN:
-  {
-    mint: new PublicKey("8CofuxeTuXjrZSMahW9wYkedVoNcvwua6aJeM1UhxuLh"),
-    symbol: "TSTCOIN",
-    name: "TESTERCOIN",
-    image: "https://i.ibb.co/SvfbhLy/imageedit-37-6175591894.png",
-    decimals: 9,
-    baseWager: 1e9,
-  },
+  // {
+  //   mint: new PublicKey("8CofuxeTuXjrZSMahW9wYkedVoNcvwua6aJeM1UhxuLh"),
+  //   symbol: "TSTCOIN",
+  //   name: "TESTERCOIN",
+  //   image: "https://i.ibb.co/SvfbhLy/imageedit-37-6175591894.png",
+  //   decimals: 9,
+  //   baseWager: 1e9,
+  // },
 ];
 
 // handler for TOKENS
