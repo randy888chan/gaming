@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>Gamba v2 Casino Platform - Next.js</title>
+        <title>Socasino</title>
         <meta name="title" content="Gamba v2 Casino Platform - Next.js" />
         <meta
           name="description"
@@ -18,10 +18,10 @@ export default function HomePage() {
         />
 
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://gamba-v2-nextjs.vercel.app/" />
+        <meta property="og:url" content="https://casino-silk-three.vercel.app/" />
         <meta
           property="og:title"
-          content="Gamba v2 Casino Platform - Next.js"
+          content="Socasino - A fair, simple, and decentralized casino on Solana."
         />
         <meta
           property="og:description"
@@ -29,17 +29,17 @@ export default function HomePage() {
         />
         <meta
           property="og:image"
-          content="https://gamba-v2-nextjs.vercel.app/logo.svg"
+          content=""
         />
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta
           property="twitter:url"
-          content="https://gamba-v2-nextjs.vercel.app/"
+          content=""
         />
         <meta
           property="twitter:title"
-          content="Gamba v2 Casino Platform - Next.js"
+          content=""
         />
         <meta
           property="twitter:description"
@@ -47,7 +47,7 @@ export default function HomePage() {
         />
         <meta
           property="twitter:image"
-          content="https://gamba-v2-nextjs.vercel.app/logo.svg"
+          content=""
         />
       </Head>
       <Header />
