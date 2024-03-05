@@ -89,24 +89,26 @@ export default function RecentPlays() {
     <div className="w-full relative flex flex-col gap-2.5">
       <div className="mb-4 flex justify-center">
         <div className="flex items-center gap-4">
-          <GambaUi.Button
-            onClick={() => setPlatformOnly(true)}
-            main={platformOnly}
-          >
-            Platform Only
-          </GambaUi.Button>
-
-          <GambaUi.Switch
-            checked={!platformOnly}
-            onChange={togglePlatformView}
-          />
-
-          <GambaUi.Button
+          
+          {/* <GambaUi.Button
             onClick={() => setPlatformOnly(false)}
             main={!platformOnly}
           >
             All Gamba Events
-          </GambaUi.Button>
+          </GambaUi.Button> */}
+
+          {/* <GambaUi.Switch
+            checked={!platformOnly}
+            onChange={togglePlatformView}
+          /> */}
+          
+          {/* <GambaUi.Button
+            onClick={() => setPlatformOnly(true)}
+            main={platformOnly}
+          >
+            Platform Only
+          </GambaUi.Button> */}
+         
         </div>
       </div>
 
@@ -135,7 +137,7 @@ export default function RecentPlays() {
           <TimeDiff time={tx.time} />
         </button>
       ))}
-      <GambaUi.Button
+      {/* <GambaUi.Button
         main
         onClick={() =>
           window.open(
@@ -144,7 +146,7 @@ export default function RecentPlays() {
         }
       >
         {platformOnly ? "🚀 Platform Explorer" : "🚀 Gamba Explorer"}
-      </GambaUi.Button>
+      </GambaUi.Button> */}
     </div>
   );
 }
