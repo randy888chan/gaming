@@ -7,52 +7,54 @@ export default function Footer() {
           <a
             target="_blank"
             rel="noopener noreferrer"
-            href="https://gamba.so/"
+            href="https://soca.casino/"
             className="flex items-center mb-4 sm:mb-0 space-x-3 rtl:space-x-reverse"
           >
-            <img src="/logo.svg" className="h-10" alt="Gamba Logo" />
+            <img src="/logo.svg" className="h-10" alt="Soca Logo" />
           </a>
           <ul className="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
             <li>
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href="https://explorer.gamba.so/create"
+                href="https://docs.soca.casino/buy"
                 className="hover:underline me-4 md:me-6"
               >
-                🚀 Create Pool
+                BUY $SOCA
+              </a>
+            </li>
+            
+            <li>
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://twitter.com/socasinosol"
+                className="hover:underline me-4 md:me-6"
+              >
+                Follow on X
               </a>
             </li>
             <li>
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href="https://github.com/BankkRoll/Gamba-V2-Next.js"
+                href="https://t.me/so_casino"
                 className="hover:underline me-4 md:me-6"
               >
-                👨‍💻 Build your own
+                Telegram
               </a>
             </li>
             <li>
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href="https://gamba.so/docs"
+                href="https://docs.soca.casino"
                 className="hover:underline me-4 md:me-6"
               >
-                📖 Gamba Docs
+                Read Docs
               </a>
             </li>
-            <li>
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://discord.com/invite/HSTtFFwR"
-                className="hover:underline"
-              >
-                💬 Join Discord
-              </a>
-            </li>
+            
           </ul>
         </div>
         <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
@@ -62,7 +64,7 @@ export default function Footer() {
             href="https://twitter.com/bankkroll_eth"
             className="hover:underline"
           >
-            Bankk™
+            socasino Team
           </a>
         </span>
       </div>
