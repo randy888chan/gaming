@@ -43,16 +43,16 @@ export const TOKENS = [
     decimals: 6,
     baseWager: 1e6,
   },
-  // GUAC:
-  // {
-  //   mint: new PublicKey("AZsHEMXd36Bj1EMNXhowJajpUXzrKcK57wW4ZGXVa7yR"),
-  //   symbol: "GUAC",
-  //   name: "Guacamole",
-  //   image:
-  //     "https://bafkreiccbqs4jty2yjvuxp5x7gzgepquvv657ttauaqgxfhxghuz5us54u.ipfs.nftstorage.link/",
-  //   decimals: 5,
-  //   baseWager: 2000000e5,
-  // },
+  //SOCA:
+  {
+    mint: new PublicKey("6uihwkp7FPREQPuGrqdcGxm4YkN7h3Ykq1b69pktoCzb"),
+    symbol: "SOCA",
+    name: "Socasino",
+    image:
+      "https://bafkreigzwsyjndiusmywapiyuedrpve7sraoxrohkgxcfwpvcvtgtmalea.ipfs.nftstorage.link/",
+    decimals: 6,
+    baseWager: 1000000e6,
+  },
   // TSTCOIN:
   // {
   //   mint: new PublicKey("8CofuxeTuXjrZSMahW9wYkedVoNcvwua6aJeM1UhxuLh"),
@@ -96,18 +96,18 @@ useTokenMeta.setFallbackHandler((mint) => {
     };
   }
 
-  // GUAC
+  // SOCA
   if (
-    mint.equals(new PublicKey("AZsHEMXd36Bj1EMNXhowJajpUXzrKcK57wW4ZGXVa7yR"))
+    mint.equals(new PublicKey("6uihwkp7FPREQPuGrqdcGxm4YkN7h3Ykq1b69pktoCzb"))
   ) {
     return {
-      mint: new PublicKey("AZsHEMXd36Bj1EMNXhowJajpUXzrKcK57wW4ZGXVa7yR"),
-      symbol: "GUAC",
-      name: "Guacamole",
+      mint: new PublicKey("6uihwkp7FPREQPuGrqdcGxm4YkN7h3Ykq1b69pktoCzb"),
+      symbol: "SOCA",
+      name: "Socasino",
       image:
-        "https://bafkreiccbqs4jty2yjvuxp5x7gzgepquvv657ttauaqgxfhxghuz5us54u.ipfs.nftstorage.link/",
-      decimals: 5,
-      baseWager: 2000000 * 1e5,
+        "https://bafkreigzwsyjndiusmywapiyuedrpve7sraoxrohkgxcfwpvcvtgtmalea.ipfs.nftstorage.link/",
+      decimals: 6,
+      baseWager: 1000000 * 1e6,
     };
   }
 
