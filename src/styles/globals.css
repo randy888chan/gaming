@@ -139,7 +139,27 @@ body::-webkit-scrollbar-thumb {
   }
 }
 
+/* Recent plays skeleton pulse */
+@keyframes Skeleton {
+  0% {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.6);
+  }
 
+  50% {
+    opacity: 0.5;
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+
+  100% {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.animate-Skeleton {
+  animation: Skeleton 1.5s cubic-bezier(0.2, 0, 0.2, 1) infinite;
+}
 
 /* GambaUi.WagerInput overriding styles */
 .sc-gLLuof.cXPwGP button img,
