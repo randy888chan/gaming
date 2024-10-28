@@ -77,22 +77,16 @@ export default function HomePage() {
               👨‍💻 Things Twitter
             </button>
             <button
-              onClick={() => window.open("https://gamba.so/docs")}
+              onClick={() => window.open("https://x.com/ThingsSOL")}
               className="rounded-lg p-3 bg-white hover:bg-gray-200 hover:-translate-y-0.5 transform text-black transition-all duration-200 ease-in-out cursor-pointer shadow-lg hover:shadow-xl"
             >
-              📖 Gamba Docs
+              📖 Things Discord
             </button>
             <button
-              onClick={() => window.open("https://explorer.gamba.so")}
+              onClick={() => window.open("https://discord.gg/c3ghgahMjQ")}
               className="rounded-lg p-3 bg-white hover:bg-gray-200 hover:-translate-y-0.5 transform text-black transition-all duration-200 ease-in-out cursor-pointer shadow-lg hover:shadow-xl"
             >
-              🌐 Explorer
-            </button>
-            <button
-              onClick={() => window.open("https://discord.com/invite/HSTtFFwR")}
-              className="rounded-lg p-3 bg-white hover:bg-gray-200 hover:-translate-y-0.5 transform text-black transition-all duration-200 ease-in-out cursor-pointer shadow-lg hover:shadow-xl"
-            >
-              💬 Join Things Discord
+          
             </button>
           </div>
         </div>
