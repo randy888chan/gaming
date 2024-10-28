@@ -30,16 +30,9 @@ export const FOOTER_LINKS = [
     href: "https://github.com/BankkRoll/Gamba-V2-Next.js",
     title: "👨‍💻 Twitter",
   },
+ 
   {
-    href: "https://explorer.gamba.so/create",
-    title: "🚀 Join Things Discord",
-  },
-  {
-    href: "https://gamba.so/docs",
-    title: "📖 Tw",
-  },
-  {
-    href: "https://discord.com/invite/HSTtFFwR",
+    href: "https://discord.com/invite/c3ghgahMjQ",
     title: "💬 Join Things Discord",
   },
 ];
