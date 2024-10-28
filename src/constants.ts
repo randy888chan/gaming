@@ -119,14 +119,14 @@ export const TOKENLIST = [
     baseWager: 0.01e9,
   },
   // GUAC
-  {
-    mint: new PublicKey("AZsHEMXd36Bj1EMNXhowJajpUXzrKcK57wW4ZGXVa7yR"),
-    name: "Guacamole",
-    symbol: "GUAC",
-    image:
-      "https://bafkreiccbqs4jty2yjvuxp5x7gzgepquvv657ttauaqgxfhxghuz5us54u.ipfs.nftstorage.link/",
-    decimals: 5,
-    baseWager: 2000000e5,
+   {
+    mint: FAKE_TOKEN_MINT,
+    name: 'Fake',
+    symbol: 'FAKE',
+    image: '/fakemoney.png',
+    baseWager: 1e9,
+    decimals: 9,
+    usdPrice: 0,
   },
 
   // Add New Public pool
