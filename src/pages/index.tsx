@@ -70,24 +70,19 @@ export default function HomePage() {
           <div className="whitespace-nowrap grid grid-cols-2 grid-rows-2 gap-2 mt-5 md:flex md:flex-col md:mt-0 md:justify-start">
             <button
               onClick={() =>
-                window.open("https://github.com/BankkRoll/Gamba-V2-Next.js")
+                window.open("https://x.com/ThingsSOL")
               }
               className="rounded-lg p-3 bg-white hover:bg-gray-200 hover:-translate-y-0.5 transform text-black transition-all duration-200 ease-in-out cursor-pointer shadow-lg hover:shadow-xl"
             >
               👨‍💻 Things Twitter
             </button>
             <button
-              onClick={() => window.open("https://x.com/ThingsSOL")}
+              onClick={() => window.open("https://discord.gg/c3ghgahMjQ")}
               className="rounded-lg p-3 bg-white hover:bg-gray-200 hover:-translate-y-0.5 transform text-black transition-all duration-200 ease-in-out cursor-pointer shadow-lg hover:shadow-xl"
             >
               📖 Things Discord
             </button>
-            <button
-              onClick={() => window.open("https://discord.gg/c3ghgahMjQ")}
-              className="rounded-lg p-3 bg-white hover:bg-gray-200 hover:-translate-y-0.5 transform text-black transition-all duration-200 ease-in-out cursor-pointer shadow-lg hover:shadow-xl"
-            >
-          
-            </button>
+            
           </div>
         </div>
         <h2 className="text-2xl font-bold text-center">Games</h2>
