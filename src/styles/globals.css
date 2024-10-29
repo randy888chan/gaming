@@ -7,7 +7,7 @@
 }
 
 :root {
-  --background-color: #15152e;
+  --background-color: #000000;
   --text-color: #ffffff;
 
   --gamba-ui-border-radius: 10px;
@@ -124,7 +124,6 @@ body::-webkit-scrollbar-thumb {
 
     100% {
       opacity: 0;
-      transform: scale(1);
     }
   }
 }
@@ -182,7 +181,7 @@ body::-webkit-scrollbar-thumb {
 
   50% {
     opacity: 0.7;
-    background-color: rgba(75, 0, 130, 0.8);
+    background-color: rgba(75, 0, 130, 0.6);
   }
 
   100% {
@@ -191,110 +190,12 @@ body::-webkit-scrollbar-thumb {
   }
 }
 
-.animate-purplePulse {
-  animation: purplePulse 1.5s cubic-bezier(0.2, 0, 0.2, 1) infinite;
-}
-
-/* Dashbaord gamecard styles */
+/* Tile animation */
 @keyframes tileAnimation {
   0% {
     background-position: -100px 100px;
   }
-
   100% {
-    background-position: 100px -100px;
+    background-position: 100px 100px; /* Bitiriş durumu */
   }
-}
-
-.game-card {
-  transition: transform 0.2s ease;
-  position: relative;
-  transform: scale(1);
-  max-height: 100%;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-
-.game-card:hover {
-  transform: scale(1.01);
-  outline: #9564ff33 solid 5px;
-  outline-offset: 0px;
-}
-
-.game-card .background {
-  transition:
-    transform 0.2s ease,
-    opacity 0.3s;
-  animation: tileAnimation 5s linear infinite;
-  opacity: 0;
-}
-
-.game-card:hover .background {
-  opacity: 0.35;
-}
-
-.game-card .image {
-  transition: transform 0.2s ease;
-  transform: scale(0.9);
-}
-
-.game-card:hover .image {
-  transform: scale(1);
-}
-
-.game-card .play {
-  transition: opacity 0.2s ease;
-  opacity: 0;
-  backdrop-filter: blur(20px);
-}
-
-.game-card:hover .play {
-  opacity: 1;
-}
-
-/* Shutter animation */
-@keyframes shutter-open {
-  0% {
-    opacity: 0.2;
-    transform: scale(0.2);
-  }
-
-  20% {
-    opacity: 0.8;
-    transform: scale(0.6);
-  }
-
-  40% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  60% {
-    opacity: 0.8;
-    transform: scale(0.6);
-  }
-
-  80% {
-    opacity: 0.2;
-    transform: scale(0.2);
-  }
-
-  100% {
-    opacity: 0;
-    transform: scale(0);
-  }
-}
-
-.animate-shutter {
-  animation: shutter-open 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 50;
-  pointer-events: none;
-  border-radius: 10px;
 }

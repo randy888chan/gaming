@@ -27,20 +27,13 @@ export const LIVE_EVENT_TOAST = true;
 
 export const FOOTER_LINKS = [
   {
-    href: "https://github.com/BankkRoll/Gamba-V2-Next.js",
-    title: "👨‍💻 Build your own",
+    href: "https://x.com/ThingsSOL",
+    title: "👨‍💻 Twitter",
   },
+ 
   {
-    href: "https://explorer.gamba.so/create",
-    title: "🚀 Create Pool",
-  },
-  {
-    href: "https://gamba.so/docs",
-    title: "📖 Gamba Docs",
-  },
-  {
-    href: "https://discord.com/invite/HSTtFFwR",
-    title: "💬 Join Discord",
+    href: "https://discord.com/invite/c3ghgahMjQ",
+    title: "💬 Join Things Discord",
   },
 ];
 
@@ -56,7 +49,7 @@ export const FOOTER_TWITTER_LINK = {
  ******************************************/
 
 export const BASE_SEO_CONFIG = {
-  defaultTitle: "Gamba - NEXTjs Demo",
+  defaultTitle: "Things Gamble",
   description:
     "The gambleFi protocol with end-to-end tools for on-chain degeneracy on Solana.",
   openGraph: {
@@ -69,15 +62,15 @@ export const BASE_SEO_CONFIG = {
     images: [
       {
         url: "https://play-gamba.vercel.app/seo.png",
-        alt: "Gamba - NEXTjs Demo",
+        alt: "Things Gamble",
       },
     ],
-    site_name: "Gamba - NEXTjs Demo",
+    site_name: "Things Gamble",
   },
   twitter: {
     cardType: "summary_large_image",
-    site: "https://twitter.com/gambalabs",
-    handle: "@gambalabs",
+    site: "https://x.com/ThingsSOL",
+    handle: "@ThingsSOL",
   },
   additionalMetaTags: [
     {
@@ -118,16 +111,7 @@ export const TOKENLIST = [
     decimals: 9,
     baseWager: 0.01e9,
   },
-  // GUAC
-  {
-    mint: new PublicKey("AZsHEMXd36Bj1EMNXhowJajpUXzrKcK57wW4ZGXVa7yR"),
-    name: "Guacamole",
-    symbol: "GUAC",
-    image:
-      "https://bafkreiccbqs4jty2yjvuxp5x7gzgepquvv657ttauaqgxfhxghuz5us54u.ipfs.nftstorage.link/",
-    decimals: 5,
-    baseWager: 2000000e5,
-  },
+  
 
   // Add New Public pool
   // {
