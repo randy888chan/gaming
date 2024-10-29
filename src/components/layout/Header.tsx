@@ -23,7 +23,6 @@ export default function Header() {
 
   return (
     <>
-      
       <div className="flex items-center justify-between w-full p-2.5 bg-gradient-to-br from-blue-800 to-purple-800 fixed top-0 left-0 z-50 rounded-b-2xl shadow-lg">
         <div className="absolute top-0 left-0 right-0 backdrop-blur w-full h-full rounded-b-2xl -z-20" />
         <div className="flex gap-5 items-center">
@@ -34,7 +33,6 @@ export default function Header() {
           </Link>
         </div>
         <div className="max-sm:text-xs max-sm:gap-1 flex gap-2.5 items-center relative">
-          </div>
           {bonusHelp && (
             <Modal onClose={() => setBonusHelp(false)}>
               <h1>You have a bonus!</h1>
