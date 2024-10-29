@@ -32,6 +32,9 @@ export default function Header() {
             </div>
           </Link>
         </div>
+         <marquee>test</marquee>
+
+    
         <div className="max-sm:text-xs max-sm:gap-1 flex gap-2.5 items-center relative">
           {bonusHelp && (
             <Modal onClose={() => setBonusHelp(false)}>
