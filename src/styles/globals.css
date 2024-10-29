@@ -29,8 +29,7 @@ input,
 button,
 textarea,
 pre {
-  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial,
-    sans-serif;
+  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
 }
 
@@ -87,23 +86,20 @@ body::-webkit-scrollbar-thumb {
   scrollbar-width: none;
 }
 
-/* splash game styles */
+/* Splash game styles */
 @keyframes splashAnimation {
   0% {
     opacity: 1;
     transform: scale(1);
   }
-
   33% {
     opacity: 0.6;
     transform: scale(1.025);
   }
-
   66% {
     opacity: 0.3;
     transform: scale(1.05);
   }
-
   100% {
     opacity: 0;
     transform: scale(1.1);
@@ -116,12 +112,10 @@ body::-webkit-scrollbar-thumb {
       opacity: 1;
       transform: scale(1);
     }
-
     50% {
       opacity: 0.5;
       transform: scale(1);
     }
-
     100% {
       opacity: 0;
       transform: scale(1);
@@ -129,28 +123,26 @@ body::-webkit-scrollbar-thumb {
   }
 }
 
+/* Loading Animation */
 @keyframes loadingAnimation {
   0% {
     transform: translateX(-125%);
   }
-
   100% {
     transform: translateX(100%);
   }
 }
 
-/* Recent plays skeleton pulse */
+/* Recent Plays Skeleton Pulse */
 @keyframes Skeleton {
   0% {
     opacity: 1;
     background-color: rgba(255, 255, 255, 0.6);
   }
-
   50% {
     opacity: 0.5;
     background-color: rgba(255, 255, 255, 0.8);
   }
-
   100% {
     opacity: 1;
     background-color: rgba(255, 255, 255, 0.6);
@@ -161,7 +153,7 @@ body::-webkit-scrollbar-thumb {
   animation: Skeleton 1.5s cubic-bezier(0.2, 0, 0.2, 1) infinite;
 }
 
-/* GambaUi.WagerInput overriding styles */
+/* GambaUi WagerInput Overriding Styles */
 .sc-gLLuof.cXPwGP button img,
 .sc-gLLuof.iROQRr button img,
 .sc-gLLuof.jPfPoR button img,
@@ -173,18 +165,16 @@ body::-webkit-scrollbar-thumb {
   height: auto !important;
 }
 
-/* Game stepper animation */
+/* Game Stepper Animation */
 @keyframes purplePulse {
   0% {
     opacity: 1;
     background-color: rgba(149, 76, 233, 0.6);
   }
-
   50% {
     opacity: 0.7;
     background-color: rgba(75, 0, 130, 0.8);
   }
-
   100% {
     opacity: 1;
     background-color: rgba(149, 76, 233, 0.6);
@@ -195,12 +185,11 @@ body::-webkit-scrollbar-thumb {
   animation: purplePulse 1.5s cubic-bezier(0.2, 0, 0.2, 1) infinite;
 }
 
-/* Dashbaord gamecard styles */
+/* Dashboard Game Card Styles */
 @keyframes tileAnimation {
   0% {
     background-position: -100px 100px;
   }
-
   100% {
     background-position: 100px -100px;
   }
@@ -226,9 +215,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 .game-card .background {
-  transition:
-    transform 0.2s ease,
-    opacity 0.3s;
+  transition: transform 0.2s ease, opacity 0.3s;
   animation: tileAnimation 5s linear infinite;
   opacity: 0;
 }
@@ -256,33 +243,28 @@ body::-webkit-scrollbar-thumb {
   opacity: 1;
 }
 
-/* Shutter animation */
+/* Shutter Animation */
 @keyframes shutter-open {
   0% {
     opacity: 0.2;
     transform: scale(0.2);
   }
-
   20% {
     opacity: 0.8;
     transform: scale(0.6);
   }
-
   40% {
     opacity: 1;
     transform: scale(1);
   }
-
   60% {
     opacity: 0.8;
     transform: scale(0.6);
   }
-
   80% {
     opacity: 0.2;
     transform: scale(0.2);
   }
-
   100% {
     opacity: 0;
     transform: scale(0);
@@ -296,5 +278,46 @@ body::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.3);
   z-index: 50;
   pointer-events: none;
-  border-radius: 10px;
+  border-radius: var(--gamba-ui-border-radius);
+}
+
+/* Yeni Ekleme: Guacamole Tasarımına Özel Stiller */
+.button-main {
+  background-color: var(--gamba-ui-button-main-background);
+  color: var(--gamba-ui-button-default-color);
+  border-radius: var(--gamba-ui-border-radius);
+  padding: 0.5rem 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.button-main:hover {
+  background-color: var(--gamba-ui-button-main-background-hover);
+}
+
+/* Oyun Kartları */
+.game-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.game-card img {
+  border-radius: var(--gamba-ui-border-radius);
+}
+
+/* Üst Düzey Ekran Stilleri */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--gamba-ui-border-radius);
+}
+
+.footer {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--gamba-ui-border-radius);
 }
