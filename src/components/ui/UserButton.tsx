@@ -85,14 +85,6 @@ export function UserButton() {
                     View Profile
                   </button>
                 </Link>
-                <Link href="https://discord.gg/KBBBpbbGGj>
-                  <button
-                    className="bg-[#8851ff] hover:bg-[#9564ff] rounded-lg p-2 text-xs  transition-colors"
-                    onClick={() => setModal(false)}
-                  >
-                    Support
-                  </button>
-                </Link>
               </div>
               <div>
                 <button
