@@ -86,17 +86,6 @@ export function UserButton() {
                   </button>
                 </Link>
               </div>
-              <div className="flex flex-row m-auto justify-end gap-2 pt-12">
-              <div>
-                <Link href="/profile" passHref>
-                  <button
-                    className="bg-[#8851ff] hover:bg-[#9564ff] rounded-lg p-2 text-xs  transition-colors"
-                    onClick={() => setModal(false)}
-                  >
-                    View sdasd
-                  </button>
-                </Link>
-              </div>
               <div>
                 <button
                   className="bg-red-500 hover:bg-red-600 rounded-lg p-2 text-xs transition-colors"
