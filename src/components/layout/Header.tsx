@@ -29,11 +29,14 @@ export default function Header() {
           <Link href="/" passHref>
             <div className="h-9 m-0 cursor-pointer">
               <img alt="Gamba logo" src="/logo.svg" className="h-full" />
-              <marquee>teset</marquee>
-
             </div>
           </Link>
         </div>
+
+      <marquee scrollamount="1" height="100" width="100%" direction="down">
+test
+
+</marquee>
         <div className="max-sm:text-xs max-sm:gap-1 flex gap-2.5 items-center relative">
           {bonusHelp && (
             <Modal onClose={() => setBonusHelp(false)}>
