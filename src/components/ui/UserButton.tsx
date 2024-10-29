@@ -84,7 +84,9 @@ export function UserButton() {
                   >
                     View Profile
                   </button>
-                  <div className="flex flex-row m-auto justify-end gap-2 pt-12">
+                </Link>
+              </div>
+              <div className="flex flex-row m-auto justify-end gap-2 pt-12">
               <div>
                 <Link href="/profile" passHref>
                   <button
