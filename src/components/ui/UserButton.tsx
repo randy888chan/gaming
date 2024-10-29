@@ -93,6 +93,7 @@ export function UserButton() {
                   >
                     Support
                   </button>
+                    </div>
                 </Link>
               </div>
               <div>
