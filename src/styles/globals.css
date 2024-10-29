@@ -9,16 +9,12 @@
 :root {
   --background-color: #000000;
   --text-color: #ffffff;
-
   --gamba-ui-border-radius: 10px;
-
   --gamba-ui-button-default-background: #0e0e16;
   --gamba-ui-button-default-background-hover: #11111d;
   --gamba-ui-button-default-color: white;
-
   --gamba-ui-button-main-background: #8851ff;
   --gamba-ui-button-main-background-hover: #9564ff;
-
   --gamba-ui-input-background: #0e0e16;
   --gamba-ui-input-color: #ffffff;
   --gamba-ui-input-background-hover: #11111d;
@@ -29,7 +25,8 @@ input,
 button,
 textarea,
 pre {
-  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
   font-size: 16px;
 }
 
@@ -75,18 +72,15 @@ body::-webkit-scrollbar-thumb {
   }
 }
 
-/* Hide X scrollbar for Chrome, Safari, and Opera */
 .overflow-x-auto::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide X scrollbar for IE, Edge, and Firefox */
 .overflow-x-auto {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-/* Splash game styles */
 @keyframes splashAnimation {
   0% {
     opacity: 1;
@@ -123,7 +117,6 @@ body::-webkit-scrollbar-thumb {
   }
 }
 
-/* Loading Animation */
 @keyframes loadingAnimation {
   0% {
     transform: translateX(-125%);
@@ -133,7 +126,6 @@ body::-webkit-scrollbar-thumb {
   }
 }
 
-/* Recent Plays Skeleton Pulse */
 @keyframes Skeleton {
   0% {
     opacity: 1;
@@ -153,7 +145,6 @@ body::-webkit-scrollbar-thumb {
   animation: Skeleton 1.5s cubic-bezier(0.2, 0, 0.2, 1) infinite;
 }
 
-/* GambaUi WagerInput Overriding Styles */
 .sc-gLLuof.cXPwGP button img,
 .sc-gLLuof.iROQRr button img,
 .sc-gLLuof.jPfPoR button img,
@@ -165,7 +156,6 @@ body::-webkit-scrollbar-thumb {
   height: auto !important;
 }
 
-/* Game Stepper Animation */
 @keyframes purplePulse {
   0% {
     opacity: 1;
@@ -185,139 +175,8 @@ body::-webkit-scrollbar-thumb {
   animation: purplePulse 1.5s cubic-bezier(0.2, 0, 0.2, 1) infinite;
 }
 
-/* Dashboard Game Card Styles */
 @keyframes tileAnimation {
   0% {
     background-position: -100px 100px;
   }
-  100% {
-    background-position: 100px -100px;
-  }
-}
-
-.game-card {
-  transition: transform 0.2s ease;
-  position: relative;
-  transform: scale(1);
-  max-height: 100%;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-
-.game-card:hover {
-  transform: scale(1.01);
-  outline: #9564ff33 solid 5px;
-  outline-offset: 0px;
-}
-
-.game-card .background {
-  transition: transform 0.2s ease, opacity 0.3s;
-  animation: tileAnimation 5s linear infinite;
-  opacity: 0;
-}
-
-.game-card:hover .background {
-  opacity: 0.35;
-}
-
-.game-card .image {
-  transition: transform 0.2s ease;
-  transform: scale(0.9);
-}
-
-.game-card:hover .image {
-  transform: scale(1);
-}
-
-.game-card .play {
-  transition: opacity 0.2s ease;
-  opacity: 0;
-  backdrop-filter: blur(20px);
-}
-
-.game-card:hover .play {
-  opacity: 1;
-}
-
-/* Shutter Animation */
-@keyframes shutter-open {
-  0% {
-    opacity: 0.2;
-    transform: scale(0.2);
-  }
-  20% {
-    opacity: 0.8;
-    transform: scale(0.6);
-  }
-  40% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  60% {
-    opacity: 0.8;
-    transform: scale(0.6);
-  }
-  80% {
-    opacity: 0.2;
-    transform: scale(0.2);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0);
-  }
-}
-
-.animate-shutter {
-  animation: shutter-open 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 50;
-  pointer-events: none;
-  border-radius: var(--gamba-ui-border-radius);
-}
-
-/* Yeni Ekleme: Guacamole Tasarımına Özel Stiller */
-.button-main {
-  background-color: var(--gamba-ui-button-main-background);
-  color: var(--gamba-ui-button-default-color);
-  border-radius: var(--gamba-ui-border-radius);
-  padding: 0.5rem 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.button-main:hover {
-  background-color: var(--gamba-ui-button-main-background-hover);
-}
-
-/* Oyun Kartları */
-.game-card-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.game-card img {
-  border-radius: var(--gamba-ui-border-radius);
-}
-
-/* Üst Düzey Ekran Stilleri */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--gamba-ui-border-radius);
-}
-
-.footer {
-  text-align: center;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--gamba-ui-border-radius);
-}
+  
