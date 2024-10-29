@@ -53,8 +53,7 @@ export default function HomePage() {
               <img src="/wave.gif" className="h-14" alt="Gamba Logo" />
             </div>
             <p className="my-2 text-white drop-shadow">
-              The thing gamble protocol with end-to-end tools for on-chain
-              degeneracy on Solana.
+              Multi-game platform for on-chain on Solana.
             </p>
             <p className="my-2 text-sm max-w-sm">
               Share your link to earn a {PLATFORM_REFERRAL_FEE * 100}% fee on
