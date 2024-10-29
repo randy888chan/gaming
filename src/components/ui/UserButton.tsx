@@ -84,6 +84,15 @@ export function UserButton() {
                   >
                     View Profile
                   </button>
+                  <div className="flex flex-row m-auto justify-end gap-2 pt-12">
+              <div>
+                <Link href="https://things-delta.vercel.app/profile>
+                  <button
+                    className="bg-[#8851ff] hover:bg-[#9564ff] rounded-lg p-2 text-xs  transition-colors"
+                    onClick={() => setModal(false)}
+                  >
+                    Support
+                  </button>
                 </Link>
               </div>
               <div>
