@@ -27,7 +27,7 @@ export const LIVE_EVENT_TOAST = true;
 
 export const FOOTER_LINKS = [
   {
-    href: "https://github.com/BankkRoll/Gamba-V2-Next.js",
+    href: "https://x.com/ThingsSOL",
     title: "👨‍💻 Twitter",
   },
  
