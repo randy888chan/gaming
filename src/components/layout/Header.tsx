@@ -29,6 +29,8 @@ export default function Header() {
           <Link href="/" passHref>
             <div className="h-9 m-0 cursor-pointer">
               <img alt="Gamba logo" src="/logo.svg" className="h-full" />
+              <marquee>teset</marquee>
+
             </div>
           </Link>
         </div>
