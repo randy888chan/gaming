@@ -49,7 +49,7 @@ export const FOOTER_TWITTER_LINK = {
  ******************************************/
 
 export const BASE_SEO_CONFIG = {
-  defaultTitle: "Gamba - NEXTjs Demo",
+  defaultTitle: "x",
   description:
     "The gambleFi protocol with end-to-end tools for on-chain degeneracy on Solana.",
   openGraph: {
