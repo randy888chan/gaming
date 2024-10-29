@@ -75,20 +75,6 @@ export function UserButton() {
             >
               Share Referral Link
             </button>
-             <div>
-            <h1 className="min-w-64">
-              {truncateString(address.toBase58(), 8, 8)}
-            </h1>
-            <p className="my-4 text-sm max-w-sm">
-              Share your link to earn a {PLATFORM_REFERRAL_FEE * 100}% fee on each
-              play when players use this platform using your code.
-            </p>
-            <button
-              className="bg-[#8851ff] hover:bg-[#9564ff] rounded-lg p-2 text-xs transition-colors"
-              onClick={copyInvite}
-            >
-              Share Referral Link
-            </button>
             <div className="flex flex-row m-auto justify-end gap-2 pt-12">
               <div>
                 <Link href="/profile" passHref>
