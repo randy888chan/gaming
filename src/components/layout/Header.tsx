@@ -34,10 +34,6 @@ export default function Header() {
           </Link>
         </div>
         <div className="max-sm:text-xs max-sm:gap-1 flex gap-2.5 items-center relative">
-          <div <marquee scrollamount="1" height="100" width="100%" direction="down">
-test
-
-</marquee>
           </div>
           {bonusHelp && (
             <Modal onClose={() => setBonusHelp(false)}>
