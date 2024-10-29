@@ -93,7 +93,7 @@ export function UserButton() {
                     className="bg-[#8851ff] hover:bg-[#9564ff] rounded-lg p-2 text-xs  transition-colors"
                     onClick={() => setModal(false)}
                   >
-                    View Profile
+                    View sdasd
                   </button>
                 </Link>
               </div>
