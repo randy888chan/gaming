@@ -1,8 +1,9 @@
-# Gamba Nextjs
+# Gamba Demo
 
-![screencapture](https://github.com/BankkRoll/Gamba-V2-Next.js/assets/106103625/b924180e-39a0-47b2-89f7-87b1ae460ce1)
+![image](https://github.com/BankkRoll/Gamba-V2-Next.js/assets/106103625/286c4710-c817-4157-9f1d-c5719cb58558)
 
-> This is a forked and rewritten repo from the [gamba platform](https://github.com/gamba-labs/platform).
+
+> This is a mirrored repo from the [gamba monorepo](https://github.com/gamba-labs/gamba/tree/main/apps/demo).
 
 A demo frontend featuring multiple casino games built on Gamba.
 
@@ -10,89 +11,12 @@ Simply provide your own wallet address to the `<Gamba />` provider and start col
 
 ## Quick Setup
 
-To get started with the Gamba Demo, follow these steps:
+1. [Fork this repository](https://github.com/gamba-labs/platform/generate).
 
-1. **Fork and Clone the Repository**
+2. [Connect your forked repo and deploy on Vercel](https://vercel.com/new).
 
-   ```
-   git clone https://github.com/BankkRoll/Gamba-V2-Next.js.git
-   cd Gamba-V2-Next.js
-   ```
+3. Set up your Environment variables in the .env file. (Use .env.example as reference)
 
-2. **Install Dependencies**
+## Rewritten in Next.js
 
-   Run the following command to install the necessary dependencies:
-
-   ```
-   npm install
-   ```
-
-3. **Configure your RPC and Creator**
-
-   - **Upload to Vercel:** For deployment, it is recommended to upload your project to [Vercel](https://vercel.com/). Ensure that you set the necessary environment variables (`NEXT_PUBLIC_RPC_ENDPOINT` and `NEXT_PUBLIC_PLATFORM_CREATOR`) in the Vercel dashboard under the project settings.
-
-   - **Environment Variables:** If you choose to publish your env on GitHub, make sure to use environment variables securely. Rename the `.env.example` file to `.env` and update the RPC with your RPC.
-     I would suggest setting up domain on helius RPC access control rules for your api key if publishing to github.
-
-   ```bash
-   ### Web3 connection
-   NEXT_PUBLIC_RPC_ENDPOINT="HTTPS://<HELIUS API URL>"
-   ### Creator address
-   NEXT_PUBLIC_PLATFORM_CREATOR="<SOLANA WALLET ADDRESS>"
-   ```
-
-4. **Configure your platform**
-
-   Edit the [constants.ts](./src/constants.ts) and configure ALL OF YOUR INFO LINE BY LINE:
-
-   - Platform FEEs
-   - MetaTags SEO
-   - Footer Links
-   - Supported Tokens
-   - ect.
-
-   To add a custom token to your platform, Update/Add to the following section with your custom token's details:
-
-   Add Public Pool 
-   ```
-   {
-      mint: new PublicKey("So11111111111111111111111111111111111111112"),
-      name: "Solana",
-      symbol: "SOL",
-      image: "/logo.png",
-      decimals: 9,
-      baseWager: 0.01e9,
-   }
-   ```
-
-   Add Private Pool
-   ```
-   {
-   mint: new PublicKey(""),
-   poolAuthority: new PublicKey(""), // REQUIRED FOR PRIVATE POOLS
-   name: "",
-   symbol: "",
-   image: "",
-   decimals: 0,
-   baseWager: 0,
-   },
-   ```
-
-5. **Run the Application**
-
-Start the development server:
-
-```
-npm run dev
-```
-
-Visit `http://localhost:3000` in your browser to view the app.
-
-## Additional Information
-
-- **Contributing**: We welcome contributions! If you have improvements or fixes, please submit a pull request and include details about your changes.
-- **Acknowledgments**: Special thanks to the original [gamba platform](https://github.com/gamba-labs/platform) for the inspiration behind this project.
-
-### License
-
-This project is licensed under the [MIT License](LICENSE).
+This version of the Gamba Demo has been rewritten using Next.js instead of Vite for improved performance and functionality.
