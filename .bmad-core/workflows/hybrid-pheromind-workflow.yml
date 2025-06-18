@@ -1,0 +1,48 @@
+workflow:
+  id: hybrid-pheromind-workflow
+  name: Hybrid State-Driven Development Cycle
+  description: >-
+    An adaptive workflow where a Scribe agent interprets outcomes to update a central state file, and an Orchestrator agent uses that state to recommend the next optimal action.
+  type: hybrid
+
+  main_cycle:
+    - step: worker_action
+      agent: dev | qa | refactorer | etc.
+      action: Completes a specific task (e.g., implements story, runs tests).
+      output: A detailed natural language summary of the outcome in its final report (e.g., Dev Agent Record).
+
+    - step: scribe_interpretation
+      agent: bmad-master
+      action: "*process <report_path>"
+      input: The report from the worker agent.
+      output: An updated `.bmad-state.json` file with new/modified signals.
+      notes: This is the "sense and deposit pheromone" step.
+
+    - step: orchestrator_recommendation
+      agent: bmad-orchestrator
+      action: "*propose_next_action"
+      input: The updated `.bmad-state.json`.
+      output: A natural language recommendation for the user on the next agent and task.
+      notes: This is the "follow pheromone trail" step.
+
+    - step: user_approval
+      agent: user
+      action: Approve or modify the orchestrator's recommendation.
+      output: A command to the next worker agent.
+      notes: The user is the ultimate strategic decision-maker.
+
+  flow_diagram: |
+    ```mermaid
+    graph TD
+        A[Start: User needs next action] --> B[User tasks @bmad-orchestrator]
+        B --> C{Orchestrator reads .bmad-state.json}
+        C --> D[Orchestrator proposes next action to User]
+        D --> E{User approves?}
+        E -->|Yes| F[User tasks recommended Worker Agent (e.g., @dev)]
+        F --> G[Worker Agent completes task & reports results]
+        G --> H[User tasks @bmad-master (Scribe) to process report]
+        H --> I{Scribe interprets report & updates .bmad-state.json}
+        I --> A
+        E -->|No| J[User decides on a different action]
+        J --> F
+    ```

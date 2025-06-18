@@ -1,0 +1,10 @@
+bundle:
+  name: Team Maintenance
+  icon: 🛠️
+  description: A specialized team for debugging, refactoring, and assessing code health.
+agents:
+  - bmad-orchestrator
+  - debugger
+  - refactorer
+  - qa
+  - po
