@@ -73,6 +73,32 @@ export function ShareModal({
     }
   };
 
+  const handleShareToSocial = async (platform: 'twitter' | 'facebook') => {
+    try {
+      const response = await fetch('/api/social-post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contentId: event.signature, // Using transaction signature as contentId for now
+          platforms: [platform],
+          scheduleAt: new Date().toISOString(),
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success(`Successfully shared on ${platform}!`);
+      } else {
+        toast.error(`Failed to share on ${platform}: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error: any) {
+      console.error(`Error sharing on ${platform}:`, error);
+      toast.error(`Error sharing on ${platform}: ${error.message || 'Unknown error'}`);
+    }
+  };
+
   if (!game) {
     return null;
   }
@@ -204,7 +230,11 @@ export function ShareModal({
             <GambaButton onClick={gotoGame} text={`Play ${game?.meta?.name}`} />
           )}
 
-          <GambaButton onClick={copyImage} text="Share" />
+          <GambaButton onClick={copyImage} text="Copy Image" />
+        </div>
+        <div className="mt-2 flex gap-2">
+          <GambaButton onClick={() => handleShareToSocial('twitter')} text="Share on Twitter" />
+          <GambaButton onClick={() => handleShareToSocial('facebook')} text="Share on Facebook" />
         </div>
       </div>
     </Modal>

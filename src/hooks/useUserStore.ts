@@ -9,6 +9,8 @@ export interface UserStore {
   gamesPlayed: string[];
   isPriorityFeeEnabled: boolean;
   priorityFee: number;
+  user: any; // Particle Network user info
+  hasClaimedFirstPlay: boolean; // New field
   set: StoreApi<UserStore>["setState"];
 }
 
@@ -23,6 +25,8 @@ export const useUserStore = create(
       gamesPlayed: [],
       priorityFee: 400_201,
       isPriorityFeeEnabled: true,
+      user: null,
+      hasClaimedFirstPlay: false, // Initialize new field
       set,
     }),
     {

@@ -1,3 +1,8 @@
+import withBundleAnalyzer from '@next/bundle-analyzer';
+import withPWA from 'next-pwa';
+
+const isProd = process.env.NODE_ENV === 'production';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -14,4 +19,11 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+const withPWAConfig = withPWA({
+  dest: 'public',
+  disable: !isProd,
+})(nextConfig);
+
+export default withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})(withPWAConfig);

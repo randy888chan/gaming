@@ -21,11 +21,18 @@ const getRecipientFromStorage = () => {
     const referralAddressOnChain = Cookies.get("referralAddressOnChain");
     const referralAddress = referralAddressOnChain ?? referralData.current;
     console.log(referralAddressOnChain, referralData.current);
-    if (!referralAddress) return null;
-    return {
-      recipient: new PublicKey(referralAddress),
-      onChain: !!referralAddressOnChain,
-    };
+    if (!referralAddress) {
+      return null;
+    }
+    try {
+      return {
+        recipient: new PublicKey(referralAddress),
+        onChain: !!referralAddressOnChain,
+      };
+    } catch (error) {
+      console.error("Invalid referral address in storage:", error);
+      return null;
+    }
   } catch {
     return null;
   }

@@ -1,0 +1,142 @@
+{
+  "signals": [
+    {
+      "name": "project_initiated",
+      "strength": 100,
+      "createdAt": "2025-06-19T16:51:40.000Z",
+      "decayRate": 0.01
+    },
+    {
+      "name": "epic_planned:flash_experience",
+      "strength": 80,
+      "createdAt": "2025-06-19T16:51:40.000Z",
+      "decayRate": 0.05,
+      "metadata": {
+        "title": "The 'Flash' Experience & Onboarding Engine"
+      }
+    },
+    {
+      "name": "epic_planned:viral_growth",
+      "strength": 80,
+      "createdAt": "2025-06-19T16:51:40.000Z",
+      "decayRate": 0.05,
+      "metadata": {
+        "title": "The Viral Growth & AI Engine"
+      }
+    },
+    {
+      "name": "requirements_defined:functional",
+      "strength": 90,
+      "createdAt": "2025-06-19T16:51:40.000极狐Z",
+      "decayRate": 0.03,
+      "metadata": {
+        "count": 12
+      }
+    },
+    {
+      "name": "requirements_defined:non_functional",
+      "strength": 85,
+      "createdAt": "2025-06-19T16:51:40.000Z",
+      "极狐decayRate": 0.03,
+      "metadata": {
+        "count": 5
+      }
+    },
+    {
+      "name": "task_created",
+      "strength": 100,
+      "createdAt": "2025-06-20T02:58:00.000Z",
+      "decayRate": 0.1,
+      "metadata": {
+        "agent": "dev",
+        "description": "Review and update .gitignore for security and best practices"
+      }
+    },
+    {
+      "name": "task_created",
+      "strength": 100,
+      "createdAt": "2025-06-20T02:58:00.000Z",
+      "decayRate": 0.1,
+      "metadata": {
+        "agent": "architect",
+        "description": "Create technical design docs for 'Flash Experience' epic"
+      }
+    },
+    {
+      "name": "coding_complete",
+      "strength": 100,
+      "createdAt": "2025-06-20T03:12:01.000Z",
+      "decayRate": 0.1,
+      "metadata": {
+        "task": "Implement Social Login integration using Particle Network",
+        "agent": "dev",
+        "files": [
+          "src/components/onboarding/OnboardingModal.tsx",
+          "src/hooks/useUserStore.ts"
+        ]
+      }
+    },
+    {
+      "name": "coding_complete",
+      "strength": 100,
+      "createdAt": "2025-06-20T03:27:00.000Z",
+      "decayRate": 0.1,
+      "metadata": {
+        "task": "Implement the 'First Play Free' feature",
+        "agent": "dev",
+        "files": [
+          "schema.sql",
+          "src/pages/api/first-play-free.ts",
+          "src/hooks/useUserStore.ts",
+          "src/components/onboarding/OnboardingModal.tsx"
+        ]
+      }
+    },
+    {
+      "name": "task_canceled",
+      "strength": 95,
+      "createdAt": "2025-06-20T03:36:45.000Z",
+      "decayRate": 0.1,
+      "metadata": {
+        "task": "Implement the 'Smart Bet' feature",
+        "agent": "dev",
+        "reason": "Stopped and canceled by user"
+      }
+    },
+    {
+      "name": "task_completed",
+      "strength": 100,
+      "createdAt": "2025-06-20T03:54:41.000Z",
+      "decayRate": 0.1,
+      "metadata": {
+        "agent": "sm",
+        "description": "Created user stories for: QA Validation Task, Tournament System Specification, Betting Assistant Specification, Tournament System Technical Design"
+      }
+    },
+    {
+      "name": "signal_conflict",
+      "strength": 100,
+      "createdAt": "2025-06-20T05:57:35.000Z",
+      "decayRate": 0.1,
+      "metadata": {
+        "conflicting_signals": ["coding_complete"],
+        "description": "Task marked complete but critical issues remain unresolved"
+      }
+    },
+    {
+      "name": "critical_bug_found",
+      "strength": 95,
+      "createdAt": "2025-06-20T05:57:35.000Z",
+      "decayRate": 0.05,
+      "metadata": {
+        "files": [
+          "src/components/onboarding/OnboardingModal.tsx",
+          "src/components/game/RecentPlays/ShareModal.tsx",
+          "src/components/ParticleProviderWrapper.tsx",
+          "src/pages/_app.tsx"
+        ],
+        "description": "Modal functionality issues and TypeScript errors blocking development"
+      }
+    }
+  ]
+}
