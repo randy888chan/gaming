@@ -6,6 +6,8 @@ import { authWalletConnectors } from "@particle-network/connectkit/auth";
 import { wallet, EntryPosition } from "@particle-network/connectkit/wallet";
 import { WalletProvider } from "@solana/wallet-adapter-react";
 import { TOKENLIST } from "@/constants";
+import { SolanaChain, Ethereum } from "@particle-network/chains";
+import { SendTransactionProvider } from "gamba-react-v2"; // Assuming this is the correct provider
 import dynamic from "next/dynamic";
 
 const DynamicTokenMetaProvider = dynamic(
@@ -62,7 +64,42 @@ export const ParticleProviderWrapper: React.FC<ParticleProviderWrapperProps> = (
           entryPosition: EntryPosition.BR,
         }),
       ],
-      chains: [],
+      chains: [
+        Ethereum,
+        new SolanaChain({
+          id: 101, // Mainnet-beta
+          name: 'Solana',
+          rpcUrl: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
+        }),
+        // Example for ZetaChain Athens 3 Testnet (EVM)
+        // You'll need to ensure Particle Network supports ZetaChain or use a generic EVM configuration if available.
+        // For now, let's represent it with a generic EVM structure if Particle allows custom EVM chains.
+        // This might need adjustment based on Particle's exact ZetaChain support.
+        // Looking at https://developers.particle.network/guides/integrations/partners/zetachain
+        // and https://www.zetachain.com/docs/reference/network/api/
+        // Particle Connect Kit might not have a pre-defined ZetaChain object.
+        // We will use a generic EVM configuration if Particle supports it,
+        // otherwise, we might need to wait for official support or use Particle's Wallet SDK more directly for ZetaChain.
+        // For now, let's assume we can add it like other EVM chains if we have the chainId and rpcUrl.
+        // ZetaChain Athens 3 Testnet: Chain ID 7001
+        // RPC: https://zetachain-athens-evm.blockpi.network/v1/rpc/public
+        // This is a placeholder, actual integration might require specific Particle Network adapter for ZetaChain
+        // or using their generic EVM capabilities.
+        {
+          id: 7001,
+          name: 'ZetaChain Athens 3',
+          network: 'zetachain-athens-3',
+          nativeCurrency: { name: 'ZETA', decimals: 18, symbol: 'aZETA' },
+          rpcUrls: {
+            default: { http: [process.env.NEXT_PUBLIC_ZETA_TESTNET_RPC_URL || 'https://zetachain-athens-evm.blockpi.network/v1/rpc/public'] },
+            public: { http: [process.env.NEXT_PUBLIC_ZETA_TESTNET_RPC_URL || 'https://zetachain-athens-evm.blockpi.network/v1/rpc/public'] },
+          },
+          blockExplorers: {
+            default: { name: 'ZetaScan', url: 'https://athens3.explorer.zetachain.com' },
+          },
+          testnet: true,
+        }
+      ],
     });
   }, []);
 
