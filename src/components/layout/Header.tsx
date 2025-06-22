@@ -89,6 +89,11 @@ export default function Header() {
               <img alt="Gamba logo" src="/logo.svg" className="h-full" />
             </div>
           </Link>
+          <Link href="/polymarket" passHref>
+            <Button variant="link" className="text-white hover:text-gray-300 px-2 md:px-3">
+              Polymarket
+            </Button>
+          </Link>
         </div>
         <div className="max-sm:text-xs max-sm:gap-1 flex gap-2.5 items-center relative">
           <Dialog open={showBonusHelp} onOpenChange={setShowBonusHelp}>

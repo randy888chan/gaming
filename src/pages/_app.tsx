@@ -12,10 +12,10 @@ import {
 } from "../constants";
 import {
   ConnectionProvider,
-  WalletProvider,
+  // WalletProvider, // WalletProvider is now inside ParticleProviderWrapper
 } from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui"; // New import
-import { GambaProvider, SendTransactionProvider } from "gamba-react-v2";
+// import { WalletModalProvider } from "@solana/wallet-adapter-react-ui"; // Particle provides its own modal
+import { GambaProvider } from "gamba-react-v2"; // SendTransactionProvider is in ParticleProviderWrapper
 
 import { AppProps } from "next/app";
 import { DefaultSeo } from "next-seo";
@@ -84,63 +84,63 @@ function MyApp({ Component, pageProps }: AppProps) {
       endpoint={RPC_ENDPOINT}
       config={{ commitment: "processed" }}
     >
-      <WalletModalProvider> {/* Added WalletModalProvider */}
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+      {/* <WalletModalProvider> Replaced by Particle's UI </WalletModalProvider> */}
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <ParticleProviderWrapper
+          wallets={wallets} // This still passes an empty array, needs verification if Particle can populate Solana WalletProvider context
+          sendTransactionConfig={sendTransactionConfig}
+          PLATFORM_CREATOR_ADDRESS={PLATFORM_CREATOR_ADDRESS}
+          PLATFORM_CREATOR_FEE={PLATFORM_CREATOR_FEE}
+          PLATFORM_JACKPOT_FEE={PLATFORM_JACKPOT_FEE}
+          PLATFORM_REFERRAL_FEE={PLATFORM_REFERRAL_FEE}
+          BASE_SEO_CONFIG={BASE_SEO_CONFIG}
+          LIVE_EVENT_TOAST={LIVE_EVENT_TOAST}
+          showDisclaimer={showDisclaimer}
+          DisclaimerModal={DisclaimerModal}
+          OnboardingModal={OnboardingModal}
+          showOnboarding={showOnboarding}
+          handleCloseOnboarding={handleCloseOnboarding}
         >
-          <ParticleProviderWrapper
-            wallets={wallets}
-            sendTransactionConfig={sendTransactionConfig}
-            PLATFORM_CREATOR_ADDRESS={PLATFORM_CREATOR_ADDRESS}
-            PLATFORM_CREATOR_FEE={PLATFORM_CREATOR_FEE}
-            PLATFORM_JACKPOT_FEE={PLATFORM_JACKPOT_FEE}
-            PLATFORM_REFERRAL_FEE={PLATFORM_REFERRAL_FEE}
-            BASE_SEO_CONFIG={BASE_SEO_CONFIG}
-            LIVE_EVENT_TOAST={LIVE_EVENT_TOAST}
-            showDisclaimer={showDisclaimer}
-            DisclaimerModal={DisclaimerModal}
-            OnboardingModal={OnboardingModal}
-            showOnboarding={showOnboarding}
-            handleCloseOnboarding={handleCloseOnboarding}
-          >
-            <GambaProvider>
-              <GambaPlatformProvider
-                creator={PLATFORM_CREATOR_ADDRESS}
-                defaultCreatorFee={PLATFORM_CREATOR_FEE}
-                defaultJackpotFee={PLATFORM_JACKPOT_FEE}
-                referral={{
-                  fee: PLATFORM_REFERRAL_FEE,
-                  prefix: "code",
+          {/* SendTransactionProvider is now inside ParticleProviderWrapper, so no need to wrap GambaProvider with it here */}
+          <GambaProvider>
+            <GambaPlatformProvider
+              creator={PLATFORM_CREATOR_ADDRESS}
+              defaultCreatorFee={PLATFORM_CREATOR_FEE}
+              defaultJackpotFee={PLATFORM_JACKPOT_FEE}
+              referral={{
+                fee: PLATFORM_REFERRAL_FEE,
+                prefix: "code",
+              }}
+            >
+              <Header />
+              <DefaultSeo {...BASE_SEO_CONFIG} />
+              <main className="pt-12">
+              <Component {...pageProps} />
+              </main>
+              <Footer />
+              <Toaster
+                position="bottom-right"
+                richColors
+                toastOptions={{
+                  style: {
+                    backgroundImage:
+                      "linear-gradient(to bottom right, #1e3a8a, #6b21a8)",
+                  },
                 }}
-              >
-                <Header />
-                <DefaultSeo {...BASE_SEO_CONFIG} />
-                <main className="pt-12">
-                <Component {...pageProps} />
-                </main>
-                <Footer />
-                <Toaster
-                  position="bottom-right"
-                  richColors
-                  toastOptions={{
-                    style: {
-                      backgroundImage:
-                        "linear-gradient(to bottom right, #1e3a8a, #6b21a8)",
-                    },
-                  }}
-                />
-                {LIVE_EVENT_TOAST && <GameToast />}
-                {showDisclaimer && <DisclaimerModal />}
-                <OnboardingModal isOpen={showOnboarding} onClose={handleCloseOnboarding} />
-              </GambaPlatformProvider>
-            </GambaProvider>
-          </SendTransactionProvider>
+              />
+              {LIVE_EVENT_TOAST && <GameToast />}
+              {showDisclaimer && <DisclaimerModal />}
+              <OnboardingModal isOpen={showOnboarding} onClose={handleCloseOnboarding} />
+            </GambaPlatformProvider>
+          </GambaProvider>
+          {/* </SendTransactionProvider> */} {/* Moved inside ParticleProviderWrapper */}
         </ParticleProviderWrapper>
       </ThemeProvider>
-    </WalletModalProvider> {/* Added WalletModalProvider closing tag */}
     </ConnectionProvider>
   );
 }
