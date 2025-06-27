@@ -1,4 +1,4 @@
-# Quantum Nexus Product Requirements Document (PRD) - Flash & Viral Edition
+# Quantum Nexus Product Requirements Document (PRD) - v1.1 (PO Validated)
 
 ## Goals and Background Context
 
@@ -16,9 +16,9 @@ The decentralized application landscape is functionally powerful but often fails
 
 ### Change Log
 
-| Date | Version | Description | Author |
-| :--- | :------ | :---------- | :----- |
-|      | 1.0     | Final Release      | John   |
+| Date       | Version | Description                   | Author |
+| :--------- | :------ | :---------------------------- | :----- |
+| 2025-06-27 | 1.1     | PO validation changes integrated. | Sarah  |
 
 ## Requirements
 
@@ -44,53 +44,45 @@ The decentralized application landscape is functionally powerful but often fails
 *   **NFR3:** All primary UI animations and page transitions must maintain a consistent 60 FPS on modern desktop and mobile devices.
 *   **NFR4:** The pSEO engine and its underlying data structures must be architected to scale to generating and serving thousands of pages without a significant increase in manual oversight or cost.
 *   **NFR5:** The core architecture must be modular to support planned post-MVP integrations, such as THORChain for cross-chain swaps, without requiring a major refactor.
+*   **NFR6:** The system must implement a caching layer (e.g., Cloudflare KV) for Polymarket data to ensure UI performance and gracefully handle external API downtime.
 
 ## User Interface Design Goals
 
 ### Overall UX Vision
-
 The UI/UX is a core product feature. Our vision is to create a visually stunning and immersive "Hyperspace Gateway" that feels less like a traditional dApp and more like a high-tech, futuristic control center for decentralized entertainment. The experience must be fluid, empowering, and intuitive, designed to drive retention and viral sharing.
 
 ### Key Interaction Paradigms
-
 *   **Fluidity & Impact:** Every user action, from a button click to a page transition, must be met with a polished, meaningful animation (e.g., "energy pulse" on click, "Hyperspace Jump" transitions).
 *   **Intelligent Simplicity:** Complex underlying features, especially AI-driven suggestions and cross-chain operations, must be presented to the user as simple, one-click actions.
 *   **Digital Esoterica:** We will embrace a unique visual style that blends futuristic and esoteric motifs to create a distinct and memorable brand identity.
 
 ### Core Screens and Views
-
 *   **Homepage (The Cosmic Nexus Hub):** Features a central, interactive 3D **"Nexus Orb"** for navigation and animated **"Insight Shards"** (Game/Market Cards).
 *   **Game Play Pages (The "Probability Tunnel"):** Immersive, game-specific themes with a sleek **"Control Console"** for wagers.
 *   **pSEO Landing Pages:** Conversion-focused pages featuring the animated **"Interception Portal"** for lead capture.
 
 ### Branding
-
 *   **Palette:** "Cosmic Bloom," featuring a dark "Deep Space" background (#0A0B12), accented with "Quantum Violet" (#8851FF), "Electric Cyan" (#00FFFF), and "Neon Charge" Yellow (#FFEC63).
 *   **Metaphors:** "Quantum Nexus," "Hyperspace Jump," "Insight Shards."
 *   **Theming Strategy:** The MVP will launch exclusively with a **dark theme**. A high-contrast light theme is a high-priority feature for post-launch development.
 
 ### Target Device and Platforms
-
 The design must be fully responsive for web, function flawlessly as a **Progressive Web App (PWA)**, and be optimized for the **Telegram Mini App** environment.
 
 ## Technical Assumptions
 
 ### Repository Structure: Monorepo
-
 The project will be developed within the existing `bankkroll-gamba-v2-next.js.git` **monorepo**. A `workers/` directory will house Cloudflare Worker code, and an `infra/` directory will store D1 database schemas.
 
 ### Service Architecture: Serverless-First
-
 The application will be built on a **serverless-first architecture** on the Cloudflare ecosystem (Pages, Workers, D1) for scalability and cost-effectiveness.
 
 ### Testing Requirements
-
 *   **Unit Tests:** Mandatory for all new, non-trivial business logic (AI adapter, referral logic, fee structures).
 *   **E2E (End-to-End) Tests:** Must cover the full user journey for "First Play Free" onboarding, a Gamba game lifecycle, and a Polymarket betting lifecycle.
 *   **Visual Regression Tests:** Required for key UI components to prevent design degradation.
 
 ### Swappable AI Engine
-
 The architecture will feature a swappable **AI Service Adapter** (`src/services/aiAdapter.ts`) to abstract interactions with third-party AI providers like Mistral and Gemini.
 
 ## Epics
@@ -127,6 +119,7 @@ As a new user, I want to sign up with my social account (e.g., Google), so I can
 *   2: A "Sign in with Social" button is the main call-to-action for unauthenticated users.
 *   3: A successful social login creates a self-custodial wallet for the user and updates the UI to a "connected" state.
 *   4: The user's wallet address is stored in the `useUserStore` (Zustand) for global access.
+*   5: The UI must verify that the wallet state from Particle has fully propagated before enabling any features that require a wallet connection (e.g., the "First Play Free" button).
 
 #### Story 2.2: "First Play Free" API & User Flow
 As a new user who just signed up, I want to receive a "First Play Free" credit, so I can try a game immediately without any risk.
@@ -164,23 +157,30 @@ As a user playing a Gamba game, I want a "Smart Bet" button that gives me a simp
 
 **Goal:** Build the complete, end-to-end Polymarket betting functionality, allowing users to bet on prediction markets from the Quantum Nexus interface.
 
-#### Story 4.1: Polymarket Market Discovery UI
+#### Story 4.1: (New Enabler Story) Deploy and Verify Polymarket Betting Contracts
+As a developer, I need the EVM smart contracts for Polymarket betting to be developed, deployed, and verified on-chain, so the frontend team has a stable and secure interface to build against.
+**Acceptance Criteria:**
+*   1: The **Smart Contract Agent** develops Solidity contracts for interacting with the Polymarket protocol.
+*   2: The contracts are successfully deployed to the target EVM testnet.
+*   3: The contract addresses and ABIs are documented and made available to the frontend team.
+*   4: **This story is a BLOCKER for all other stories in Epic 4.**
+
+#### Story 4.2: Polymarket Market Discovery UI
 As a user, I want to browse and view active prediction markets from Polymarket within a dedicated section of the app.
 **Acceptance Criteria:**
 *   1: A new page is created at `/polymarket`.
 *   2: This page uses the `polymarketService.ts` to fetch and display a list of active markets.
-*   3: The UI displays key information for each market: question, options, current odds/prices, and volume, using the reskinned "Insight Shard" component.
-*   4: The data is presented in a clean, readable format, consistent with the "Hyperspace Gateway" theme.
+*   3: The UI displays key information for each market: question, options, current odds/prices, and volume.
+*   4: The UI is consistent with the "Hyperspace Gateway" theme.
 
-#### Story 4.2: EVM Wallet & Betting Contract Integration
+#### Story 4.3: EVM Wallet & Betting Contract Integration
 As a user, I want to connect my EVM wallet (via Particle) and place a bet on a Polymarket market.
 **Acceptance Criteria:**
 *   1: The frontend can trigger EVM-specific interactions using the Particle Network wallet.
-*   2: A **Smart Contract Agent** develops and deploys the necessary contract(s) to interact with the Polymarket protocol on an EVM chain.
-*   3. The UI allows a user to select a market outcome and enter a wager amount.
-*   4: Clicking "Place Bet" initiates the correct on-chain transaction through the new smart contract, and the user is prompted to sign with their wallet.
+*   2: The UI allows a user to select a market outcome and enter a wager amount.
+*   3: Clicking "Place Bet" initiates the correct on-chain transaction by calling the deployed smart contract from Story 4.1.
 
-#### Story 4.3: User Position & History Display
+#### Story 4.4: User Position & History Display
 As a user, I want to see my open positions and a history of my past bets on Polymarket.
 **Acceptance Criteria:**
 *   1: A new "My Positions" tab is added to the `/profile` page.
