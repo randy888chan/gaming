@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { PLATFORM_REFERRAL_FEE } from "@/constants";
 import { PublicKey } from "@solana/web3.js";
 import type React from "react";
@@ -21,6 +22,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useUserStore } from "@/hooks/useUserStore";
 
 const Profile: React.FC = () => {
   const wallet = useWallet();
@@ -42,6 +44,7 @@ const Profile: React.FC = () => {
 
   const [newReferrer, setNewReferrer] = useState("");
   const [copied, setCopied] = useState(false);
+  const { smartBet, set } = useUserStore();
 
   const connect = () => {
     if (wallet.wallet) {
@@ -276,6 +279,25 @@ const Profile: React.FC = () => {
                   Confirm On-Chain
                 </Button>
               )}
+            </div>
+          </div>
+
+          <Separator />
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Game Preferences</h3>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="smart-bet-toggle" className="flex flex-col space-y-1">
+                <span>Smart Bet</span>
+                <span className="font-normal text-muted-foreground">
+                  Automatically optimize bets based on game history
+                </span>
+              </Label>
+              <Switch
+                id="smart-bet-toggle"
+                checked={smartBet}
+                onCheckedChange={(checked) => set({ smartBet: checked })}
+              />
             </div>
           </div>
         </CardContent>

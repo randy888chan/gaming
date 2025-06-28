@@ -1,73 +1,264 @@
 {
+  "version": "0.1.0",
+  "swarmConfig": {
+    "signalCategories": {
+      "need": [
+        "analysis_needed",
+        "api_design_needed",
+        "architecture_needed",
+        "asset_creation_needed",
+        "audit_needed",
+        "build_needed",
+        "clarification_needed",
+        "coding_needed",
+        "config_management_needed",
+        "database_design_needed",
+        "debugging_needed",
+        "deployment_needed",
+        "design_needed",
+        "documentation_needed",
+        "game_design_document_needed",
+        "gameplay_mechanic_coding_needed",
+        "infra_architecture_needed",
+        "infra_provisioning_needed",
+        "integration_needed",
+        "level_design_needed",
+        "merge_needed",
+        "monitoring_setup_needed",
+        "play_testing_needed",
+        "qa_needed",
+        "refactoring_needed",
+        "release_needed",
+        "research_query_pending",
+        "review_needed",
+        "security_scan_needed",
+        "smart_contract_coding_needed",
+        "smart_contract_design_needed",
+        "smart_contract_test_needed",
+        "story_creation_needed",
+        "ui_design_needed",
+        "ux_research_needed"
+      ],
+      "priority": [
+        "user_task_request"
+      ],
+      "problem": [
+        "audit_findings_reported",
+        "blocker_identified",
+        "build_failed",
+        "bug_report_received",
+        "critical_bug_found",
+        "deployment_failed",
+        "release_failed",
+        "review_failed",
+        "smart_contract_tests_failed",
+        "test_failed",
+        "vulnerability_found"
+      ],
+      "state": [
+        "api_designed",
+        "assets_created",
+        "audit_completed",
+        "build_successful",
+        "config_applied",
+        "database_designed",
+        "deployment_successful",
+        "documentation_created",
+        "document_updated",
+        "feature_coded",
+        "game_design_document_created",
+        "gameplay_mechanic_coded",
+        "infra_architecture_designed",
+        "infra_provisioned",
+        "level_designed",
+        "merged_to_main",
+        "monitoring_active",
+        "play_testing_feedback_received",
+        "project_init_done",
+        "qa_passed",
+        "release_successful",
+        "research_findings_received",
+        "review_passed",
+        "security_scan_completed",
+        "smart_contract_coded",
+        "smart_contract_designed",
+        "smart_contract_tests_passed",
+        "tech_debt_identified",
+        "tests_passed",
+        "ui_designed",
+        "user_feedback_received",
+        "ux_research_completed"
+      ]
+    },
+    "signalPriorities": {
+      "critical_bug_found": 2.5,
+      "blocker_identified": 2.2,
+      "test_failed": 2.0,
+      "user_task_request": 1.8,
+      "coding_needed": 1.0,
+      "qa_needed": 1.2,
+      "debugging_needed": 1.5,
+      "refactoring_needed": 1.3,
+      "research_query_pending": 1.1,
+      "tech_debt_identified": 0.9
+    },
+    "definedSignalTypes": [
+      "analysis_needed",
+      "api_design_needed",
+      "api_designed",
+      "architecture_needed",
+      "asset_creation_needed",
+      "assets_created",
+      "audit_completed",
+      "audit_findings_reported",
+      "audit_needed",
+      "blocker_identified",
+      "build_failed",
+      "build_needed",
+      "build_successful",
+      "bug_report_received",
+      "clarification_needed",
+      "coding_needed",
+      "config_applied",
+      "config_management_needed",
+      "critical_bug_found",
+      "database_design_needed",
+      "database_designed",
+      "debugging_needed",
+      "deployment_failed",
+      "deployment_needed",
+      "deployment_successful",
+      "design_needed",
+      "documentation_created",
+      "documentation_needed",
+      "document_updated",
+      "feature_coded",
+      "game_design_document_created",
+      "game_design_document_needed",
+      "gameplay_mechanic_coded",
+      "gameplay_mechanic_coding_needed",
+      "infra_architecture_designed",
+      "infra_architecture_needed",
+      "infra_provisioned",
+      "infra_provisioning_needed",
+      "integration_needed",
+      "level_design_needed",
+      "level_designed",
+      "merge_needed",
+      "merged_to_main",
+      "monitoring_active",
+      "monitoring_setup_needed",
+      "play_testing_feedback_received",
+      "play_testing_needed",
+      "project_init_done",
+      "qa_needed",
+      "qa_passed",
+      "refactoring_needed",
+      "release_failed",
+      "release_needed",
+      "release_successful",
+      "research_findings_received",
+      "research_query_pending",
+      "review_failed",
+      "review_needed",
+      "review_passed",
+      "security_scan_completed",
+      "security_scan_needed",
+      "smart_contract_coded",
+      "smart_contract_coding_needed",
+      "smart_contract_design_needed",
+      "smart_contract_designed",
+      "smart_contract_test_needed",
+      "smart_contract_tests_failed",
+      "smart_contract_tests_passed",
+      "story_creation_needed",
+      "tech_debt_identified",
+      "test_failed",
+      "tests_passed",
+      "ui_design_needed",
+      "ui_designed",
+      "user_feedback_received",
+      "user_task_request",
+      "ux_research_completed",
+      "ux_research_needed",
+      "vulnerability_found"
+    ],
+    "defaultEvaporationRate": 0.1,
+    "signalPruneThreshold": 0.2,
+    "maxSignalsBeforePruning": 50,
+    "signalsToPrune": 5,
+    "pruningExemptCategories": ["problem", "priority"]
+  },
   "signals": [
     {
-      "name": "project_initiated",
-      "strength": 100,
-      "createdAt": "2025-06-19T16:51:40.000Z",
-      "decayRate": 0.01
+      "id": "e2e9b8f0-9d1a-4e82-bd7c-1f3a5c8b6d42",
+      "type": "project_init_done",
+      "category": "state",
+      "timestamp": "2025-06-19T16:51:40.000Z",
+      "data": {}
     },
     {
-      "name": "epic_planned:flash_experience",
-      "strength": 80,
-      "createdAt": "2025-06-19T16:51:40.000Z",
-      "decayRate": 0.05,
-      "metadata": {
+      "id": "a5f3c7e1-2b8d-4e6f-9c0a-3d7e5f1b6a42",
+      "type": "architecture_needed",
+      "category": "need",
+      "timestamp": "2025-06-19T16:51:40.000Z",
+      "data": {
         "title": "The 'Flash' Experience & Onboarding Engine"
       }
     },
     {
-      "name": "epic_planned:viral_growth",
-      "strength": 80,
-      "createdAt": "2025-06-19T16:51:40.000Z",
-      "decayRate": 0.05,
-      "metadata": {
+      "id": "b8e3d2c1-4f6a-5e9c-7d0b-1a2f3e4d5c6a",
+      "type": "architecture_needed",
+      "category": "need",
+      "timestamp": "2025-06-19T16:51:40.000Z",
+      "data": {
         "title": "The Viral Growth & AI Engine"
       }
     },
     {
-      "name": "requirements_defined:functional",
-      "strength": 90,
-      "createdAt": "2025-06-19T16:51:40.000极狐Z",
-      "decayRate": 0.03,
-      "metadata": {
+      "id": "c7d3e2f1-8a6b-4c5d-9e0f-1a2b3c4d5e6f",
+      "type": "documentation_created",
+      "category": "state",
+      "timestamp": "2025-06-19T16:51:40.000Z",
+      "data": {
         "count": 12
       }
     },
     {
-      "name": "requirements_defined:non_functional",
-      "strength": 85,
-      "createdAt": "2025-06-19T16:51:40.000Z",
-      "极狐decayRate": 0.03,
-      "metadata": {
+      "id": "d6e5f4c3-2b1a-4d8f-9e7c-5a6b4c3d2e1f",
+      "type": "documentation_created",
+      "category": "state",
+      "timestamp": "2025-06-19T16:51:40.000Z",
+      "data": {
         "count": 5
       }
     },
     {
-      "name": "task_created",
-      "strength": 100,
-      "createdAt": "2025-06-20T02:58:00.000Z",
-      "decayRate": 0.1,
-      "metadata": {
+      "id": "f1e2d3c4-5b6a-7d8e-9f0a-1b2c3d4e5f6a",
+      "type": "user_task_request",
+      "category": "priority",
+      "timestamp": "2025-06-20T02:58:00.000Z",
+      "data": {
         "agent": "dev",
         "description": "Review and update .gitignore for security and best practices"
       }
     },
     {
-      "name": "task_created",
-      "strength": 100,
-      "createdAt": "2025-06-20T02:58:00.000Z",
-      "decayRate": 0.1,
-      "metadata": {
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "type": "user_task_request",
+      "category": "priority",
+      "timestamp": "2025-06-20T02:58:00.000Z",
+      "data": {
         "agent": "architect",
         "description": "Create technical design docs for 'Flash Experience' epic"
       }
     },
     {
-      "name": "coding_complete",
-      "strength": 100,
-      "createdAt": "2025-06-20T03:12:01.000Z",
-      "decayRate": 0.1,
-      "metadata": {
+      "id": "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
+      "type": "feature_coded",
+      "category": "state",
+      "timestamp": "2025-06-20T03:12:01.000Z",
+      "data": {
         "task": "Implement Social Login integration using Particle Network",
         "agent": "dev",
         "files": [
@@ -77,11 +268,11 @@
       }
     },
     {
-      "name": "coding_complete",
-      "strength": 100,
-      "createdAt": "2025-06-20T03:27:00.000Z",
-      "decayRate": 0.1,
-      "metadata": {
+      "id": "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
+      "type": "feature_coded",
+      "category": "state",
+      "timestamp": "2025-06-20T03:27:00.000Z",
+      "data": {
         "task": "Implement the 'First Play Free' feature",
         "agent": "dev",
         "files": [
@@ -93,50 +284,44 @@
       }
     },
     {
-      "name": "task_canceled",
-      "strength": 95,
-      "createdAt": "2025-06-20T03:36:45.000Z",
-      "decayRate": 0.1,
-      "metadata": {
+      "id": "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
+      "type": "bug_report_received",
+      "category": "problem",
+      "timestamp": "2025-06-20T03:36:45.000Z",
+      "data": {
         "task": "Implement the 'Smart Bet' feature",
         "agent": "dev",
         "reason": "Stopped and canceled by user"
       }
     },
     {
-      "name": "task_completed",
-      "strength": 100,
-      "createdAt": "2025-06-20T03:54:41.000Z",
-      "decayRate": 0.1,
-      "metadata": {
+      "id": "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+      "type": "documentation_created",
+      "category": "state",
+      "timestamp": "2025-06-20T03:54:41.000Z",
+      "data": {
         "agent": "sm",
         "description": "Created user stories for: QA Validation Task, Tournament System Specification, Betting Assistant Specification, Tournament System Technical Design"
       }
     },
     {
-      "name": "signal_conflict",
-      "strength": 100,
-      "createdAt": "2025-06-20T05:57:35.000Z",
-      "decayRate": 0.1,
-      "metadata": {
-        "conflicting_signals": ["coding_complete"],
-        "description": "Task marked complete but critical issues remain unresolved"
+      "id": "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c",
+      "type": "blocker_resolved",
+      "category": "state",
+      "timestamp": "2025-06-28T06:10:00.000Z",
+      "data": {
+        "description": "Resolved modal functionality issues and TypeScript errors"
       }
     },
     {
-      "name": "critical_bug_found",
-      "strength": 95,
-      "createdAt": "2025-06-20T05:57:35.000Z",
-      "decayRate": 0.05,
-      "metadata": {
-        "files": [
-          "src/components/onboarding/OnboardingModal.tsx",
-          "src/components/game/RecentPlays/ShareModal.tsx",
-          "src/components/ParticleProviderWrapper.tsx",
-          "src/pages/_app.tsx"
-        ],
-        "description": "Modal functionality issues and TypeScript errors blocking development"
+      "id": "a3b4c5d6-e7f8-90a1-b2c3-d4e5f6a7b8c9",
+      "type": "test_failed",
+      "category": "problem",
+      "timestamp": "2025-06-28T03:19:05.000Z",
+      "data": {
+        "description": "Test Suites: 2 failed, 1 passed, 3 total; Tests: 1 passed, 1 total"
       }
     }
-  ]
+  ],
+  "project_documents": {}
 }

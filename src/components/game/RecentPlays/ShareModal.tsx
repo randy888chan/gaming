@@ -179,7 +179,7 @@ export function ShareModal({
                       {profit >= 0 ? "+" : " "}
                       <TokenValue
                         exact
-                        amount={event.data.payout}
+                        amount={event.data.payout.toNumber()}
                         mint={event.data.tokenMint}
                       />
                     </div>
@@ -231,10 +231,6 @@ export function ShareModal({
           )}
 
           <GambaButton onClick={copyImage} text="Copy Image" />
-        </div>
-        <div className="mt-2 flex gap-2">
-          <GambaButton onClick={() => handleShareToSocial('twitter')} text="Share on Twitter" />
-          <GambaButton onClick={() => handleShareToSocial('facebook')} text="Share on Facebook" />
         </div>
       </div>
     </Modal>

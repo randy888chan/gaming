@@ -33,7 +33,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
   const [currentStep, setCurrentStep] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { connect, disconnect } = useParticleConnect();
-  const { set, user, hasClaimedFirstPlay } = useUserStore();
+  const { set, user, hasClaimedFirstPlay, smartBet } = useUserStore();
 
   const handleNext = () => {
     if (currentStep < filteredSteps.length - 1) {
@@ -59,25 +59,31 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
     try {
       const userInfo = await connect({});
       if (userInfo) {
-        set((state) => ({ user: userInfo }));
+        // Batch state updates
+        set((state) => ({
+          ...state,
+          user: userInfo,
+          hasClaimedFirstPlay: true
+        }));
+        
         // Call the first-play-free API
         const response = await fetch('/api/first-play-free', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userToken: userInfo.publicAddress }), // Using publicAddress as userToken
+          body: JSON.stringify({ userToken: userInfo.account }),
         });
+        
         const data = await response.json();
         if (data.success) {
-          set((state) => ({ hasClaimedFirstPlay: true }));
           console.log('First play free credited:', data.creditAmount);
-          onClose(); // Close only on successful login and first play claim
+          handleNext(); // Advance to next step after successful login
         } else {
           const errorMsg = data.error || 'Failed to claim first play free.';
           console.error('Failed to claim first play free:', errorMsg);
           setErrorMessage(errorMsg);
-          toast.error(errorMsg); // Display error message using toast
+          toast.error(errorMsg);
         }
       } else {
         const errorMsg = 'Social login failed: No user info received.';
@@ -88,13 +94,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
       const errorMsg = `Particle Network social login failed: ${error.message || 'Unknown error'}`;
       console.error(errorMsg, error);
       setErrorMessage(errorMsg);
-      toast.error(errorMsg); // Display error message using toast
+      toast.error(errorMsg);
     }
   };
 
   // Skip "Your First Free Play" step if already claimed
   const filteredSteps = steps.filter((step, index) => {
     if (step.title === 'Your First Free Play' && hasClaimedFirstPlay) {
+      return false;
+    }
+    if (step.title === 'Smart Bets with AI' && !smartBet) {
       return false;
     }
     return true;

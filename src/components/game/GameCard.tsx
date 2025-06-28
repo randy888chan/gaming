@@ -23,6 +23,7 @@ export function GameCard({ game }: GameCardProps) {
       <div
         className="cursor-pointer game-card w-full bg-cover bg-center rounded-lg text-white font-bold text-2xl"
         style={backgroundStyle}
+        data-testid={`game-card-${game.id}`}
       >
         <div
           className="background absolute top-0 left-0 w-full h-full bg-size-100 bg-center bg-repeat"

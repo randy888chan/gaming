@@ -30,5 +30,6 @@ CREATE TABLE user_preferences (
     notificationSettings TEXT, -- JSON configuration
     lastLogin DATETIME DEFAULT CURRENT_TIMESTAMP,
     hasClaimedFirstPlay BOOLEAN DEFAULT FALSE,
-    referralCredits REAL DEFAULT 0
+    referralCredits REAL DEFAULT 0,
+    smartBet BOOLEAN DEFAULT TRUE
 );

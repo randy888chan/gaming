@@ -67,11 +67,11 @@ export const ParticleProviderWrapper: React.FC<ParticleProviderWrapperProps> = (
       chains: [
         Ethereum,
         new SolanaChain({
-          id: 101, // Mainnet-beta
-          name: 'Solana',
-          rpcUrl: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
+          id: 103, // Devnet
+          name: 'Solana Devnet',
+          rpcUrl: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com',
         }),
-        ZetaChainTestnet // Using the predefined ZetaChainTestnet object
+        ZetaChainTestnet
       ],
     });
   }, []);

@@ -11,6 +11,7 @@ export interface UserStore {
   priorityFee: number;
   user: any; // Particle Network user info
   hasClaimedFirstPlay: boolean; // New field
+  smartBet: boolean; // Smart Bet feature
   set: StoreApi<UserStore>["setState"];
 }
 
@@ -27,6 +28,7 @@ export const useUserStore = create(
       isPriorityFeeEnabled: true,
       user: null,
       hasClaimedFirstPlay: false, // Initialize new field
+      smartBet: true, // Smart Bet feature default
       set,
     }),
     {
