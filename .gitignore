@@ -13,7 +13,6 @@ dev-dist/
 out/
 coverage/
 .bmad-coverage
-.roomodes
 
 # Environment files
 .env
@@ -36,6 +35,9 @@ lerna-debug.log*
 .vscode/
 .idea/
 *.tgz
+.bmad-core/
+.roomodes
+expansion-packs/
 
 # Security exclusions
 secrets.**
