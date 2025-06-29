@@ -1,3 +1,4 @@
+// jest.config.js
 module.exports = {
   testEnvironment: 'jsdom',
   rootDir: './', // Explicitly set rootDir
@@ -12,7 +13,10 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': 'babel-jest',
   },
-  transformIgnorePatterns: [],
+  // FIX: This pattern tells Jest to transform these specific modules instead of ignoring them
+  transformIgnorePatterns: [
+    '/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2)/)',
+  ],
   verbose: true, // Add verbose output
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 };
