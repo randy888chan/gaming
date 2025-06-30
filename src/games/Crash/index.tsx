@@ -1,27 +1,43 @@
 import React from 'react';
 
 export const doTheIntervalThing = (
-  currentMultiplier: number,
+  initialMultiplier: number,
   targetMultiplier: number,
   win: boolean,
   setCurrentMultiplier: React.Dispatch<React.SetStateAction<number>>,
   setRocketState: React.Dispatch<React.SetStateAction<"idle" | "win" | "crash">>,
   sound: any, // Adjust type as needed
 ) => {
-  const nextIncrement = 0.01 * (Math.floor(currentMultiplier) + 1);
-  const nextValue = currentMultiplier + nextIncrement;
+  let currentMultiplier = initialMultiplier;
+  let animationFrameId: number;
 
-  setCurrentMultiplier(nextValue);
+  const animate = () => {
+    const nextIncrement = 0.01 * (Math.floor(currentMultiplier) + 1);
+    currentMultiplier += nextIncrement;
 
-  if (nextValue >= targetMultiplier) {
-    sound.sounds.music.player.stop();
-    sound.play(win ? "win" : "crash");
-    setRocketState(win ? "win" : "crash");
-    setCurrentMultiplier(targetMultiplier);
-    return;
-  }
+    if (currentMultiplier >= targetMultiplier) {
+      setCurrentMultiplier(targetMultiplier);
+      sound.sounds.music.player.stop();
+      sound.play(win ? "win" : "crash");
+      setRocketState(win ? "win" : "crash");
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      return;
+    }
 
-  setTimeout(() => doTheIntervalThing(nextValue, targetMultiplier, win, setCurrentMultiplier, setRocketState, sound), 50);
+    setCurrentMultiplier(currentMultiplier);
+    animationFrameId = requestAnimationFrame(animate);
+  };
+
+  animationFrameId = requestAnimationFrame(animate);
+
+  // Return a function to cancel the animation if needed
+  return () => {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+  };
 };
 
 // src/games/Crash/index.tsx

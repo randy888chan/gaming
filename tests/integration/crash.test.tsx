@@ -68,15 +68,35 @@ describe('Crash Game Component Integration Tests', () => {
 
   afterEach(() => {
     // Wrap timer finalization in act to avoid warnings
-    act(() => { jest.runOnlyPendingTimers(); });
+    // jest.runOnlyPendingTimers(); // Not reliable with requestAnimationFrame
     jest.useRealTimers();
+    // Restore requestAnimationFrame if it was mocked for a specific test
+    jest.restoreAllMocks();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Mock requestAnimationFrame
+    jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
+      const handle = setTimeout(() => cb(Date.now()), 0);
+      return handle as unknown as number; // Adjust type as necessary
+    });
+    jest.spyOn(window, 'cancelAnimationFrame').mockImplementation((handle: number) => {
+      clearTimeout(handle);
+    });
+    (useSound as jest.Mock).mockReturnValue({
+      play: jest.fn(),
+      sounds: { music: { player: { stop: jest.fn() } } },
+    });
+    (useWagerInput as jest.Mock).mockReturnValue([1, jest.fn()]);
   });
 
   test('renders CrashGame component', () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     render(<CrashGame />);
     expect(screen.getByText('Play')).toBeInTheDocument();
-    expect(screen.getByText('0.00x')).toBeInTheDocument();
+    // Initial state might be 0.00x or some other placeholder
+    expect(screen.getByTestId('current-multiplier')).toHaveTextContent('0.00x');
   });
 
   test('simulates placing a bet', async () => {
@@ -96,38 +116,53 @@ describe('Crash Game Component Integration Tests', () => {
 
     expect(mockPlay).toHaveBeenCalledWith({ wager: 10, bet: expect.any(Array) });
   });
-  
+
   test('simulates game crash', async () => {
-    const mockGame = {
-      play: jest.fn(),
-      result: jest.fn(() => Promise.resolve({ payout: 0 })), // Simulate crash
-    };
-    (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
+    const mockGamePlay = jest.fn();
+    const mockGameResult = jest.fn(() => Promise.resolve({ payout: 0 })); // Simulate crash
+
+    (GambaUi.useGame as jest.Mock).mockReturnValue({
+      play: mockGamePlay,
+      result: mockGameResult,
+    });
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
+     // Mock doTheIntervalThing to control its execution in test
+    const mockDoTheIntervalThing = jest.requireActual('../../src/games/Crash').doTheIntervalThing;
+
 
     render(<CrashGame />);
 
-    await act(async () => fireEvent.click(screen.getByText('Play')));
+    await act(async () => {
+      fireEvent.click(screen.getByText('Play'));
+    });
 
-    act(() => jest.runAllTimers());
-
-    expect(screen.getByTestId('current-multiplier')).toHaveStyle('color: #ff0000');
+    // Wait for the multiplier to update and reflect the crash state
+    await waitFor(() => {
+      expect(screen.getByTestId('current-multiplier')).toHaveStyle('color: #ff0000');
+    }, { timeout: 2000 }); // Adjust timeout as needed
   });
 
   test('simulates game win', async () => {
-    const mockGame = {
-      play: jest.fn(),
-      result: jest.fn(() => Promise.resolve({ payout: 20 })), // Simulate win
-    };
-    (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
+    const mockGamePlay = jest.fn();
+    // Simulate a win where payout is greater than 0
+    const mockGameResult = jest.fn(() => Promise.resolve({ payout: 20 }));
+    (GambaUi.useGame as jest.Mock).mockReturnValue({
+      play: mockGamePlay,
+      result: mockGameResult,
+    });
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
 
     render(<CrashGame />);
 
-    await act(async () => fireEvent.click(screen.getByText('Play')));
+    await act(async () => {
+      fireEvent.click(screen.getByText('Play'));
+    });
 
-    act(() => jest.runAllTimers());
-
-    expect(screen.getByTestId('current-multiplier')).toHaveStyle('color: #00ff00');
+    // Wait for the multiplier to update and reflect the win state
+    await waitFor(() => {
+      // Check for the win color
+      expect(screen.getByTestId('current-multiplier')).toHaveStyle('color: #00ff00');
+      // Optionally, check if the multiplier value is as expected, e.g., "2.00x" if target was 2
+    }, { timeout: 2000 }); // Adjust timeout as needed
   });
 });

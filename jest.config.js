@@ -13,13 +13,12 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': ['babel-jest', { presets: [['@babel/preset-react', { runtime: 'classic' }]] }],
-    '^styled-components$': ['babel-jest', { presets: [['@babel/preset-react', { runtime: 'classic' }]] }],
   },
   transformIgnorePatterns: [
     '/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2|@react-three/drei)/)',
   ],
   verbose: true,
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js', 'jest-styled-components'],
   globals: {
     React: require('react'),
   },
