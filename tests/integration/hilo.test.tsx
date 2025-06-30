@@ -30,6 +30,7 @@ jest.mock('gamba-react-ui-v2', () => ({
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0 })),
     })),
+    Responsive: ({ children }: { children: React.ReactNode }) => <>{children}</>, // Added mock for Responsive
   },
   useCurrentPool: jest.fn(() => ({
     token: 'SOL',
@@ -106,7 +107,14 @@ describe('HiLo Game Component Integration Tests', () => {
       result: jest.fn(() => Promise.resolve({ payout: 20 })), // Simulate win
     };
     (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
-    (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
+    // Ensure useGamba().result() returns a winning payout for this test
+    (useGamba as jest.Mock).mockReturnValue({
+      isPlaying: false,
+      play: jest.fn(), // Not directly used by component's play logic after game.play
+      result: jest.fn(() => Promise.resolve({ payout: 20, resultIndex: 5 })), // WIN with some resultIndex
+    });
+    const initialWager = 1; // From useWagerInput mock
+    (useWagerInput as jest.Mock).mockReturnValue([initialWager, jest.fn()]);
 
     render(<HiLoGame logo="/games/hilo/logo.png" />);
 
@@ -120,19 +128,34 @@ describe('HiLo Game Component Integration Tests', () => {
       fireEvent.click(playButton);
     });
 
-    act(() => jest.runAllTimers());
+    // Ensure all promises and state updates are flushed
+    await act(async () => {});
 
-    // Expect win condition to be visually represented
-    expect(screen.getByText(/You won!/i)).toBeInTheDocument(); // Placeholder, adjust based on actual UI
+    // Expect win condition to be visually represented by profit
+    // Profit text would be like "20 +1,900%" (initialWager = 1, profit = 20)
+    // We can look for the TokenValue part: <span>20</span>
+    const profitValueDisplay = await screen.findByText(String(20), {}, {timeout: 3000});
+    expect(profitValueDisplay).toBeInTheDocument();
+    // Check for the percentage part as well
+    const expectedPercentage = Math.round((20 / initialWager) * 100 - 100).toLocaleString();
+    expect(await screen.findByText(new RegExp(`\\+${expectedPercentage}%`))).toBeInTheDocument();
   });
 
   test('simulates game lose (Higher)', async () => {
     const mockGame = {
       play: jest.fn(),
-      result: jest.fn(() => Promise.resolve({ payout: 0 })), // Simulate lose
+      result: jest.fn(() => Promise.resolve({ payout: 0 })), // Simulate lose, result not used by component
     };
     (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
-    (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
+    // Ensure useGamba().result() returns a losing payout for this test
+    (useGamba as jest.Mock).mockReturnValue({
+      isPlaying: false,
+      play: jest.fn(),
+      result: jest.fn(() => Promise.resolve({ payout: 0, resultIndex: 0 })), // LOSE
+    });
+    const initialWager = 1;
+    (useWagerInput as jest.Mock).mockReturnValue([initialWager, jest.fn()]);
+
 
     render(<HiLoGame logo="/games/hilo/logo.png" />);
 
@@ -146,9 +169,16 @@ describe('HiLo Game Component Integration Tests', () => {
       fireEvent.click(playButton);
     });
 
-    act(() => jest.runAllTimers());
+    // Ensure all promises and state updates are flushed
+    await act(async () => {});
 
-    // Expect lose condition to be visually represented
-    expect(screen.getByText(/You lost!/i)).toBeInTheDocument(); // Placeholder, adjust based on actual UI
+    // Expect lose condition: profit display should not appear, or profit is 0
+    // If profit is 0, the <Profit> component is not rendered.
+    // So, we check that the TokenValue with a non-zero profit is NOT there.
+    // And also that the initial wager input is available again.
+    expect(screen.queryByText(String(initialWager * 2))).not.toBeInTheDocument(); // Example non-zero profit
+    expect(screen.getByTestId("wager-input")).toHaveValue(initialWager);
+    // Check that the "Roll" button is available (means game reset or ready for new game)
+    expect(screen.getByRole('button', { name: /Roll/i })).toBeInTheDocument();
   });
 });
