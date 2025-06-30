@@ -316,7 +316,7 @@ global.OffscreenCanvas = class OffscreenCanvas {
       ellipse: jest.fn(),
       arcTo: jest.fn(),
       direction: 'ltr',
-      font: '',
+  font: '',
       textAlign: 'start',
       textBaseline: 'alphabetic',
       shadowBlur: 0,
