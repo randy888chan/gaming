@@ -149,10 +149,7 @@ export default function Roulette() {
           value={selectedChip.value}
           onChange={(value) => (selectedChip.value = value)}
           label={(value) => (
-            <>
-              <Chip value={value} /> ={" "}
-              <TokenValue amount={token.baseWager * value} />
-            </>
+            `${value} = ${token.baseWager * value}`
           )}
         />
         <GambaPlayButton

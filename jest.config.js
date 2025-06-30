@@ -11,12 +11,15 @@ module.exports = {
   moduleDirectories: ['node_modules', '<rootDir>'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': 'babel-jest',
+    '^.+\\.(ts|tsx|js|jsx)$': ['babel-jest', { presets: [['@babel/preset-react', { runtime: 'classic' }]] }],
   },
   // FIX: This pattern tells Jest to transform these specific modules instead of ignoring them
   transformIgnorePatterns: [
-    '/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2)/)',
+    '/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2|three-stdlib|@react-three/drei|styled-components)/)',
   ],
   verbose: true, // Add verbose output
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  globals: {
+    React: require('react'),
+  },
 };

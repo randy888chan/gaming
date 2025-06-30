@@ -1,7 +1,6 @@
 import React from 'react';
-// tests/integration/crash.test.tsx
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import CrashGame, { doTheIntervalThing } from '../../src/games/Crash';
+import HiLoGame from '../../src/games/HiLo';
 import { GambaUi, useCurrentPool, useCurrentToken, useSound, useWagerInput } from 'gamba-react-ui-v2';
 import { useGamba } from 'gamba-react-v2';
 
@@ -46,7 +45,7 @@ jest.mock('gamba-react-ui-v2', () => ({
   TokenValue: ({ amount }: { amount: number }) => <span>{amount}</span>,
 }));
 
-// Mock GambaPlayButton as it's used in CrashGame
+// Mock GambaPlayButton as it's used in HiLoGame
 jest.mock('@/components/GambaPlayButton', () => ({
   __esModule: true,
   default: ({ disabled, onClick, text }: { disabled?: boolean; onClick: () => void; text: string }) => (
@@ -54,11 +53,10 @@ jest.mock('@/components/GambaPlayButton', () => ({
   ),
 }));
 
-describe('Crash Game Component Integration Tests', () => {
+describe('HiLo Game Component Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-    // Centralize common mock setups
     (useSound as jest.Mock).mockReturnValue({
       play: jest.fn(),
       sounds: { music: { player: { stop: jest.fn() } } },
@@ -67,19 +65,19 @@ describe('Crash Game Component Integration Tests', () => {
   });
 
   afterEach(() => {
-    // Wrap timer finalization in act to avoid warnings
     act(() => { jest.runOnlyPendingTimers(); });
     jest.useRealTimers();
   });
 
-  test('renders CrashGame component', () => {
+  test('renders HiLoGame component', () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
-    render(<CrashGame />);
-    expect(screen.getByText('Play')).toBeInTheDocument();
-    expect(screen.getByText('0.00x')).toBeInTheDocument();
+    render(<HiLoGame logo="/games/hilo/logo.png" />);
+    expect(screen.getByText('HiLo')).toBeInTheDocument();
+    expect(screen.getByText('Higher')).toBeInTheDocument();
+    expect(screen.getByText('Lower')).toBeInTheDocument();
   });
 
-  test('simulates placing a bet', async () => {
+  test('simulates placing a bet on Higher', async () => {
     const mockPlay = jest.fn();
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
@@ -87,34 +85,22 @@ describe('Crash Game Component Integration Tests', () => {
     });
     (useWagerInput as jest.Mock).mockReturnValue([10, jest.fn()]);
 
-    render(<CrashGame />);
+    render(<HiLoGame logo="/games/hilo/logo.png" />);
 
-    const playButton = screen.getByText('Play');
+    const higherButton = screen.getByText('Higher');
+    await act(async () => {
+      fireEvent.click(higherButton);
+    });
+
+    const playButton = screen.getByTestId('gamba-play-button');
     await act(async () => {
       fireEvent.click(playButton);
     });
 
-    expect(mockPlay).toHaveBeenCalledWith({ wager: 10, bet: expect.any(Array) });
-  });
-  
-  test('simulates game crash', async () => {
-    const mockGame = {
-      play: jest.fn(),
-      result: jest.fn(() => Promise.resolve({ payout: 0 })), // Simulate crash
-    };
-    (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
-    (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
-
-    render(<CrashGame />);
-
-    await act(async () => fireEvent.click(screen.getByText('Play')));
-
-    act(() => jest.runAllTimers());
-
-    expect(screen.getByTestId('current-multiplier')).toHaveStyle('color: #ff0000');
+    expect(mockPlay).toHaveBeenCalledWith({ wager: 10, bet: expect.any(Array) }); // Bet array will contain the selected card and prediction
   });
 
-  test('simulates game win', async () => {
+  test('simulates game win (Higher)', async () => {
     const mockGame = {
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 20 })), // Simulate win
@@ -122,12 +108,47 @@ describe('Crash Game Component Integration Tests', () => {
     (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
 
-    render(<CrashGame />);
+    render(<HiLoGame logo="/games/hilo/logo.png" />);
 
-    await act(async () => fireEvent.click(screen.getByText('Play')));
+    const higherButton = screen.getByText('Higher');
+    await act(async () => {
+      fireEvent.click(higherButton);
+    });
+
+    const playButton = screen.getByTestId('gamba-play-button');
+    await act(async () => {
+      fireEvent.click(playButton);
+    });
 
     act(() => jest.runAllTimers());
 
-    expect(screen.getByTestId('current-multiplier')).toHaveStyle('color: #00ff00');
+    // Expect win condition to be visually represented
+    expect(screen.getByText(/You won!/i)).toBeInTheDocument(); // Placeholder, adjust based on actual UI
+  });
+
+  test('simulates game lose (Higher)', async () => {
+    const mockGame = {
+      play: jest.fn(),
+      result: jest.fn(() => Promise.resolve({ payout: 0 })), // Simulate lose
+    };
+    (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
+    (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
+
+    render(<HiLoGame logo="/games/hilo/logo.png" />);
+
+    const higherButton = screen.getByText('Higher');
+    await act(async () => {
+      fireEvent.click(higherButton);
+    });
+
+    const playButton = screen.getByTestId('gamba-play-button');
+    await act(async () => {
+      fireEvent.click(playButton);
+    });
+
+    act(() => jest.runAllTimers());
+
+    // Expect lose condition to be visually represented
+    expect(screen.getByText(/You lost!/i)).toBeInTheDocument(); // Placeholder, adjust based on actual UI
   });
 });

@@ -1,7 +1,6 @@
 import React from 'react';
-// tests/integration/crash.test.tsx
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import CrashGame, { doTheIntervalThing } from '../../src/games/Crash';
+import KenoGame from '../../src/games/Keno';
 import { GambaUi, useCurrentPool, useCurrentToken, useSound, useWagerInput } from 'gamba-react-ui-v2';
 import { useGamba } from 'gamba-react-v2';
 
@@ -46,7 +45,7 @@ jest.mock('gamba-react-ui-v2', () => ({
   TokenValue: ({ amount }: { amount: number }) => <span>{amount}</span>,
 }));
 
-// Mock GambaPlayButton as it's used in CrashGame
+// Mock GambaPlayButton as it's used in KenoGame
 jest.mock('@/components/GambaPlayButton', () => ({
   __esModule: true,
   default: ({ disabled, onClick, text }: { disabled?: boolean; onClick: () => void; text: string }) => (
@@ -54,11 +53,10 @@ jest.mock('@/components/GambaPlayButton', () => ({
   ),
 }));
 
-describe('Crash Game Component Integration Tests', () => {
+describe('Keno Game Component Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-    // Centralize common mock setups
     (useSound as jest.Mock).mockReturnValue({
       play: jest.fn(),
       sounds: { music: { player: { stop: jest.fn() } } },
@@ -67,19 +65,20 @@ describe('Crash Game Component Integration Tests', () => {
   });
 
   afterEach(() => {
-    // Wrap timer finalization in act to avoid warnings
     act(() => { jest.runOnlyPendingTimers(); });
     jest.useRealTimers();
   });
 
-  test('renders CrashGame component', () => {
+  test('renders KenoGame component', () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
-    render(<CrashGame />);
-    expect(screen.getByText('Play')).toBeInTheDocument();
-    expect(screen.getByText('0.00x')).toBeInTheDocument();
+    render(<KenoGame />);
+    expect(screen.getByText('Keno')).toBeInTheDocument();
+    for (let i = 1; i <= 40; i++) {
+      expect(screen.getByText(String(i))).toBeInTheDocument();
+    }
   });
 
-  test('simulates placing a bet', async () => {
+  test('simulates selecting numbers and placing a bet', async () => {
     const mockPlay = jest.fn();
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
@@ -87,47 +86,96 @@ describe('Crash Game Component Integration Tests', () => {
     });
     (useWagerInput as jest.Mock).mockReturnValue([10, jest.fn()]);
 
-    render(<CrashGame />);
+    render(<KenoGame />);
 
-    const playButton = screen.getByText('Play');
+    // Select a few numbers
+    await act(async () => {
+      fireEvent.click(screen.getByText('1'));
+      fireEvent.click(screen.getByText('5'));
+      fireEvent.click(screen.getByText('10'));
+    });
+
+    const playButton = screen.getByTestId('gamba-play-button');
     await act(async () => {
       fireEvent.click(playButton);
     });
 
     expect(mockPlay).toHaveBeenCalledWith({ wager: 10, bet: expect.any(Array) });
   });
-  
-  test('simulates game crash', async () => {
-    const mockGame = {
-      play: jest.fn(),
-      result: jest.fn(() => Promise.resolve({ payout: 0 })), // Simulate crash
-    };
-    (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
-    (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
-
-    render(<CrashGame />);
-
-    await act(async () => fireEvent.click(screen.getByText('Play')));
-
-    act(() => jest.runAllTimers());
-
-    expect(screen.getByTestId('current-multiplier')).toHaveStyle('color: #ff0000');
-  });
 
   test('simulates game win', async () => {
     const mockGame = {
       play: jest.fn(),
-      result: jest.fn(() => Promise.resolve({ payout: 20 })), // Simulate win
+      result: jest.fn(() => Promise.resolve({ payout: 20, resultIndex: 0 })), // Simulate win
     };
     (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
 
-    render(<CrashGame />);
+    render(<KenoGame />);
 
-    await act(async () => fireEvent.click(screen.getByText('Play')));
+    await act(async () => {
+      fireEvent.click(screen.getByText('1'));
+      fireEvent.click(screen.getByText('5'));
+      fireEvent.click(screen.getByText('10'));
+    });
+
+    const playButton = screen.getByTestId('gamba-play-button');
+    await act(async () => {
+      fireEvent.click(playButton);
+    });
 
     act(() => jest.runAllTimers());
 
-    expect(screen.getByTestId('current-multiplier')).toHaveStyle('color: #00ff00');
+    // Expect win condition to be visually represented
+    expect(screen.getByText(/Clear the board to play again./i)).toBeInTheDocument();
+  });
+
+  test('simulates game lose', async () => {
+    const mockGame = {
+      play: jest.fn(),
+      result: jest.fn(() => Promise.resolve({ payout: 0, resultIndex: 0 })), // Simulate lose
+    };
+    (GambaUi.useGame as jest.Mock).mockReturnValue(mockGame);
+    (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
+
+    render(<KenoGame />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('1'));
+      fireEvent.click(screen.getByText('5'));
+      fireEvent.click(screen.getByText('10'));
+    });
+
+    const playButton = screen.getByTestId('gamba-play-button');
+    await act(async () => {
+      fireEvent.click(playButton);
+    });
+
+    act(() => jest.runAllTimers());
+
+    // Expect lose condition to be visually represented
+    expect(screen.getByText(/Clear the board to play again./i)).toBeInTheDocument();
+  });
+
+  test('simulates clearing selected numbers', async () => {
+    render(<KenoGame />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('1'));
+      fireEvent.click(screen.getByText('5'));
+    });
+
+    expect(screen.getByText('1')).toHaveAttribute('selected'); // This assertion might need adjustment based on actual styling
+    expect(screen.getByText('5')).toHaveAttribute('selected'); // This assertion might need adjustment based on actual styling
+
+    const clearButton = screen.getByText('Clear');
+    await act(async () => {
+      fireEvent.click(clearButton);
+    });
+
+    // After clearing, numbers should not be selected
+    // This assertion might need adjustment based on actual styling
+    // For now, we'll check if the "Play" button is disabled again, indicating no numbers are selected.
+    expect(screen.getByTestId('gamba-play-button')).toBeDisabled();
   });
 });

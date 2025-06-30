@@ -1,3 +1,29 @@
+import React from 'react';
+
+export const doTheIntervalThing = (
+  currentMultiplier: number,
+  targetMultiplier: number,
+  win: boolean,
+  setCurrentMultiplier: React.Dispatch<React.SetStateAction<number>>,
+  setRocketState: React.Dispatch<React.SetStateAction<"idle" | "win" | "crash">>,
+  sound: any, // Adjust type as needed
+) => {
+  const nextIncrement = 0.01 * (Math.floor(currentMultiplier) + 1);
+  const nextValue = currentMultiplier + nextIncrement;
+
+  setCurrentMultiplier(nextValue);
+
+  if (nextValue >= targetMultiplier) {
+    sound.sounds.music.player.stop();
+    sound.play(win ? "win" : "crash");
+    setRocketState(win ? "win" : "crash");
+    setCurrentMultiplier(targetMultiplier);
+    return;
+  }
+
+  setTimeout(() => doTheIntervalThing(nextValue, targetMultiplier, win, setCurrentMultiplier, setRocketState, sound), 50);
+};
+
 // src/games/Crash/index.tsx
 import {
   GambaUi,
@@ -85,27 +111,6 @@ const CrashGame = () => {
     };
   };
 
-  const doTheIntervalThing = (
-    currentMultiplier: number,
-    targetMultiplier: number,
-    win: boolean,
-  ) => {
-    const nextIncrement = 0.01 * (Math.floor(currentMultiplier) + 1);
-    const nextValue = currentMultiplier + nextIncrement;
-
-    setCurrentMultiplier(nextValue);
-
-    if (nextValue >= targetMultiplier) {
-      sound.sounds.music.player.stop();
-      sound.play(win ? "win" : "crash");
-      setRocketState(win ? "win" : "crash");
-      setCurrentMultiplier(targetMultiplier);
-      return;
-    }
-
-    setTimeout(() => doTheIntervalThing(nextValue, targetMultiplier, win), 50);
-  };
-
   const calculateBiasedLowMultiplier = (targetMultiplier: number) => {
     const randomValue = Math.random();
     const maxPossibleMultiplier = Math.min(targetMultiplier, 12);
@@ -145,7 +150,7 @@ const CrashGame = () => {
 
       sound.play("music");
 
-      doTheIntervalThing(0, multiplierResult, win);
+      doTheIntervalThing(0, multiplierResult, win, setCurrentMultiplier, setRocketState, sound);
     } catch (err: any) {
       toast.error(`An error occurred: ${err.message}`);
       setRocketState("idle");
@@ -177,7 +182,7 @@ const CrashGame = () => {
           <StarsLayer10 style={{ opacity: currentMultiplier > 0.5 ? 0 : 1 }} />
           <LineLayer10 style={{ opacity: currentMultiplier > 0.5 ? 1 : 0 }} />
 
-          <MultiplierText color={multiplierColor}>
+          <MultiplierText data-testid="current-multiplier" color={multiplierColor}>
             {currentMultiplier.toFixed(2)}x
           </MultiplierText>
           <div

@@ -114,6 +114,7 @@ export default function Limbo() {
             }}
           >
             <div
+              data-testid="multiplier-display"
               style={{
                 fontSize: "10rem",
                 fontWeight: "bold",
