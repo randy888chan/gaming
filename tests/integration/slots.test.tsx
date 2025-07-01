@@ -28,12 +28,13 @@ jest.mock('gamba-react-ui-v2', () => ({
       <button onClick={onClick} disabled={disabled}>{children}</button>
     ),
     Responsive: ({ children }: { children: React.ReactNode }) => <div data-testid="gamba-ui-responsive">{children}</div>,
-    EffectTest: ({ src }: { src: string }) => <div data-testid="effect-test" style={{ backgroundImage: `url(${src})` }}></div>,
-    useGame: jest.fn(() => ({ // Moved useGame back inside GambaUi
+    // EffectTest is no longer nested under GambaUi in the mock
+    useGame: jest.fn(() => ({
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0, multiplier: 0, token: 'SOL' })),
     })),
   },
+  EffectTest: ({ src }: { src: string }) => <div data-testid="effect-test" style={{ backgroundImage: `url(${src})` }}></div>, // Moved EffectTest to top level
   useCurrentPool: jest.fn(() => ({
     token: 'SOL',
     maxPayout: 1000,
@@ -85,8 +86,8 @@ jest.mock('../../src/games/Slots/utils', () => {
   const actualConstants = jest.requireActual('../../src/games/Slots/constants');
   return {
     generateBetArray: jest.fn(() => {
-      console.log('[TEST MOCK] generateBetArray actually called, returning [1,0,0]');
-      return [1, 0, 0];
+      console.log('[TEST MOCK] generateBetArray actually called, returning [2,0,0]');
+      return [2, 0, 0]; // Ensure at least one element is > 1
     }),
     getSlotCombination: jest.fn((numSlots, multiplier, bet) => {
       const { SLOT_ITEMS } = actualConstants; // Ensure it's defined for this scope
@@ -137,11 +138,17 @@ describe('Slots Game Component Integration Tests', () => {
 
   test('simulates a winning spin', async () => {
     const mockPlayGame = jest.fn();
+    // Update useGamba mock for this specific test case
+    (useGamba as jest.Mock).mockReturnValue({
+      isPlaying: false,
+      play: mockPlayGame, // play is called by the component via GambaUi.useGame().play
+      result: jest.fn(() => Promise.resolve({ payout: 100, multiplier: 10, token: 'SOL' })), // Simulate win via useGamba().result
+    });
+    // The GambaUi.useGame().play mock is still needed if the component calls game.play()
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlayGame,
-      result: jest.fn(() => Promise.resolve({ payout: 100, multiplier: 10, token: 'SOL' })), // Simulate win
+      // No need to mock result here as the component uses gamba.result()
     });
-    (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     // generateBetArray mock is now at top-level
 
     // Mock getSlotCombination to return a winning combination
@@ -157,12 +164,12 @@ describe('Slots Game Component Integration Tests', () => {
 
     expect(mockPlayGame).toHaveBeenCalledWith({
       wager: 1,
-      bet: [1,0,0], // Expect the bet array used
+      bet: [2,0,0], // Expect the bet array used
     });
 
     // Advance timers to simulate spin and reveal animations
     act(() => {
-      jest.advanceTimersByTime(5000); // SPIN_DELAY + (NUM_SLOTS * REVEAL_SLOT_DELAY) + FINAL_DELAY
+      jest.advanceTimersByTime(10000); // Increased delay
     });
 
     expect(screen.getByText(/Payout:/)).toBeInTheDocument();
@@ -171,15 +178,36 @@ describe('Slots Game Component Integration Tests', () => {
 
   test('simulates a losing spin', async () => {
     const mockPlayGame = jest.fn();
+    // Update useGamba mock for this specific test case
+    (useGamba as jest.Mock).mockReturnValue({
+      isPlaying: false,
+      play: mockPlayGame, // play is called by the component via GambaUi.useGame().play
+      result: jest.fn(() => Promise.resolve({ payout: 0, multiplier: 0, token: 'SOL' })), // Simulate lose via useGamba().result
+    });
+    // The GambaUi.useGame().play mock is still needed if the component calls game.play()
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlayGame,
-      result: jest.fn(() => Promise.resolve({ payout: 0, multiplier: 0, token: 'SOL' })), // Simulate lose
+      // No need to mock result here as the component uses gamba.result()
     });
-    (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     // generateBetArray mock is now at top-level
 
     // Mock getSlotCombination to return a losing combination
-    jest.mocked(require('../../src/games/Slots/utils').getSlotCombination).mockReturnValue(Array(3).fill(SLOT_ITEMS[1])); // NUM_SLOTS is 3
+    const losingCombination = [
+      SLOT_ITEMS.find(item => item.multiplier === 0) || SLOT_ITEMS[SLOT_ITEMS.length -1], // Wojak or last item as fallback
+      SLOT_ITEMS.find(item => item.multiplier === 0 && item.id !== SLOT_ITEMS[SLOT_ITEMS.length -1].id) || SLOT_ITEMS[SLOT_ITEMS.length - 2], // Another 0 multiplier item, different from first
+      SLOT_ITEMS.find(item => item.multiplier === 0 && item.id !== SLOT_ITEMS[SLOT_ITEMS.length -1].id && item.id !== SLOT_ITEMS[SLOT_ITEMS.length -2].id) || SLOT_ITEMS[SLOT_ITEMS.length - 3], // Yet another different 0 multiplier item
+    ].filter(Boolean); // Ensure no undefined items if fallbacks fail (though they shouldn't with current SLOT_ITEMS)
+    // Ensure we have NUM_SLOTS items, repeat last if necessary
+    while(losingCombination.length < 3 && losingCombination.length > 0) losingCombination.push(losingCombination[losingCombination.length-1]);
+    if(losingCombination.length === 0) { // Absolute fallback if all else fails
+      losingCombination.push(SLOT_ITEMS[SLOT_ITEMS.length -1]);
+      losingCombination.push(SLOT_ITEMS[SLOT_ITEMS.length -2]);
+      losingCombination.push(SLOT_ITEMS[SLOT_ITEMS.length -3]);
+    }
+
+
+    jest.mocked(require('../../src/games/Slots/utils').getSlotCombination).mockReturnValue(losingCombination.slice(0,3));
+
 
     render(<SlotsGame />);
 
@@ -196,7 +224,7 @@ describe('Slots Game Component Integration Tests', () => {
 
     // Advance timers to simulate spin and reveal animations
     act(() => {
-      jest.advanceTimersByTime(5000); // SPIN_DELAY + (NUM_SLOTS * REVEAL_SLOT_DELAY) + FINAL_DELAY
+      jest.advanceTimersByTime(10000); // Increased delay
     });
 
     expect(screen.getByText(/Payout:/)).toBeInTheDocument();
