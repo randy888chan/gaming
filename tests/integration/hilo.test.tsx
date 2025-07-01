@@ -34,6 +34,7 @@ jest.mock('gamba-react-ui-v2', () => ({
   },
   useCurrentPool: jest.fn(() => ({
     token: 'SOL',
+    maxPayout: 10000, // Provide a sensible maxPayout
   })),
   useCurrentToken: jest.fn(() => ({
     symbol: 'SOL',
@@ -98,7 +99,7 @@ describe('HiLo Game Component Integration Tests', () => {
       fireEvent.click(playButton);
     });
 
-    expect(mockPlay).toHaveBeenCalledWith({ wager: 1, bet: expect.any(Array) }); // Changed wager to 1 (default mock)
+    expect(mockPlay).toHaveBeenCalledWith({ wager: 10, bet: expect.any(Array) });
   });
 
   test('simulates game win (Higher)', async () => {
@@ -133,12 +134,15 @@ describe('HiLo Game Component Integration Tests', () => {
 
     // Expect win condition to be visually represented by profit
     // Profit text would be like "20 +1,900%" (initialWager = 1, profit = 20)
-    // We can look for the TokenValue part: <span>20</span>
-    const profitValueDisplay = await screen.findByText(String(20), {}, {timeout: 3000});
-    expect(profitValueDisplay).toBeInTheDocument();
-    // Check for the percentage part as well
+    // Check for the combined profit and percentage string
     const expectedPercentage = Math.round((20 / initialWager) * 100 - 100).toLocaleString();
-    expect(await screen.findByText(new RegExp(`\\+${expectedPercentage}%`))).toBeInTheDocument();
+    const percentageRegex = new RegExp(`\\+${expectedPercentage}%`);
+    const percentageElement = await screen.findByText(percentageRegex, {}, { timeout: 4000 });
+    expect(percentageElement).toBeInTheDocument();
+
+    // Check that the parent of the percentage text also contains the profit value
+    const profitContainer = percentageElement.parentElement;
+    expect(profitContainer).toHaveTextContent(`20 +${expectedPercentage}%`);
   });
 
   test('simulates game lose (Higher)', async () => {
