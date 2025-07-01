@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor, within } from '@testing-library/react';
 import MinesGame from '../../src/games/Mines';
 import { GambaUi, useCurrentPool, useCurrentToken, useSound, useWagerInput } from 'gamba-react-ui-v2';
 import { useGamba } from 'gamba-react-v2';
@@ -26,10 +26,6 @@ jest.mock('gamba-react-ui-v2', () => ({
     Button: ({ children, onClick, disabled }: { children: React.ReactNode, onClick?: () => void, disabled?: boolean }) => (
       <button onClick={onClick} disabled={disabled}>{children}</button>
     ),
-    useGame: jest.fn(() => ({
-      play: jest.fn(),
-      result: jest.fn(() => Promise.resolve({ payout: 0, multiplier: 0 })),
-    })),
     Select: ({ options, value, onChange, label }: { options: any[], value: any, onChange: (value: any) => void, label: (value: any) => React.ReactNode }) => (
       <select data-testid="mines-select" value={value} onChange={(e) => onChange(Number(e.target.value))}>
         {options.map((opt) => (
@@ -37,6 +33,11 @@ jest.mock('gamba-react-ui-v2', () => ({
         ))}
       </select>
     ),
+    Responsive: ({ children }: { children: React.ReactNode }) => <div data-testid="gamba-ui-responsive">{children}</div>,
+    useGame: jest.fn(() => ({ // Correctly placed inside GambaUi
+      play: jest.fn(),
+      result: jest.fn(() => Promise.resolve({ payout: 0, multiplier: 0 })),
+    })),
   },
   useCurrentPool: jest.fn(() => ({
     token: 'SOL',
@@ -92,16 +93,22 @@ describe('Mines Game Component Integration Tests', () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     render(<MinesGame />);
     expect(screen.getByText('Play')).toBeInTheDocument();
-    expect(screen.getByText('Mines:')).toBeInTheDocument();
+    expect(screen.getByText(/Mines:\s*\d+/)).toBeInTheDocument();
   });
 
   test('simulates starting a game and revealing a gold cell', async () => {
     const mockPlay = jest.fn();
+    const mockGambaResult = jest.fn(() => Promise.resolve({ payout: 10, profit: 9, multiplier: 10 }));
+
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
-      result: jest.fn(() => Promise.resolve({ payout: 10, profit: 9, multiplier: 10 })), // Simulate win
+      result: jest.fn(() => Promise.resolve({ payout: 10, profit: 9, multiplier: 10 })),
     });
-    (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
+    (useGamba as jest.Mock).mockReturnValue({
+      isPlaying: false,
+      play: jest.fn(),
+      result: mockGambaResult,
+    });
 
     render(<MinesGame />);
 
@@ -111,13 +118,21 @@ describe('Mines Game Component Integration Tests', () => {
     });
 
     // Click on a cell to reveal it
-    const cell = screen.getAllByRole('button')[0]; // Assuming the first button is a cell
+    const cells = screen.getAllByRole('button');
+    const gameCells = cells.filter(button => button.textContent !== 'Play' && button.textContent !== 'Reset');
+
     await act(async () => {
-      fireEvent.click(cell);
+      fireEvent.click(gameCells[0]);
     });
 
+    await act(async () => { jest.runAllTimers(); }); // Advance timers
+
     expect(mockPlay).toHaveBeenCalled();
-    expect(screen.getByText('+9')).toBeInTheDocument(); // Check for profit display
+    expect(mockGambaResult).toHaveBeenCalled();
+
+    const cellWithProfit = gameCells[0];
+    expect(within(cellWithProfit).getByText("9")).toBeInTheDocument();
+    expect(cellWithProfit.textContent).toContain("+");
   });
 
   test('simulates starting a game and hitting a mine', async () => {

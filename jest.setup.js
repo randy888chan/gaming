@@ -4,22 +4,29 @@ import { signal } from '@preact/signals-react';
 
 global.React = React; // Explicitly make React global
 
-jest.mock('@preact/signals-react', () => ({
-  signal: jest.fn((initialValue) => ({
-    value: initialValue,
-    subscribe: jest.fn(),
-    valueOf: jest.fn(() => initialValue),
-    toString: jest.fn(() => String(initialValue)),
-  })),
-  effect: jest.fn(),
-  useSignal: jest.fn((initialValue) => ({ value: initialValue })),
-  computed: jest.fn((fn) => ({ // Ensure computed is mocked as a function that returns a signal-like object
-    value: fn(),
-    subscribe: jest.fn(),
-    valueOf: jest.fn(() => fn()),
-    toString: jest.fn(() => String(fn())),
-  })),
-}));
+// jest.mock('@preact/signals-react', () => ({
+//   signal: jest.fn((initialValue) => ({
+//     value: initialValue,
+//     subscribe: jest.fn(),
+//     valueOf: jest.fn(() => initialValue),
+//     toString: jest.fn(() => String(initialValue)),
+//   })),
+//   effect: jest.fn(),
+//   useSignal: jest.fn((initialValue) => ({ value: initialValue })),
+//   computed: jest.fn((computeFn) => {
+//     // Helper to ensure the computeFn result is captured for all methods
+//     const getComputedValue = () => computeFn();
+//     return {
+//       get value() {
+//         return getComputedValue();
+//       },
+//       subscribe: jest.fn(),
+//       valueOf: () => getComputedValue(),
+//       toString: () => String(getComputedValue()),
+//       peek: () => getComputedValue(), // Add peek for completeness if needed by actual code
+//     };
+//   }),
+// }));
 
 // The custom mock for styled-components is removed.
 // jest-styled-components, added to setupFilesAfterEnv, will handle necessary setup.
