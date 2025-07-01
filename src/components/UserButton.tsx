@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useUserStore } from "@/hooks/useUserStore";
 
 export function UserButton() {
   const walletModal = useWalletModal();
@@ -17,12 +18,13 @@ export function UserButton() {
   const [modal, setModal] = useState(false);
   const wallet = useWallet();
   const anchor = useGambaProvider();
+  const { referralCode } = useUserStore();
 
   const copyInvite = () => {
     if (!wallet.publicKey) {
       return walletModal.setVisible(true);
     }
-    const referralLink = `${location.host}?code=${wallet.publicKey.toString()}`;
+    const referralLink = `${location.host}?code=${referralCode ?? wallet.publicKey.toString()}`;
     navigator.clipboard.writeText(referralLink);
     toast.success(
       `Copied! Share your link to earn a ${
@@ -55,6 +57,11 @@ export function UserButton() {
             <h1 className="min-w-64">
               {truncateString(address.toBase58(), 8, 8)}
             </h1>
+            {referralCode && (
+              <p className="my-2 text-sm max-w-sm">
+                Your Referral Code: <strong>{referralCode}</strong>
+              </p>
+            )}
             <p className="my-4 text-sm max-w-sm">
               Share your link to earn a {PLATFORM_REFERRAL_FEE * 100}% fee on
               each play when players use this platform using your code.

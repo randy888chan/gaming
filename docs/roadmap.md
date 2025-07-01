@@ -28,7 +28,6 @@ This document outlines the strategic development plan for the Quantum Nexus gami
 
 ## Mid-Term (Q4 2025)
 ### v2.0 - Platform Expansion
-- **Mobile App Launch** (iOS/Android)
 - 5 new casino games
 - Advanced betting markets
 - Loyalty program implementation

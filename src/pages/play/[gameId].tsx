@@ -4,7 +4,8 @@ import CustomRenderer, {
   CustomError,
   GameSlider,
 } from "@/components/game/GameRenderer";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { CSSTransition } from "react-transition-group";
 
 import { BASE_SEO_CONFIG } from "../../constants";
 import { GAMES } from "@/games";
@@ -17,6 +18,8 @@ const GamePage: React.FC = () => {
   const { gameId } = router.query;
   const [currentGameId, setCurrentGameId] = useState(gameId as string);
   const [isLoading, setIsLoading] = useState(true);
+  const [transitioning, setTransitioning] = useState(false);
+  const nodeRef = useRef(null);
 
   const game = GAMES.find((x) => x.id === gameId);
   const gameName = game?.meta?.name;
@@ -24,11 +27,13 @@ const GamePage: React.FC = () => {
 
   useEffect(() => {
     const handleRouteChangeStart = () => {
+      setTransitioning(true);
       setIsLoading(true);
     };
     const handleRouteChangeComplete = () => {
       setIsLoading(false);
       setCurrentGameId(gameId as string);
+      setTransitioning(false);
     };
 
     router.events.on("routeChangeStart", handleRouteChangeStart);
@@ -67,22 +72,14 @@ const GamePage: React.FC = () => {
         additionalMetaTags={BASE_SEO_CONFIG.additionalMetaTags}
       />
 
-      {isLoading ? (
-        <div className="bg-black mt-20 flex flex-col justify-center items-center mx-auto max-w-sm md:max-w-6xl pb-1 min-h-[580px] md:min-h-[650px] rounded-lg shadow-xl">
-          <div className="flex flex-col justify-center items-center max-w-lg rounded-lg">
-            <video
-              src="/gamba.mp4"
-              className="w-full h-full"
-              autoPlay
-              muted
-              playsInline
-              loop
-            />
-            <p className="text-2xl text-white mt-5">Loading...</p>
-          </div>
-        </div>
-      ) : (
-        <>
+      <CSSTransition
+        in={!isLoading && !transitioning}
+        timeout={500}
+        classNames="hyperspace-transition"
+        nodeRef={nodeRef}
+        unmountOnExit
+      >
+        <div ref={nodeRef}>
           {game ? (
             <div className="flex flex-col justify-center items-center mx-auto max-w-6xl max-sm:max-w-sm pt-20">
               <GambaUi.Game game={game} errorFallback={<CustomError />}>
@@ -104,7 +101,23 @@ const GamePage: React.FC = () => {
               </div>
             </div>
           )}
-        </>
+        </div>
+      </CSSTransition>
+
+      {isLoading && (
+        <div className="bg-black mt-20 flex flex-col justify-center items-center mx-auto max-w-sm md:max-w-6xl pb-1 min-h-[580px] md:min-h-[650px] rounded-lg shadow-xl">
+          <div className="flex flex-col justify-center items-center max-w-lg rounded-lg">
+            <video
+              src="/gamba.mp4"
+              className="w-full h-full"
+              autoPlay
+              muted
+              playsInline
+              loop
+            />
+            <p className="text-2xl text-white mt-5">Loading...</p>
+          </div>
+        </div>
       )}
       <div className="flex flex-col justify-center items-center mx-auto max-w-6xl max-sm:max-w-sm mb-4">
         <div className="py-4">

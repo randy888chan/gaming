@@ -3,6 +3,8 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { GameBundle } from "gamba-react-ui-v2";
+import { InsightShard } from "@/components/ui/insight-shard";
+import { Flame, TrendingUp } from "lucide-react";
 
 interface GameCardProps {
   game: GameBundle;
@@ -36,6 +38,10 @@ export function GameCard({ game }: GameCardProps) {
         <div className="play absolute right-2 bottom-2 bg-black bg-opacity-40 rounded px-2 py-1 text-sm text-uppercase">
           Play {game.meta.name}
         </div>
+      </div>
+      <div className="absolute bottom-2 left-2 flex gap-2 z-10">
+        <InsightShard title="Popularity" value="90%" icon={<Flame size={16} />} className="!p-2 !text-xs" />
+        <InsightShard title="RTP" value="95%" icon={<TrendingUp size={16} />} className="!p-2 !text-xs" />
       </div>
     </Link>
   );

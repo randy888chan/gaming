@@ -1,6 +1,7 @@
 // src/pages/_app.tsx
 import "@/styles/globals.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import { appWithTranslation } from 'next-i18next';
 
 import {
   BASE_SEO_CONFIG,
@@ -22,6 +23,7 @@ import { DefaultSeo } from "next-seo";
 import Footer from "@/components/layout/Footer";
 import GameToast from "@/hooks/useGameEvent";
 import dynamic from "next/dynamic";
+import Head from "next/head";
 
 import { ParticleProviderWrapper } from "@/components/ParticleProviderWrapper";
 
@@ -45,11 +47,17 @@ const DynamicTokenMetaProvider = dynamic(
 
 function MyApp({ Component, pageProps }: AppProps) {
   const { showDisclaimer, DisclaimerModal } = useDisclaimer();
-  const { isPriorityFeeEnabled, priorityFee, set } = useUserStore((state) => ({
+  const { isPriorityFeeEnabled, priorityFee } = useUserStore((state) => ({
     isPriorityFeeEnabled: state.isPriorityFeeEnabled,
     priorityFee: state.priorityFee,
-    set: state.set,
   }));
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      console.log('Telegram Mini App is ready!');
+    }
+  }, []);
 
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -84,6 +92,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       endpoint={RPC_ENDPOINT}
       config={{ commitment: "processed" }}
     >
+      <Head>
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+      </Head>
       {/* <WalletModalProvider> Replaced by Particle's UI </WalletModalProvider> */}
       <ThemeProvider
         attribute="class"
@@ -145,4 +156,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default MyApp;
+export default appWithTranslation(MyApp);

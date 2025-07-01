@@ -2,8 +2,15 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { getSimplifiedMarkets, SimplifiedMarket, PaginatedSimplifiedMarkets } from '@/services/polymarketService';
-import { Button } from '@/components/ui/button'; // Assuming you have a UI button
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Assuming UI card components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { useUserStore } from '@/hooks/useUserStore';
+import { SmartBetSuggestion } from '@/services/aiAdapter';
+import { toast } from 'sonner';
+import { useParticleNetwork } from '@particle-network/connect-react-ui';
+import { ethers } from 'ethers';
+import PolymarketAdapterABI from '../../../contracts/evm/PolymarketAdapter.json'; // Assuming ABI will be generated here
+import { POLYMARKET_ADAPTER_ADDRESS, USDC_ADDRESS } from '@/constants'; // Assuming these constants will be defined
 
 const MarketList: React.FC = () => {
   const [marketsData, setMarketsData] = useState<PaginatedSimplifiedMarkets | null>(null);
@@ -98,12 +105,9 @@ const MarketList: React.FC = () => {
                 ))}
               </div>
             </CardContent>
-            {/* Future: Add a link to view more details or trade on Polymarket */}
-            {/* <CardFooter>
-              <a href={`https://polymarket.com/event/${market.slug}`} target="_blank" rel="noopener noreferrer" className="w-full">
-                <Button variant="outline" className="w-full">View on Polymarket</Button>
-              </a>
-            </CardFooter> */}
+            <CardFooter className="pt-4">
+              <SmartBetButton market={market} />
+            </CardFooter>
           </Card>
         ))}
       </div>
@@ -123,3 +127,160 @@ const MarketList: React.FC = () => {
 };
 
 export default MarketList;
+
+interface SmartBetButtonProps {
+  market: SimplifiedMarket;
+}
+
+const SmartBetButton: React.FC<SmartBetButtonProps> = ({ market }) => {
+  const { user } = useUserStore();
+  const { provider } = useParticleNetwork();
+  const [loadingBet, setLoadingBet] = useState(false);
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false);
+
+  const handleSmartBetSuggestion = async () => {
+    if (!user?.id) {
+      toast.error("Please log in to get smart bet suggestions.");
+      return;
+    }
+
+    setLoadingSuggestion(true);
+    try {
+      const response = await fetch(`/api/smart-bet?marketId=${market.condition_id}&userId=${user.id}`);
+      const data: SmartBetSuggestion | { message: string } = await response.json();
+
+      if (response.ok) {
+        const suggestion = data as SmartBetSuggestion;
+        toast.success(
+          `Smart Bet Suggestion for ${suggestion.marketId}:`,
+          {
+            description: `Outcome: ${suggestion.outcome}, Amount: $${suggestion.suggestedBetAmount.toFixed(2)}, Confidence: ${(suggestion.confidenceScore * 100).toFixed(0)}%`,
+            duration: 5000,
+          }
+        );
+      } else {
+        toast.error(`Failed to get smart bet suggestion: ${(data as { message: string }).message}`);
+      }
+    } catch (error) {
+      console.error("Error fetching smart bet:", error);
+      toast.error("An unexpected error occurred while fetching smart bet suggestion.");
+    } finally {
+      setLoadingSuggestion(false);
+    }
+  };
+
+  const handlePlaceBet = async (outcomeIndex: number, amount: number) => {
+    if (!provider) {
+      toast.error("Please connect your wallet.");
+      return;
+    }
+
+    setLoadingBet(true);
+    try {
+      const ethersProvider = new ethers.providers.Web3Provider(provider, "any");
+      const signer = ethersProvider.getSigner();
+
+      const adapterContract = new ethers.Contract(
+        POLYMARKET_ADAPTER_ADDRESS,
+        PolymarketAdapterABI.abi, // Assuming ABI is in .abi property
+        signer
+      );
+
+      const collateralContract = new ethers.Contract(
+        USDC_ADDRESS,
+        ["function approve(address spender, uint256 amount) returns (bool)"], // Minimal ABI for approve
+        signer
+      );
+
+      // Convert amount to USDC decimals (assuming 6 decimals for USDC)
+      const amountWei = ethers.utils.parseUnits(amount.toString(), 6);
+
+      // Approve the adapter to spend USDC
+      const approveTx = await collateralContract.approve(POLYMARKET_ADAPTER_ADDRESS, amountWei);
+      await toast.promise(approveTx.wait(), {
+        loading: "Approving USDC...",
+        success: "USDC Approved!",
+        error: (err) => `Failed to approve USDC: ${err.message}`,
+      });
+
+      // Prepare the partition for splitPosition
+      const outcomeSlotCount = 2; // Assuming binary market for simplicity (Yes/No)
+      const partition = Array(outcomeSlotCount).fill(0);
+      partition[outcomeIndex] = 1; // Set 1 for the chosen outcome
+
+      // Encode the message for onZetaMessage (actionType 0 for splitPosition)
+      const message = ethers.utils.defaultAbiCoder.encode(
+        ["uint8", "bytes32", "uint256[]"],
+        [0, market.condition_id, partition]
+      );
+
+      // Call onZetaMessage via the adapter (this would typically be a cross-chain call)
+      // For direct interaction, we'd call a function on the adapter that wraps this.
+      // Assuming a direct call for now for simplicity, but in a real ZetaChain integration,
+      // this would involve sending ZRC20 tokens to the adapter with the message.
+      // For this frontend, we'll simulate a direct call to the adapter's onZetaMessage for testing purposes.
+      // In a real scenario, the user would send ZRC20 to the ZetaChain connector, which then calls onZetaMessage.
+
+      // This part needs to be adjusted based on how the frontend interacts with ZetaChain.
+      // For now, let's assume a direct call to a public function on the adapter for betting.
+      // We need a public function in PolymarketAdapter.sol that can be called directly from the frontend
+      // to initiate a bet, which then internally calls splitPosition.
+      // Let's add a `placeBet` function to the contract.
+
+      // For now, we'll simulate the call to onZetaMessage for demonstration.
+      // This is NOT how a real ZetaChain integration would work from the frontend.
+      // A real integration would involve sending ZRC20 tokens to the ZetaChain connector.
+
+      // Since we don't have a direct `placeBet` function on the adapter yet,
+      // and `onZetaMessage` is `external override` and called by ZetaConnector,
+      // we cannot directly call it from the frontend.
+      // This highlights a missing piece in the smart contract for direct frontend interaction.
+
+      // For the purpose of this task, I will assume there will be a `placeBet` function
+      // on the PolymarketAdapter that the frontend can call.
+      // I will add a placeholder for it here and note that the contract needs updating.
+
+      // Placeholder for actual bet transaction
+      // const tx = await adapterContract.placeBet(market.condition_id, outcomeIndex, amountWei);
+      // await toast.promise(tx.wait(), {
+      //   loading: "Placing bet...",
+      //   success: "Bet Placed Successfully!",
+      //   error: (err) => `Failed to place bet: ${err.message}`,
+      // });
+
+      toast.info("Betting functionality requires a direct `placeBet` function in the smart contract.");
+      toast.success(`Simulated bet of $${amount.toFixed(2)} on outcome ${outcomeIndex} for market ${market.question}`);
+
+    } catch (error) {
+      console.error("Error placing bet:", error);
+      toast.error("An unexpected error occurred while placing your bet.");
+    } finally {
+      setLoadingBet(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col space-y-2">
+      <Button onClick={handleSmartBetSuggestion} disabled={loadingSuggestion} className="w-full">
+        {loadingSuggestion ? 'Getting Suggestion...' : 'Get Smart Bet Suggestion'}
+      </Button>
+      {/* Example buttons to place a bet directly for demonstration */}
+      <Button
+        onClick={() => handlePlaceBet(0, 10)} // Bet $10 on outcome 0
+        disabled={loadingBet}
+        className="w-full"
+        variant="outline"
+      >
+        {loadingBet ? 'Placing Bet...' : 'Place $10 Bet on Outcome 0'}
+      </Button>
+      <Button
+        onClick={() => handlePlaceBet(1, 10)} // Bet $10 on outcome 1
+        disabled={loadingBet}
+        className="w-full"
+        variant="outline"
+      >
+        {loadingBet ? 'Placing Bet...' : 'Place $10 Bet on Outcome 1'}
+      </Button>
+    </div>
+  );
+};

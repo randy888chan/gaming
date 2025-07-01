@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
+    --background: 240 80% 5%; /* Deep Space Blue */
+    --foreground: 210 100% 95%; /* Ethereal White/Light Blue */
+    --muted: 240 70% 10%; /* Slightly lighter deep space blue */
+    --muted-foreground: 210 20% 70%; /* Soft grey-blue */
+    --accent: 300 100% 60%; /* Vibrant Neon Pink/Purple */
+    --accent-foreground: 0 0% 98%; /* White */
+    --popover: 240 80% 5%; /* Deep Space Blue */
+    --popover-foreground: 210 100% 95%; /* Ethereal White/Light Blue */
+    --border: 240 60% 20%; /* Darker blue for borders */
+    --input: 240 70% 10%; /* Slightly lighter deep space blue */
+    --card: 240 80% 5%; /* Deep Space Blue */
+    --card-foreground: 210 100% 95%; /* Ethereal White/Light Blue */
+    --primary: 200 100% 50%; /* Bright Blue */
+    --primary-foreground: 240 80% 5%; /* Deep Space Blue */
+    --secondary: 270 80% 30%; /* Softer Purple */
+    --secondary-foreground: 210 100% 95%; /* Ethereal White/Light Blue */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --ring: 0 0% 83.1%;
+    --ring: 200 100% 70%; /* Lighter bright blue for focus rings */
     --radius: 0.5rem;
 
     --chart-1: 220 70% 50%;
@@ -295,6 +295,22 @@ body::-webkit-scrollbar-thumb {
   border-radius: 10px;
 }
 
+@keyframes pulse-orb {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--accent), 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--accent), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--accent), 0);
+  }
+}
+
+.animate-pulse-orb {
+  animation: pulse-orb 2s infinite;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -303,3 +319,5 @@ body::-webkit-scrollbar-thumb {
     @apply bg-background text-foreground;
   }
 }
+
+@import "./transitions.css";

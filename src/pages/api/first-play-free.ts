@@ -1,112 +1,116 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getReferralData, rewardReferrer } from '../../referral'; // Adjust path as needed
+// import { D1Database } from '@cloudflare/workers-types'; // Assuming this type is available or can be mocked
+import jwt from 'jsonwebtoken'; // For token verification
+declare module 'jsonwebtoken';
 
-type Data = {
-  success: boolean;
-  creditAmount?: number;
-  error?: string;
+// Mock D1 Database for local development/testing
+// In a real Cloudflare Worker, D1 would be bound via environment.
+const mockD1: any = {
+  prepare: (query: string) => ({
+    bind: (...args: any[]) => ({
+      first: async (colName?: string) => {
+        // Simulate user lookup
+        if (query.includes('SELECT * FROM users WHERE particle_id = ?')) {
+          const [particleId] = args;
+          if (particleId === 'mock_existing_user_id') {
+            return { particle_id: 'mock_existing_user_id', has_claimed_first_play: 1 };
+          }
+          if (particleId === 'mock_new_user_id') {
+            return null; // Simulate new user
+          }
+        }
+        // Simulate insert/update
+        if (query.includes('INSERT INTO users') || query.includes('UPDATE users')) {
+          return { success: true, changes: 1 };
+        }
+        return null;
+      },
+      all: async () => ({ results: [] }),
+      run: async () => ({ success: true, changes: 1 }),
+    }),
+  }),
+  dump: async () => new ArrayBuffer(0),
+  batch: async () => [],
 };
 
-// Define a type for the decoded JWT payload
-interface JwtPayload {
-  walletAddress: string;
-  // Add other properties if your JWT contains them
-}
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method Not Allowed' });
   }
 
-  const { userToken } = req.body;
+  const { userToken, referralCode } = req.body;
 
   if (!userToken) {
-    return res.status(400).json({ success: false, error: 'userToken is required' });
+    return res.status(400).json({ success: false, error: 'User token is required.' });
   }
 
-  // In a real Cloudflare Worker environment, you would interact with D1 here.
-  // For this Next.js API route, we'll simulate the D1 interaction.
+  // In a real scenario, verify the userToken with Particle Network's SDK or a JWT secret
+  // For this example, we'll mock a simple JWT verification.
+  let decodedToken: any;
+  try {
+    // Replace 'YOUR_PARTICLE_NETWORK_JWT_SECRET' with your actual secret
+    // This secret should be stored securely, e.g., in environment variables.
+    decodedToken = jwt.verify(userToken, process.env.PARTICLE_NETWORK_JWT_SECRET || 'mock-jwt-secret');
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return res.status(401).json({ success: false, error: 'Invalid or expired token.' });
+  }
 
-  // Mock D1 client for local development. In a Cloudflare Worker, `env.DB` would be the D1 binding.
-  const D1 = {
-    prepare: (query: string) => ({
-      bind: (params: any[]) => ({
-        first: async (column?: string) => {
-          // Simulate D1 query for user existence
-          if (query.includes('SELECT walletAddress FROM user_preferences WHERE walletAddress = ?')) {
-            // For demonstration, assume user does not exist unless a specific token is provided
-            return params[0] === 'existing_user_token' ? { walletAddress: params[0], hasClaimedFirstPlay: true } : null;
-          } else if (query.includes('SELECT hasClaimedFirstPlay FROM user_preferences WHERE walletAddress = ?')) {
-            // Simulate D1 query for hasClaimedFirstPlay status
-            return params[0] === 'new_user_token' ? { hasClaimedFirstPlay: false } : { hasClaimedFirstPlay: true };
-          }
-          return null;
-        },
-        run: async () => {
-          // Simulate D1 insert/update operation
-          if (query.includes('INSERT INTO user_preferences') || query.includes('UPDATE user_preferences')) {
-            console.log(`Mock D1: Operation successful for walletAddress: ${params[0]}`);
-            return { success: true };
-          }
-          return { success: false };
-        },
-      }),
-    }),
-  };
+  const particleId = decodedToken.account || userToken; // Use account from decoded token or fallback to userToken
 
-  // Helper to extract wallet address from userToken (which is publicAddress from Particle Network)
-  const getWalletAddressFromUserToken = async (userToken: string): Promise<string> => {
-    // In a real Cloudflare Worker, you would perform server-to-server validation with Particle Network here
-    // For this mock, we assume userToken is the walletAddress
-    return userToken;
-  };
+  // Access D1 database (mocked for now)
+  // In a Cloudflare Worker, `env.DB` would be the D1 binding.
+  const DB = (process.env.NODE_ENV === 'development' ? mockD1 : (process.env as any).DB) as any;
+
+  if (!DB) {
+    console.error('D1 Database not initialized.');
+    return res.status(500).json({ success: false, error: 'Database not available.' });
+  }
 
   try {
-    const walletAddress = await getWalletAddressFromUserToken(userToken);
-
-    // Check if user exists and if they have already claimed the first play
-    const userStatus = await D1.prepare(
-      'SELECT hasClaimedFirstPlay FROM user_preferences WHERE walletAddress = ?'
-    )
-      .bind([walletAddress])
+    // Check if user exists and has claimed first play
+    const userRecord = await DB.prepare('SELECT * FROM users WHERE particle_id = ?')
+      .bind(particleId)
       .first();
 
-    if (userStatus?.hasClaimedFirstPlay) {
-      return res.status(200).json({ success: false, error: 'First play free already claimed' });
+    if (userRecord && userRecord.has_claimed_first_play) {
+      return res.status(200).json({ success: false, error: 'First play free already claimed.' });
     }
 
-    if (!userStatus || userStatus.hasClaimedFirstPlay === undefined) {
-      // User does not exist or hasClaimedFirstPlay is not set, create record and grant first play free
-      await D1.prepare(
-        'INSERT INTO user_preferences (walletAddress, lastLogin, hasClaimedFirstPlay, riskTolerance, preferredGames, notificationSettings) VALUES (?, CURRENT_TIMESTAMP, TRUE, ?, ?, ?)'
-      )
-        .bind([walletAddress, 'medium', '[]', '{}']) // Default values for new user
-        .run();
-      console.log(`New user record created and first play claimed for walletAddress: ${walletAddress}`);
+    const creditAmount = 0.001; // Example micro-value credit
 
-      // Check for referral and reward referrer
-      const referralData = getReferralData();
-      if (referralData.current) {
-        await rewardReferrer(referralData.current, 0.0005); // Example reward amount
-      }
+    if (!userRecord) {
+      // Create new user record
+      await DB.prepare(
+        'INSERT INTO users (particle_id, wallet_address, has_claimed_first_play, referred_by, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)'
+      )
+        .bind(particleId, decodedToken.walletAddress || 'unknown', 1, referralCode || null)
+        .run();
     } else {
-      // User exists but hasn't claimed first play, update record
-      await D1.prepare(
-        'UPDATE user_preferences SET hasClaimedFirstPlay = TRUE WHERE walletAddress = ?'
-      )
-        .bind([walletAddress])
-        .run();
-      console.log(`Existing user ${walletAddress} claimed first play.`);
+      // Update existing user record
+      // Only update referred_by if it's not already set and a referralCode is provided
+      if (!userRecord.referred_by && referralCode) {
+        await DB.prepare(
+          'UPDATE users SET has_claimed_first_play = ?, referred_by = ?, updated_at = CURRENT_TIMESTAMP WHERE particle_id = ?'
+        )
+          .bind(1, referralCode, particleId)
+          .run();
+      } else {
+        await DB.prepare(
+          'UPDATE users SET has_claimed_first_play = ?, updated_at = CURRENT_TIMESTAMP WHERE particle_id = ?'
+        )
+          .bind(1, particleId)
+          .run();
+      }
     }
 
-    const creditAmount = 0.001; // SOL as per architecture
+    // Here you would typically interact with your game's credit system
+    // For this example, we'll just return success.
+    console.log(`User ${particleId} successfully claimed first play free.`);
 
-    res.status(200).json({ success: true, creditAmount });
+    return res.status(200).json({ success: true, creditAmount });
   } catch (error: any) {
-    console.error('Error in first-play-free API:', error);
-    res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
+    console.error('API Error:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
   }
 }

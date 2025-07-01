@@ -72,6 +72,29 @@ All errors return standardized responses:
 }
 ```
 
+### 4. Referral System API
+- **Endpoint**: `/api/referral`
+- **Method**: POST
+- **Description**: Processes new user referrals and distributes rewards.
+- **Request Body**:
+  ```json
+  {
+    "referralCode": "CODE123",
+    "newUserWalletAddress": "0xabc123def456"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "message": "Referral processed successfully",
+    "referrerBalance": 110
+  }
+  ```
+- **Error Codes**:
+  - `400 Bad Request`: Missing `referralCode` or `newUserWalletAddress`.
+  - `404 Not Found`: Invalid referral code.
+  - `409 Conflict`: User has already been referred.
+
 ## Rate Limiting
 - 100 requests/minute per IP address
 - 1000 requests/minute per authenticated user

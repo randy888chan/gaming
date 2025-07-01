@@ -22,6 +22,12 @@ const nextConfig = {
 const withPWAConfig = withPWA({
   dest: 'public',
   disable: !isProd,
+  register: true,
+  skipWaiting: true,
+  buildExcludes: [/middleware-manifest.json$/],
+  fallbacks: {
+    document: '/_offline',
+  },
 })(nextConfig);
 
 export default withBundleAnalyzer({

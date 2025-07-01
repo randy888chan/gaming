@@ -1,39 +1,32 @@
-// src/hooks/useUserStore.ts
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-import { StoreApi, create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-
-export interface UserStore {
-  agreedToTerms: boolean;
-  newcomer: boolean;
-  gamesPlayed: string[];
+interface UserState {
+  user: any | null;
+  hasClaimedFirstPlay: boolean;
+  smartBet: boolean;
+  referralCode: string | null;
+  referredBy: string | null;
   isPriorityFeeEnabled: boolean;
   priorityFee: number;
-  user: any; // Particle Network user info
-  hasClaimedFirstPlay: boolean; // New field
-  smartBet: boolean; // Smart Bet feature
-  set: StoreApi<UserStore>["setState"];
+  set: (fn: (state: UserState) => UserState) => void;
 }
 
-/**
- * Store client settings here
- */
-export const useUserStore = create(
-  persist<UserStore>(
+export const useUserStore = create<UserState>()(
+  persist(
     (set) => ({
-      agreedToTerms: false,
-      newcomer: true,
-      gamesPlayed: [],
-      priorityFee: 400_201,
-      isPriorityFeeEnabled: true,
       user: null,
-      hasClaimedFirstPlay: false, // Initialize new field
-      smartBet: true, // Smart Bet feature default
+      hasClaimedFirstPlay: false,
+      smartBet: true,
+      referralCode: null,
+      referredBy: null,
+      isPriorityFeeEnabled: false,
+      priorityFee: 10000,
       set,
     }),
     {
-      name: "user",
-      storage: createJSONStorage(() => sessionStorage),
-    },
-  ),
+      name: 'user-storage', // unique name
+      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
+    }
+  )
 );

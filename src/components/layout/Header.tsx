@@ -1,8 +1,9 @@
 "use client"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ChevronDown, ClipboardCopy, LogOut, User } from "lucide-react"
+import { ChevronDown, ClipboardCopy, LogOut, User, Home, Gamepad, BarChart, Info, Languages } from "lucide-react"
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { NexusOrb } from "@/components/NexusOrb"
 import {
   GambaPlatformContext,
   TokenValue,
@@ -13,6 +14,8 @@ import {
 } from "gamba-react-ui-v2"
 import { PLATFORM_REFERRAL_FEE, TOKENLIST } from "@/constants"
 import React, { useCallback, useState } from "react"
+import { useTranslation } from 'next-i18next'
+import { useRouter } from 'next/router'
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,6 +28,9 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 
 export default function Header() {
+  const { t } = useTranslation('common')
+  const router = useRouter()
+  const { i18n } = useTranslation()
   const context = React.useContext(GambaPlatformContext)
   const { connected, publicKey, disconnect, wallet, connecting, connect } = useWallet()
   const walletModal = useWalletModal()
@@ -36,7 +42,11 @@ export default function Header() {
   const [showBonusHelp, setShowBonusHelp] = useState(false)
   const [showJackpotHelp, setShowJackpotHelp] = useState(false)
 
-  const { isPriorityFeeEnabled, priorityFee, set } = useUserStore()
+  const { isPriorityFeeEnabled, priorityFee, set } = useUserStore((state) => ({
+    isPriorityFeeEnabled: state.isPriorityFeeEnabled,
+    priorityFee: state.priorityFee,
+    set: state.set,
+  }))
   const [newPriorityFee, setNewPriorityFee] = useState(priorityFee)
 
   const handleSetPriorityFee = useCallback(() => {
@@ -83,30 +93,51 @@ export default function Header() {
     <>
       <div className="flex items-center justify-between w-full p-2.5 fixed top-0 left-0 z-50 rounded-b-2xl bg-background border border-t-0 shadow-lg">
         <div className="absolute top-0 left-0 right-0 backdrop-blur w-full h-full rounded-b-2xl -z-20" />
-        <div className="flex gap-5 items-center">
-          <Link href="/" passHref>
-            <div className="h-9 m-0 cursor-pointer">
-              <img alt="Gamba logo" src="/logo.svg" className="h-full" />
-            </div>
-          </Link>
-          <Link href="/polymarket" passHref>
-            <Button variant="link" className="text-white hover:text-gray-300 px-2 md:px-3">
-              Polymarket
-            </Button>
-          </Link>
+        <div className="flex gap-2 items-center">
+          <NexusOrb href="/" label={t('home')} icon={<Home />} isActive={router.pathname === "/"} />
+          <NexusOrb href="/polymarket" label={t('polymarket')} icon={<BarChart />} isActive={router.pathname === "/polymarket"} />
+          <NexusOrb href="/games" label={t('games')} icon={<Gamepad />} isActive={router.pathname === "/games"} />
+          <NexusOrb href="/info" label={t('info')} icon={<Info />} isActive={router.pathname === "/info"} />
         </div>
         <div className="max-sm:text-xs max-sm:gap-1 flex gap-2.5 items-center relative">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Languages className="h-4 w-4" />
+                <span>{i18n.language?.toUpperCase()}</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[300px]">
+              <DialogHeader>
+                <DialogTitle>{t('language')}</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="h-[200px] rounded-md border p-4">
+                <div className="space-y-2">
+                  {router.locales?.map((locale: string) => (
+                    <button
+                      key={locale}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg w-full text-left hover:bg-accent"
+                      onClick={() => router.push(router.asPath, router.asPath, { locale })}
+                    >
+                      {locale.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
+
           <Dialog open={showBonusHelp} onOpenChange={setShowBonusHelp}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>You have a bonus!</DialogTitle>
+                <DialogTitle>{t('bonus_title')}</DialogTitle>
               </DialogHeader>
               <p>
-                You have{" "}
+                {t('bonus_description_part1')}{" "}
                 <b>
                   <TokenValue amount={balance.bonusBalance} />
                 </b>{" "}
-                worth of free plays. This bonus will be applied automatically when you play.
+                {t('bonus_description_part2')}
               </p>
             </DialogContent>
           </Dialog>
@@ -114,7 +145,7 @@ export default function Header() {
           <Dialog open={showJackpotHelp} onOpenChange={setShowJackpotHelp}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{token.name} Jackpot Details</DialogTitle>
+                <DialogTitle>{token.name} {t('jackpot_details_title')}</DialogTitle>
               </DialogHeader>
               {pool.jackpotBalance > 0 && (
                 <div className="flex text-[#003c00] rounded-lg bg-[#03ffa4] px-2.5 py-0.5 uppercase font-bold">
@@ -123,22 +154,20 @@ export default function Header() {
               )}
               <div className="mt-4">
                 <p>
-                  The Jackpot grows with each game played, funded by fees from unsuccessful attempts to win it. Winning
-                  the jackpot not only grants substantial rewards but also recycles a tiny portion of the winnings back
-                  into the main liquidity pool, sustaining the games economy.
+                  {t('jackpot_description')}
                 </p>
                 <div className="mt-4">
                   <div>
-                    <strong>Pool Fee:</strong> {pool.poolFee}%
+                    <strong>{t('pool_fee')}:</strong> {pool.poolFee}%
                   </div>
                   <div>
-                    <strong>Liquidity:</strong> <TokenValue amount={Number(pool.liquidity)} />
+                    <strong>{t('liquidity')}:</strong> <TokenValue amount={Number(pool.liquidity)} />
                   </div>
                   <div>
-                    <strong>Minimum Wager:</strong> <TokenValue amount={pool.minWager} />
+                    <strong>{t('minimum_wager')}:</strong> <TokenValue amount={pool.minWager} />
                   </div>
                   <div>
-                    <strong>Maximum Payout:</strong> <TokenValue amount={pool.maxPayout} />
+                    <strong>{t('maximum_payout')}:</strong> <TokenValue amount={pool.maxPayout} />
                   </div>
                 </div>
                 <div className="mt-4 text-center">
@@ -148,7 +177,7 @@ export default function Header() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      View Pool on Explorer
+                      {t('view_pool_on_explorer')}
                     </a>
                   </Button>
                 </div>
@@ -194,13 +223,13 @@ export default function Header() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Wallet & Settings</DialogTitle>
+                  <DialogTitle>{t('wallet_settings_title')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium">Connected Wallet</p>
+                        <p className="text-sm font-medium">{t('connected_wallet')}</p>
                         <p className="text-xs opacity-70">{truncateString(publicKey?.toString() || "", 8, 8)}</p>
                       </div>
                       <Avatar className="h-12 w-12">
@@ -209,7 +238,7 @@ export default function Header() {
                       </Avatar>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Balance</p>
+                      <p className="text-sm font-medium">{t('balance')}</p>
                       <div className="flex items-center gap-2">
                         <img className="w-8 h-8 rounded-full" src={token.image || "/placeholder.svg"} alt="Token" />
                         <p className="text-2xl font-bold">
@@ -217,7 +246,7 @@ export default function Header() {
                           {balance.bonusBalance > 0 && (
                             <span className="text-sm ml-1">
                               (+
-                              <TokenValue amount={balance.bonusBalance} /> Bonus)
+                              <TokenValue amount={balance.bonusBalance} /> {t('bonus')})
                             </span>
                           )}
                         </p>
@@ -246,24 +275,24 @@ export default function Header() {
                     </div>
                   </ScrollArea>
                   <div className="space-y-4">
-                    <p className="text-sm font-medium">Priority Fee</p>
+                    <p className="text-sm font-medium">{t('priority_fee')}</p>
                     <div className="flex items-center justify-between">
-                      <span>Enable Priority Fee</span>
+                      <span>{t('enable_priority_fee')}</span>
                       <Switch
                         checked={isPriorityFeeEnabled}
                         onCheckedChange={(checked) => {
                           set({ isPriorityFeeEnabled: checked })
                           if (checked) {
-                            toast.success("Priority fee enabled")
+                            toast.success(t('priority_fee_enabled'))
                           } else {
-                            toast.error("Priority fee disabled")
+                            toast.error(t('priority_fee_disabled'))
                           }
                         }}
                       />
                     </div>
                     {isPriorityFeeEnabled && (
                       <div className="space-y-2">
-                        <label className="text-sm">Priority Fee (Microlamports):</label>
+                        <label className="text-sm">{t('priority_fee_microlamports')}:</label>
                         <div className="flex gap-2">
                           <Input
                             type="number"
@@ -275,18 +304,18 @@ export default function Header() {
                               }
                             }}
                           />
-                          <Button onClick={handleSetPriorityFee}>Set</Button>
+                          <Button onClick={handleSetPriorityFee}>{t('set')}</Button>
                         </div>
                       </div>
                     )}
                   </div>
                   <div className="space-y-4">
-                    <p className="text-sm font-medium">Referral Link</p>
+                    <p className="text-sm font-medium">{t('referral_link')}</p>
                     <div className="flex space-x-2">
                       <Input value={`${window.location.origin}?code=${publicKey?.toString() || ""}`} readOnly />
                       <Button onClick={copyInvite} variant="outline">
                         <ClipboardCopy className="h-4 w-4 mr-2" />
-                        Copy
+                        {t('copy')}
                       </Button>
                     </div>
                   </div>
@@ -295,7 +324,7 @@ export default function Header() {
                       <Link href="/profile" passHref legacyBehavior>
                         <Button variant="outline" className="flex items-center">
                           <User className="h-4 w-4 mr-2" />
-                          View Profile
+                          {t('view_profile')}
                         </Button>
                       </Link>
                     </DialogClose>
@@ -307,7 +336,7 @@ export default function Header() {
                         }}
                       >
                         <LogOut className="h-4 w-4 mr-2" />
-                        Disconnect
+                        {t('disconnect')}
                       </Button>
                     </DialogClose>
                   </div>
@@ -316,7 +345,7 @@ export default function Header() {
             </Dialog>
           ) : (
             <Button onClick={handleConnect} variant="outline">
-              {connecting ? "Connecting" : "Connect Wallet"}
+              {connecting ? t('connecting') : t('connect_wallet')}
             </Button>
           )}
         </div>

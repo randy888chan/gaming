@@ -1,69 +1,69 @@
-interface AIGenerateRequest {
-  provider: 'mistral' | 'gemini';
-  type: 'text' | 'image';
-  prompt: string;
-  params?: Record<string, any>;
+import { AI_SERVICE_API_URL, AI_SERVICE_API_KEY } from "../constants";
+
+/**
+ * @file AI Service Adapter
+ * @description This file provides an adapter for interacting with the external AI service.
+ * It encapsulates the logic for making requests to the AI service and handling its responses.
+ */
+
+/**
+ * Interface for the Smart Bet suggestion returned by the AI service.
+ */
+export interface SmartBetSuggestion {
+  marketId: string;
+  outcome: string; // e.g., "YES" or "NO" for a binary market
+  suggestedBetAmount: number;
+  confidenceScore: number; // A score indicating the AI's confidence in the suggestion
+  reasoning?: string; // Optional explanation for the suggestion
 }
 
-interface AIResponse {
-  success: boolean;
-  content?: string;
-  imageUrl?: string;
-  error?: string;
-}
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000; // 1 second
 
-export class AIServiceAdapter {
-  private mistralApiKey: string;
-  private geminiApiKey: string;
-  private mistralApiBaseUrl: string;
+/**
+ * Function to get a smart bet suggestion from the AI service.
+ * @param marketId The ID of the market for which to get a suggestion.
+ * @param userId The ID of the user requesting the suggestion.
+ * @returns A Promise that resolves to a SmartBetSuggestion or null if no suggestion is available.
+ */
+export async function getSmartBetSuggestion(marketId: string, userId: string): Promise<SmartBetSuggestion | null> {
+  for (let i = 0; i < MAX_RETRIES; i++) {
+    try {
+      console.log(`Requesting smart bet suggestion for market: ${marketId}, user: ${userId}. Attempt ${i + 1}/${MAX_RETRIES}`);
 
-  constructor() {
-    this.mistralApiKey = process.env.MISTRAL_API_KEY || 'MOCK_MISTRAL_API_KEY';
-    this.geminiApiKey = process.env.GEMINI_API_KEY || 'MOCK_GEMINI_API_KEY';
-    this.mistralApiBaseUrl = process.env.MISTRAL_API_BASE_URL || 'https://api.mistral.ai/v1';
-  }
+      const response = await fetch(AI_SERVICE_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": AI_SERVICE_API_KEY, // Authentication header
+        },
+        body: JSON.stringify({ marketId, userId }),
+      });
 
-  async generate(request: AIGenerateRequest): Promise<AIResponse> {
-    console.log(`AI Service Adapter: Generating ${request.type} content from ${request.provider} with prompt: ${request.prompt}`);
-
-    if (request.provider === 'mistral' && request.type === 'text') {
-      try {
-        const response = await fetch(`${this.mistralApiBaseUrl}/chat/completions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.mistralApiKey}`,
-          },
-          body: JSON.stringify({
-            model: 'mistral-tiny', // Or another appropriate Mistral model
-            messages: [{ role: 'user', content: request.prompt }],
-            ...request.params,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Mistral API Error:', errorData);
-          return { success: false, error: `Mistral API error: ${errorData.message || response.statusText}` };
-        }
-
-        const data = await response.json();
-        const content = data.choices[0]?.message?.content;
-
-        if (content) {
-          return { success: true, content };
-        } else {
-          return { success: false, error: 'No content received from Mistral AI.' };
-        }
-      } catch (error: any) {
-        console.error('Error calling Mistral API:', error);
-        return { success: false, error: `Error calling Mistral API: ${error.message}` };
+      if (response.status === 429) {
+        // Rate limit exceeded, wait and retry
+        const retryAfter = response.headers.get("Retry-After");
+        const delay = retryAfter ? parseInt(retryAfter) * 1000 : RETRY_DELAY_MS * (i + 1);
+        console.warn(`Rate limit hit. Retrying after ${delay / 1000} seconds.`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue; // Retry the request
       }
-    } else if (request.provider === 'gemini' && request.type === 'image') {
-      // Simulate Gemini API call (no changes needed for this part for now)
-      return { success: true, imageUrl: `https://example.com/generated-image-${Date.now()}.png` };
-    } else {
-      return { success: false, error: 'Unsupported AI provider or type combination.' };
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`AI service responded with status ${response.status}: ${errorBody}`);
+      }
+
+      const suggestion: SmartBetSuggestion = await response.json();
+      return suggestion;
+    } catch (error) {
+      console.error(`Error fetching smart bet suggestion (attempt ${i + 1}/${MAX_RETRIES}):`, error);
+      if (i < MAX_RETRIES - 1) {
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1)));
+      } else {
+        return null; // All retries failed
+      }
     }
   }
+  return null; // Should not reach here if MAX_RETRIES > 0
 }

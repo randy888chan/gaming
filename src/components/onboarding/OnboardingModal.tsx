@@ -4,6 +4,8 @@ import { Button } from '../ui/button';
 import { useParticleConnect } from '@particle-network/connect-react-ui';
 import { useUserStore } from '@/hooks/useUserStore';
 import { toast } from 'sonner';
+import { useMemo } from 'react';
+import { useRouter } from 'next/router';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -32,8 +34,10 @@ const steps = [
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { connect, disconnect } = useParticleConnect();
-  const { set, user, hasClaimedFirstPlay, smartBet } = useUserStore();
+  const { connect } = useParticleConnect();
+  const { set, user, hasClaimedFirstPlay, smartBet, referredBy } = useUserStore();
+  const router = useRouter();
+  const { code: referralCodeFromUrl } = router.query;
 
   const handleNext = () => {
     if (currentStep < filteredSteps.length - 1) {
@@ -59,26 +63,30 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
     try {
       const userInfo = await connect({});
       if (userInfo) {
-        // Batch state updates
-        set((state) => ({
-          ...state,
-          user: userInfo,
-          hasClaimedFirstPlay: true
-        }));
-        
         // Call the first-play-free API
         const response = await fetch('/api/first-play-free', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userToken: userInfo.account }),
+          body: JSON.stringify({
+            userToken: userInfo.publicAddress,
+            referralCode: referralCodeFromUrl,
+          }),
         });
         
         const data = await response.json();
         if (data.success) {
           console.log('First play free credited:', data.creditAmount);
+          set((state) => ({
+            ...state,
+            user: userInfo,
+            hasClaimedFirstPlay: true,
+            referredBy: referralCodeFromUrl ? String(referralCodeFromUrl) : null,
+          }));
           handleNext(); // Advance to next step after successful login
+          // Clear referral code from URL after successful processing
+          router.replace(router.pathname, undefined, { shallow: true });
         } else {
           const errorMsg = data.error || 'Failed to claim first play free.';
           console.error('Failed to claim first play free:', errorMsg);
