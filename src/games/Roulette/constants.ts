@@ -31,7 +31,7 @@ const makeSquare = (
 
 interface TableSquare {
   label: string;
-  numbers: number[];
+  numbers: number[]; // This type is correct
   row: number;
   column: number;
   color?: "red" | "black";
@@ -42,9 +42,10 @@ type TableLayout = Record<string, TableSquare>;
 const numbersLayout = Array.from({ length: NUMBERS }).reduce<TableLayout>(
   (prev, _, index) => ({
     ...prev,
+    // Key remains as number, e.g., 1, 2, ...
     [index + 1]: {
       label: String(index + 1),
-      numbers: [String(index + 1)],
+      numbers: [index + 1], // Changed from [String(index + 1)] to [index + 1]
       row: getRow(index),
       column: 1 + Math.floor(index / 3),
       color: isRed(index + 1) ? "red" : "black",

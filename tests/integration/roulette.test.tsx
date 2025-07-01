@@ -1,3 +1,4 @@
+import "@preact/signals-react/runtime"; // Ensure Preact signals runtime is initialized for React
 import React from 'react';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import RouletteGame from '../../src/games/Roulette';
@@ -133,20 +134,25 @@ describe('Roulette Game Component Integration Tests', () => {
     await act(async () => {
       fireEvent.click(rouletteTable);
     });
-    act(() => jest.advanceTimersByTime(1)); // Help signals propagate
+    act(() => { jest.runAllTimers(); }); // Try running all timers
 
     // Wait for the Play button to become enabled and wager to update
-    const enabledPlayButton = await screen.findByTestId('gamba-play-button-play', undefined, { timeout: 4500 });
     await waitFor(async () => {
+      // Fetch the button inside waitFor to get its latest state
+      const playButton = screen.getByTestId('gamba-play-button-play');
       const wagerDisplayCheck = screen.getByText('Wager').previousSibling;
+
       expect(wagerDisplayCheck).toHaveTextContent('100');
+
       // If wager is 100, check button state. Log if it's unexpectedly disabled.
-      if (enabledPlayButton.hasAttribute('disabled')) {
-        console.log('[TEST DEBUG] Play button in "placing bet" is unexpectedly disabled. Wager is 100. Disabled attribute:', enabledPlayButton.getAttribute('disabled'));
+      if (playButton.hasAttribute('disabled')) {
+        console.log('[TEST DEBUG] Play button in "placing bet" is unexpectedly disabled. Wager is 100. Disabled attribute:', playButton.getAttribute('disabled'));
       }
-      expect(enabledPlayButton).not.toBeDisabled();
+      expect(playButton).not.toBeDisabled();
     }, { timeout: 4500 });
 
+    // Fetch the button again before clicking, to ensure we have the reference to the enabled button
+    const enabledPlayButton = screen.getByTestId('gamba-play-button-play');
     // Re-fetch wagerDisplay after waitFor to ensure it's the latest
     const wagerDisplay = screen.getByText('Wager').previousSibling;
     expect(wagerDisplay).toHaveTextContent('100');
@@ -184,7 +190,7 @@ describe('Roulette Game Component Integration Tests', () => {
     await act(async () => {
       fireEvent.click(clearButton);
     });
-    act(() => jest.advanceTimersByTime(1)); // Help signals propagate
+    act(() => { jest.runAllTimers(); }); // Help signals propagate & align with other tests
     console.log('[TEST] After clearChips click, chipPlacements:', JSON.stringify(actualSignals.chipPlacements.value), 'totalChipValue immediately after act:', actualSignals.totalChipValue.value);
 
     await waitFor(() => {
@@ -216,18 +222,19 @@ describe('Roulette Game Component Integration Tests', () => {
     await act(async () => {
       fireEvent.click(rouletteTable);
     });
-    act(() => jest.advanceTimersByTime(1)); // Help signals propagate
+    act(() => { jest.runAllTimers(); }); // Try running all timers
 
-    const enabledPlayButtonWin = await screen.findByTestId('gamba-play-button-play', undefined, { timeout: 4500 });
     await waitFor(async () => {
+        const playButton = screen.getByTestId('gamba-play-button-play');
         const wagerDisplayCheck = screen.getByText('Wager').previousSibling;
         expect(wagerDisplayCheck).toHaveTextContent('100');
-        if (enabledPlayButtonWin.hasAttribute('disabled')) {
-          console.log('[TEST DEBUG] Play button in "game win" is unexpectedly disabled. Wager is 100. Disabled attribute:', enabledPlayButtonWin.getAttribute('disabled'));
+        if (playButton.hasAttribute('disabled')) {
+          console.log('[TEST DEBUG] Play button in "game win" is unexpectedly disabled. Wager is 100. Disabled attribute:', playButton.getAttribute('disabled'));
         }
-        expect(enabledPlayButtonWin).not.toBeDisabled();
+        expect(playButton).not.toBeDisabled();
     }, { timeout: 4500 });
 
+    const enabledPlayButtonWin = screen.getByTestId('gamba-play-button-play');
     await act(async () => {
       fireEvent.click(enabledPlayButtonWin);
     });
@@ -255,18 +262,19 @@ describe('Roulette Game Component Integration Tests', () => {
     await act(async () => {
       fireEvent.click(rouletteTable);
     });
-    act(() => jest.advanceTimersByTime(1)); // Help signals propagate
+    act(() => { jest.runAllTimers(); }); // Try running all timers
 
-    const enabledPlayButtonLose = await screen.findByTestId('gamba-play-button-play', undefined, { timeout: 4500 });
     await waitFor(async () => {
+      const playButton = screen.getByTestId('gamba-play-button-play');
       const wagerDisplayCheck = screen.getByText('Wager').previousSibling;
       expect(wagerDisplayCheck).toHaveTextContent('100');
-      if (enabledPlayButtonLose.hasAttribute('disabled')) {
-        console.log('[TEST DEBUG] Play button in "game lose" is unexpectedly disabled. Wager is 100. Disabled attribute:', enabledPlayButtonLose.getAttribute('disabled'));
+      if (playButton.hasAttribute('disabled')) {
+        console.log('[TEST DEBUG] Play button in "game lose" is unexpectedly disabled. Wager is 100. Disabled attribute:', playButton.getAttribute('disabled'));
       }
-      expect(enabledPlayButtonLose).not.toBeDisabled();
+      expect(playButton).not.toBeDisabled();
     }, { timeout: 4500 });
 
+    const enabledPlayButtonLose = screen.getByTestId('gamba-play-button-play');
     await act(async () => {
       fireEvent.click(enabledPlayButtonLose);
     });
