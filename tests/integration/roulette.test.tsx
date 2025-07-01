@@ -27,10 +27,6 @@ jest.mock('gamba-react-ui-v2', () => ({
     Button: ({ children, onClick, disabled }: { children: React.ReactNode, onClick?: () => void, disabled?: boolean }) => (
       <button onClick={onClick} disabled={disabled}>{children}</button>
     ),
-    useGame: jest.fn(() => ({
-      play: jest.fn(),
-      result: jest.fn(() => Promise.resolve({ payout: 0, resultIndex: 0 })),
-    })),
     Select: ({ options, value, onChange, label }: { options: any[], value: any, onChange: (value: any) => void, label: (value: any) => React.ReactNode }) => (
       <select data-testid="roulette-select" value={value} onChange={(e) => onChange(Number(e.target.value))}>
         {options.map((opt) => (
@@ -38,10 +34,15 @@ jest.mock('gamba-react-ui-v2', () => ({
         ))}
       </select>
     ),
+    Responsive: ({ children }: { children: React.ReactNode }) => <div data-testid="gamba-ui-responsive">{children}</div>,
+    useGame: jest.fn(() => ({ // Correctly placed inside GambaUi
+      play: jest.fn(),
+      result: jest.fn(() => Promise.resolve({ payout: 0, resultIndex: 0 })),
+    })),
   },
   useCurrentPool: jest.fn(() => ({
     token: 'SOL',
-    maxPayout: 1000,
+    maxPayout: 50000, // Increased maxPayout
   })),
   useCurrentToken: jest.fn(() => ({
     symbol: 'SOL',
@@ -62,7 +63,7 @@ jest.mock('gamba-react-ui-v2', () => ({
 jest.mock('@/components/GambaPlayButton', () => ({
   __esModule: true,
   default: ({ disabled, onClick, text }: { disabled?: boolean; onClick: () => void; text: string }) => (
-    <button data-testid="gamba-play-button" disabled={disabled} onClick={onClick}>{text}</button>
+    <button data-testid={`gamba-play-button-${text.toLowerCase().replace(/\s+/g, '-')}`} disabled={disabled} onClick={onClick}>{text}</button>
   ),
 }));
 
@@ -71,32 +72,49 @@ import { signal } from '@preact/signals-react';
 // Mock internal components/signals
 jest.mock('../../src/games/Roulette/signals', () => {
   const actual = jest.requireActual('../../src/games/Roulette/signals');
-  const { signal } = jest.requireActual('@preact/signals-react');
+  const { signal } = jest.requireActual('@preact/signals-react'); // For selectedChip override
+
+  const mockAddChipsFn = jest.fn((id: string, amount: number) => {
+    console.log('[SPY MOCK signals] addChips called with id:', id, 'amount:', amount);
+    actual.addChips(id, amount); // Call the REAL addChips
+    console.log('[SPY MOCK signals] after actual.addChips, totalChipValue:', actual.totalChipValue.value, 'chipPlacements:', JSON.stringify(actual.chipPlacements.value), 'bet:', JSON.stringify(actual.bet.value));
+  });
+
+  const mockClearChipsFn = jest.fn(() => {
+    console.log('[SPY MOCK signals] clearChips called');
+    actual.clearChips(); // Call the REAL clearChips
+    console.log('[SPY MOCK signals] after actual.clearChips, totalChipValue:', actual.totalChipValue.value);
+  });
+
+  const mockAddResultFn = jest.fn((result: number) => {
+    console.log('[SPY MOCK signals] addResult called with:', result);
+    actual.addResult(result); // Call the REAL addResult
+  });
+
   return {
-    ...actual,
-    bet: signal([]),
-    clearChips: jest.fn(() => {
-      actual.chipPlacements.value = {};
-    }),
-    results: signal([]),
+    ...actual, // Spread all actual signals and functions
+
+    // Override only the functions we want to spy on
+    addChips: mockAddChipsFn,
+    clearChips: mockClearChipsFn,
+    addResult: mockAddResultFn,
+
+    // Override selectedChip because the test needs to set its initial value simply
+    // All other signals (bet, chipPlacements, results, totalChipValue) will be the ACTUAL signals.
     selectedChip: signal(1),
-    totalChipValue: signal(0),
-    addResult: jest.fn((result: number) => {
-      actual.results.value = [...actual.results.value, result];
-    }),
-    addChips: jest.fn((id: string, amount: number) => {
-      actual.chipPlacements.value = {
-        ...actual.chipPlacements.value,
-        [id]: (actual.chipPlacements.value[id] || 0) + amount,
-      };
-    }),
   };
 });
 
+const mockTableAddChipsSpy = jest.fn();
+
+// This mock must be defined AFTER the signals mock.
+// The Table mock will use jest.requireMock to get the mocked signals.
 jest.mock('../../src/games/Roulette/Table', () => ({
   Table: () => <div data-testid="roulette-table" onClick={() => {
-    // Simulate placing a chip on a number (e.g., number 1)
-    jest.requireMock('../../src/games/Roulette/signals').addChips('number-1', jest.requireMock('../../src/games/Roulette/signals').selectedChip.value);
+    console.log('[TEST MOCK TABLE] onClick triggered');
+    const signals = jest.requireMock('../../src/games/Roulette/signals');
+    mockTableAddChipsSpy(signals.selectedChip.value);
+    signals.addChips('1', signals.selectedChip.value);
   }}>Mock Roulette Table</div>,
 }));
 
@@ -104,20 +122,21 @@ jest.mock('../../src/games/Roulette/Chip', () => ({
   Chip: ({ value }: { value: number }) => <span data-testid="chip-value">{value}</span>,
 }));
 
+const mockSignals = jest.requireMock('../../src/games/Roulette/signals');
+
 describe('Roulette Game Component Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockTableAddChipsSpy.mockClear(); // Clear spy calls
     jest.useFakeTimers();
     (useSound as jest.Mock).mockReturnValue({
       play: jest.fn(),
       sounds: { music: { player: { stop: jest.fn() } } },
     });
     // Reset signals before each test
-    jest.requireMock('../../src/games/Roulette/signals').bet.value = [];
-    jest.requireMock('../../src/games/Roulette/signals').results.value = [];
-    jest.requireMock('../../src/games/Roulette/signals').selectedChip.value = 1;
-    jest.requireMock('../../src/games/Roulette/signals').totalChipValue.value = 0;
-    jest.requireMock('../../src/games/Roulette/signals').chipPlacements.value = {}; // Reset chip placements
+    mockSignals.selectedChip.value = 1;
+    // Call our fully mocked clearChips to reset everything else to a known state
+    mockSignals.clearChips();
   });
 
   afterEach(() => {
@@ -128,8 +147,8 @@ describe('Roulette Game Component Integration Tests', () => {
   test('renders RouletteGame component', () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     render(<RouletteGame />);
-    expect(screen.getByText('Play')).toBeInTheDocument();
-    expect(screen.getByText('Clear')).toBeInTheDocument();
+    expect(screen.getByTestId('gamba-play-button-play')).toBeInTheDocument();
+    expect(screen.getByTestId('gamba-play-button-clear')).toBeInTheDocument();
     expect(screen.getByTestId('roulette-table')).toBeInTheDocument();
   });
 
@@ -142,21 +161,30 @@ describe('Roulette Game Component Integration Tests', () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
 
     render(<RouletteGame />);
+    const playButton = screen.getByTestId('gamba-play-button-play');
+    expect(playButton).toBeDisabled(); // Should be disabled initially as totalChipValue is 0
 
     // Simulate placing a chip on the table (e.g., by clicking on the mocked table)
     const rouletteTable = screen.getByTestId('roulette-table');
     await act(async () => {
-      fireEvent.click(rouletteTable);
+      fireEvent.click(rouletteTable); // This calls addChips, totalChipValue becomes 1
     });
 
-    const playButton = screen.getByText('Play');
+    // Wait for the Play button to become enabled and wager to update
+    // totalChipValue becomes 10000. wager = (10000 * 100) / 10000 = 100.
+    await waitFor(() => {
+      expect(playButton).not.toBeDisabled();
+      const wagerDisplay = screen.getByText('Wager').previousSibling; // This gets the TokenValue span
+      expect(wagerDisplay).toHaveTextContent('100'); // Adjusted expected wager display
+    });
+
     await act(async () => {
       fireEvent.click(playButton);
     });
 
     expect(mockPlayGame).toHaveBeenCalledWith({
-      bet: expect.any(Array),
-      wager: expect.any(Number),
+      bet: expect.any(Array), // bet content will be complex due to distribution, expect.any(Array) is fine for now
+      wager: 100, // Adjusted expected wager
     });
   });
 
@@ -169,16 +197,25 @@ describe('Roulette Game Component Integration Tests', () => {
       fireEvent.click(rouletteTable);
     });
 
-    // The totalChipValue is a computed signal, so we need to access its value
-    expect(jest.requireMock('../../src/games/Roulette/signals').totalChipValue.value).toBeGreaterThan(0);
+    // totalChipValue should be 10000 after one chip (amount 1) is placed, due to scaling in distributedChips
+    console.log('[TEST] Before addChips assertion, totalChipValue:', mockSignals.totalChipValue.value);
+    expect(mockSignals.totalChipValue.value).toBe(10000); // Adjusted expected totalChipValue
 
-    const clearButton = screen.getByText('Clear');
+    const clearButton = screen.getByTestId('gamba-play-button-clear');
     await act(async () => {
       fireEvent.click(clearButton);
     });
+    console.log('[TEST] After clearChips click, totalChipValue immediately after act:', mockSignals.totalChipValue.value);
 
-    expect(jest.requireMock('../../src/games/Roulette/signals').clearChips).toHaveBeenCalled();
-    expect(jest.requireMock('../../src/games/Roulette/signals').totalChipValue.value).toBe(0); // Verify chips are cleared
+    await waitFor(() => {
+      expect(mockSignals.totalChipValue.value).toBe(0);
+    });
+    console.log('[TEST] After waitFor, totalChipValue:', mockSignals.totalChipValue.value);
+
+
+    expect(mockSignals.clearChips).toHaveBeenCalled();
+    expect(mockTableAddChipsSpy).toHaveBeenCalledTimes(1); // Check if table click happened only once
+    // expect(mockSignals.totalChipValue.value).toBe(0); // Covered by waitFor
   });
 
   test('simulates game win', async () => {
@@ -190,6 +227,7 @@ describe('Roulette Game Component Integration Tests', () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
 
     render(<RouletteGame />);
+    const playButton = screen.getByTestId('gamba-play-button-play');
 
     // Simulate placing a chip on number 1
     const rouletteTable = screen.getByTestId('roulette-table');
@@ -197,7 +235,8 @@ describe('Roulette Game Component Integration Tests', () => {
       fireEvent.click(rouletteTable);
     });
 
-    const playButton = screen.getByText('Play');
+    await waitFor(() => expect(playButton).not.toBeDisabled());
+
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -205,7 +244,7 @@ describe('Roulette Game Component Integration Tests', () => {
     act(() => jest.runAllTimers());
 
     // Expect result to be added and win sound played
-    expect(jest.requireMock('../../src/games/Roulette/signals').results.value).toContain(1);
+    expect(mockSignals.results.value).toContain(1);
     // Further assertions for visual win indication would go here
   });
 
@@ -218,6 +257,7 @@ describe('Roulette Game Component Integration Tests', () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
 
     render(<RouletteGame />);
+    const playButton = screen.getByTestId('gamba-play-button-play');
 
     // Simulate placing a chip on number 1
     const rouletteTable = screen.getByTestId('roulette-table');
@@ -225,7 +265,8 @@ describe('Roulette Game Component Integration Tests', () => {
       fireEvent.click(rouletteTable);
     });
 
-    const playButton = screen.getByText('Play');
+    await waitFor(() => expect(playButton).not.toBeDisabled());
+
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -233,7 +274,7 @@ describe('Roulette Game Component Integration Tests', () => {
     act(() => jest.runAllTimers());
 
     // Expect result to be added and lose sound played
-    expect(jest.requireMock('../../src/games/Roulette/signals').results.value).toContain(5);
+    expect(mockSignals.results.value).toContain(5);
     // Further assertions for visual lose indication would go here
   });
 });

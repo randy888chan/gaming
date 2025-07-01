@@ -27,7 +27,9 @@ jest.mock('gamba-react-ui-v2', () => ({
     Button: ({ children, onClick, disabled }: { children: React.ReactNode, onClick?: () => void, disabled?: boolean }) => (
       <button onClick={onClick} disabled={disabled}>{children}</button>
     ),
-    useGame: jest.fn(() => ({
+    Responsive: ({ children }: { children: React.ReactNode }) => <div data-testid="gamba-ui-responsive">{children}</div>,
+    EffectTest: ({ src }: { src: string }) => <div data-testid="effect-test" style={{ backgroundImage: `url(${src})` }}></div>,
+    useGame: jest.fn(() => ({ // Moved useGame back inside GambaUi
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0, multiplier: 0, token: 'SOL' })),
     })),
@@ -50,25 +52,23 @@ jest.mock('gamba-react-ui-v2', () => ({
       play: { player: { stop: jest.fn() } },
     },
   })),
-  useWagerInput: jest.fn(() => [1, jest.fn()]),
+  useWagerInput: jest.fn(() => [1, jest.fn()]), // Default mock for useWagerInput
   TokenValue: ({ amount }: { amount: number }) => <span>{amount}</span>,
-  Responsive: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  EffectTest: ({ src }: { src: string }) => <div data-testid="effect-test" style={{ backgroundImage: `url(${src})` }}></div>,
 }));
 
 // Mock GambaPlayButton as it's used in SlotsGame
 jest.mock('@/components/GambaPlayButton', () => ({
   __esModule: true,
   default: ({ disabled, onClick, text }: { disabled?: boolean; onClick: () => void; text: string }) => (
-    <button data-testid="gamba-play-button" disabled={disabled} onClick={onClick}>{text}</button>
+    <button data-testid={`gamba-play-button-${text.toLowerCase().replace(/\s+/g, '-')}`} disabled={disabled} onClick={onClick}>{text}</button>
   ),
 }));
 
 // Mock internal components
 jest.mock('../../src/games/Slots/Slot', () => ({
   Slot: ({ item, revealed, good }: { item: any, revealed: boolean, good: boolean }) => (
-    <div data-testid={`slot-${item.id}`} data-revealed={revealed} data-good={good}>
-      {item.name}
+    <div data-testid={`slot-${item?.image?.split('/').pop()?.split('.')[0] || Math.random()}`} data-revealed={revealed} data-good={good}>
+      {item?.image || 'slot-item'}
     </div>
   ),
 }));
@@ -80,17 +80,28 @@ jest.mock('../../src/games/Slots/ItemPreview', () => ({
 }));
 
 // Mock utils functions
-jest.mock('../../src/games/Slots/utils', () => ({
-  generateBetArray: jest.fn(() => [1, 1, 1, 1, 1]), // Default mock bet array
-  getSlotCombination: jest.fn((numSlots, multiplier, bet) => {
-    const mockSlotItems = [{ id: '0', name: 'Gamba' }, { id: '1', name: 'Solana' }];
-    // Simulate a winning combination for testing purposes
-    if (multiplier > 0) {
-      return Array(numSlots).fill(mockSlotItems[0]); // All same for a win
-    }
-    return Array(numSlots).fill(mockSlotItems[1]); // Different for a loss
-  }),
-}));
+jest.mock('../../src/games/Slots/utils', () => {
+  console.log('[TEST MOCK] Slots/utils factory executing'); // Log when this factory runs
+  const actualConstants = jest.requireActual('../../src/games/Slots/constants');
+  return {
+    generateBetArray: jest.fn(() => {
+      console.log('[TEST MOCK] generateBetArray actually called, returning [1,0,0]');
+      return [1, 0, 0];
+    }),
+    getSlotCombination: jest.fn((numSlots, multiplier, bet) => {
+      const { SLOT_ITEMS } = actualConstants; // Ensure it's defined for this scope
+      const mockSlotItemsFallback = [
+        { id: 'fb0', name: 'FallbackGamba', image: 'g0.png', multiplier: 0 },
+        { id: 'fb1', name: 'FallbackSolana', image: 's1.png', multiplier: 0 }
+      ];
+      if (multiplier > 0) {
+        const winningItem = SLOT_ITEMS.find(item => item.multiplier === multiplier) || SLOT_ITEMS[0] || mockSlotItemsFallback[0];
+        return Array(numSlots).fill(winningItem);
+      }
+      return Array(numSlots).fill(SLOT_ITEMS.find(item => item.multiplier === 0) || mockSlotItemsFallback[1]);
+    }),
+  };
+}); // Single semicolon
 
 describe('Slots Game Component Integration Tests', () => {
   beforeEach(() => {
@@ -107,8 +118,8 @@ describe('Slots Game Component Integration Tests', () => {
         play: { player: { stop: jest.fn() } },
       },
     });
-    (useWagerInput as jest.Mock).mockReturnValue([1, jest.fn()]);
-    jest.mocked(require('../../src/games/Slots/utils').generateBetArray).mockReturnValue([1, 1, 1, 1, 1]);
+    // (useWagerInput as jest.Mock).mockReturnValue([1, jest.fn()]); // Removed as it's now in top-level mock
+    // No longer need to set generateBetArray mock here as it's defaulted in the top-level mock
   });
 
   afterEach(() => {
@@ -119,9 +130,9 @@ describe('Slots Game Component Integration Tests', () => {
   test('renders SlotsGame component', () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     render(<SlotsGame />);
-    expect(screen.getByText('Spin')).toBeInTheDocument();
+    expect(screen.getByTestId('gamba-play-button-spin')).toBeInTheDocument();
     expect(screen.getByTestId('item-preview')).toBeInTheDocument();
-    expect(screen.getAllByTestId(/slot-/).length).toBe(5); // Assuming NUM_SLOTS is 5
+    expect(screen.getAllByTestId(/slot-/).length).toBe(3); // NUM_SLOTS is 3
   });
 
   test('simulates a winning spin', async () => {
@@ -131,20 +142,22 @@ describe('Slots Game Component Integration Tests', () => {
       result: jest.fn(() => Promise.resolve({ payout: 100, multiplier: 10, token: 'SOL' })), // Simulate win
     });
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
+    // generateBetArray mock is now at top-level
 
     // Mock getSlotCombination to return a winning combination
-    jest.mocked(require('../../src/games/Slots/utils').getSlotCombination).mockReturnValue(Array(5).fill(SLOT_ITEMS[0]));
+    jest.mocked(require('../../src/games/Slots/utils').getSlotCombination).mockReturnValue(Array(3).fill(SLOT_ITEMS[0])); // NUM_SLOTS is 3
 
     render(<SlotsGame />);
 
-    const spinButton = screen.getByText('Spin');
+    const spinButton = screen.getByTestId('gamba-play-button-spin');
+    expect(spinButton).not.toBeDisabled(); // Check if button is enabled before click
     await act(async () => {
       fireEvent.click(spinButton);
     });
 
     expect(mockPlayGame).toHaveBeenCalledWith({
       wager: 1,
-      bet: expect.any(Array),
+      bet: [1,0,0], // Expect the bet array used
     });
 
     // Advance timers to simulate spin and reveal animations
@@ -163,13 +176,15 @@ describe('Slots Game Component Integration Tests', () => {
       result: jest.fn(() => Promise.resolve({ payout: 0, multiplier: 0, token: 'SOL' })), // Simulate lose
     });
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
+    // generateBetArray mock is now at top-level
 
     // Mock getSlotCombination to return a losing combination
-    jest.mocked(require('../../src/games/Slots/utils').getSlotCombination).mockReturnValue(Array(5).fill(SLOT_ITEMS[1]));
+    jest.mocked(require('../../src/games/Slots/utils').getSlotCombination).mockReturnValue(Array(3).fill(SLOT_ITEMS[1])); // NUM_SLOTS is 3
 
     render(<SlotsGame />);
 
-    const spinButton = screen.getByText('Spin');
+    const spinButton = screen.getByTestId('gamba-play-button-spin');
+    expect(spinButton).not.toBeDisabled(); // Check if button is enabled before click
     await act(async () => {
       fireEvent.click(spinButton);
     });

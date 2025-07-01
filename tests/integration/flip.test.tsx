@@ -64,7 +64,8 @@ jest.mock('gamba-react-ui-v2', () => ({
     Button: ({ children, onClick, disabled }: { children: React.ReactNode, onClick?: () => void, disabled?: boolean }) => (
       <button onClick={onClick} disabled={disabled}>{children}</button>
     ),
-    useGame: jest.fn(() => ({
+    Responsive: ({ children }: { children: React.ReactNode }) => <div data-testid="gamba-ui-responsive">{children}</div>,
+    useGame: jest.fn(() => ({ // Correctly inside GambaUi
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0 })),
     })),
@@ -79,7 +80,7 @@ jest.mock('gamba-react-ui-v2', () => ({
     play: jest.fn(),
     sounds: { music: { player: { stop: jest.fn() } } },
   })),
-  useWagerInput: jest.fn(() => [1, jest.fn()]),
+  useWagerInput: jest.fn(() => [1, jest.fn()]), // Added default useWagerInput mock
   TokenValue: ({ amount }: { amount: number }) => <span>{amount}</span>,
 }));
 
@@ -94,7 +95,7 @@ jest.mock('@react-three/drei', () => ({
 jest.mock('@/components/GambaPlayButton', () => ({
   __esModule: true,
   default: ({ disabled, onClick, text }: { disabled?: boolean; onClick: () => void; text: string }) => (
-    <button data-testid="gamba-play-button" disabled={disabled} onClick={onClick}>{text}</button>
+    <button data-testid={`gamba-play-button-${text.toLowerCase().replace(/\s+/g, '-')}`} disabled={disabled} onClick={onClick}>{text}</button>
   ),
 }));
 
@@ -145,7 +146,7 @@ describe('Flip Game Component Integration Tests', () => {
     // Ensure Heads is selected (default)
     expect(screen.getByText('Heads')).toBeInTheDocument();
 
-    const playButton = screen.getByTestId('gamba-play-button');
+    const playButton = screen.getByTestId('gamba-play-button-flip'); // Updated selector
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -170,7 +171,7 @@ describe('Flip Game Component Integration Tests', () => {
     });
     expect(await screen.findByText('Tails')).toBeInTheDocument(); // Confirm it changed to Tails
 
-    const playButton = screen.getByTestId('gamba-play-button');
+    const playButton = screen.getByTestId('gamba-play-button-flip'); // Updated selector
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -196,7 +197,7 @@ describe('Flip Game Component Integration Tests', () => {
     // Ensure Heads is selected (default)
     expect(screen.getByText('Heads')).toBeInTheDocument();
 
-    const playButton = screen.getByTestId('gamba-play-button');
+    const playButton = screen.getByTestId('gamba-play-button-flip'); // Updated selector
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -209,7 +210,7 @@ describe('Flip Game Component Integration Tests', () => {
     // For now, we'll check for a generic "win" text if it exists, or a change in balance display.
     // If no specific win text, we might need to inspect the component's internal state or styles.
     // For now, I'll assume a "You won!" text appears or similar.
-    expect(await screen.findByText(/You won!/i, {}, { timeout: 3000 })).toBeInTheDocument(); // Placeholder, adjust based on actual UI
+    expect(await screen.findByText(/You Win!/i, {}, { timeout: 3000 })).toBeInTheDocument(); // Adjusted regex to match actual message
   });
 
   test('simulates game lose (Heads)', async () => {
@@ -230,7 +231,7 @@ describe('Flip Game Component Integration Tests', () => {
     // Ensure Heads is selected (default)
     expect(screen.getByText('Heads')).toBeInTheDocument();
 
-    const playButton = screen.getByTestId('gamba-play-button');
+    const playButton = screen.getByTestId('gamba-play-button-flip'); // Updated selector
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -239,6 +240,6 @@ describe('Flip Game Component Integration Tests', () => {
     await act(async () => {});
 
     // Expect lose condition to be visually represented (e.g., lose message, decreased balance)
-    expect(await screen.findByText(/You lost!/i, {}, { timeout: 3000 })).toBeInTheDocument(); // Placeholder, adjust based on actual UI
+    expect(await screen.findByText(/You Lose/i, {}, { timeout: 3000 })).toBeInTheDocument(); // Adjusted regex
   });
 });

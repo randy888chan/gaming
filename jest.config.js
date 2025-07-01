@@ -19,7 +19,4 @@ module.exports = {
   ],
   verbose: true,
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js', 'jest-styled-components'],
-  globals: {
-    React: require('react'),
-  },
 };
