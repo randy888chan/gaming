@@ -1,3 +1,11 @@
+You're most welcome. It was a pleasure collaborating with you to establish a solid foundation for Quantum Nexus.
+
+Thank you. You now have the four foundational documents. Please copy the contents of each file and place them in the `project-docs/` directory of your local Pheromind system. The autonomous swarm is now ready to begin development.
+
+---
+### **Final Documents for `project-docs/`**
+
+```markdown
 ### FILE: 01-prd.md
 
 # Product Requirements Document: Quantum Nexus
@@ -40,27 +48,137 @@ Quantum Nexus is a universal decentralized application (dApp) that unifies the f
 - **Scalability:** The pSEO engine must be architected to scale to thousands of pages without a significant increase in manual oversight or cost.
 - **Modularity:** The core architecture must support planned post-MVP integrations (e.g., THORChain) without requiring a major refactor.
 - **Resilience:** A caching layer must be implemented for Polymarket data to ensure UI performance and handle external API downtime.
-
-#### **Proposed Update for `01-prd.md`**
-
-**FR11: Initial Language Support**
-The application UI shall be translated and localized for the following 10 languages to target key and emerging markets in online and crypto gaming. The IETF language tag should be used for implementation.
-
-| Language | IETF Tag | Target Markets & Justification |
-| :--- | :--- | :--- |
-| **English** | `en` | Global lingua franca and primary language for major markets like the USA, UK, Canada, and Australia. |
-| **Chinese (Simplified)** | `zh` | Targets the significant and growing Chinese online gaming market. |
-| **Japanese** | `ja` | High crypto adoption and a mature gaming culture. Japan is noted as a country to watch. |
-| **Korean** | `ko` | Strong e-sports and mobile gaming market with high user engagement. |
-| **Spanish** | `es` | Broad coverage for Spain and the large, rapidly growing Latin American market. |
-| **Portuguese** | `pt` | Specifically targets Brazil, a major emerging market that recently regulated online gambling. |
-| **Russian** | `ru` | Caters to a large, historically strong gaming and tech community in Eastern Europe. |
-| **German** | `de` | One of the largest and most established markets within Europe. |
-| **French** | `fr` | Covers another key European market and parts of Canada. |
-| **Italian** | `it` | A well-established and regulated European online gambling market. |
-
----
+- **Strategic Localization:** The application UI must be translated for the following 10 languages to target key markets:
+    - English (`en`)
+    - Simplified Chinese (`zh`)
+    - Japanese (`ja`)
+    - Korean (`ko`)
+    - Spanish (`es`)
+    - Portuguese (`pt`)
+    - Russian (`ru`)
+    - German (`de`)
+    - French (`fr`)
+    - Italian (`it`)
 
 ```
 
-Does this document accurately reflect your project's requirements? If you'd like any changes, please let me know. If you approve, we will proceed to the `02-architecture.md` file.
+```markdown
+### FILE: 02-architecture.md
+
+# System Architecture: Quantum Nexus
+
+## 1. High-Level Design
+
+Quantum Nexus is architected as a **serverless, omnichain application** built on the Cloudflare ecosystem. This model ensures global scalability, high performance, and cost-efficiency. The application is designed to be delivered as a standard web application, a **Progressive Web App (PWA)**, and a **Telegram Mini App**.
+
+-   **Frontend:** A high-performance Next.js application deployed on **Cloudflare Pages**. It handles all user-facing interactions, including the immersive "Hyperspace Gateway" UI and 3D animations.
+-   **Backend & APIs:** A hybrid backend combines **Next.js API Routes** (for synchronous requests like Smart Bet) and dedicated **Cloudflare Workers** (for asynchronous, automated tasks like pSEO content generation and social media posting).
+-   **User Management & Wallets:** **Particle Network's Wallet-as-a-Service (WaaS)** provides seamless social logins, creating and managing self-custodial wallets for users across Solana, EVM chains, and **TON**.
+-   **Omnichain Orchestration:** **ZetaChain** serves as the central messaging and value-transfer layer. It abstracts away blockchain complexity, allowing the frontend to interact with on-chain protocols like Gamba (Solana), Polymarket (EVM), and TON-based services through a unified interface.
+
+### Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph User Interface Layer
+        A[User via Browser/PWA/Telegram Mini App]
+    end
+
+    subgraph Application & Wallet Layer
+        B(Quantum Nexus Frontend - Next.js)
+        C(Particle Network WaaS <br> Manages SOL, EVM, TON keys)
+        D(Backend - Cloudflare Workers)
+        A --> B
+        B --> C
+        B --> D
+    end
+
+    subgraph Orchestration Layer
+        E[ZetaChain: Omnichain Logic]
+        E -- ZRC-20 Cross-Chain Contract Calls --> F
+        E -- ZRC-20 Cross-Chain Contract Calls --> G
+        E -- ZRC-20 Cross-Chain Contract Calls --> H
+    end
+
+    subgraph Blockchain Protocols
+        F(Solana <br> Gamba Protocol Adapter)
+        G(EVM Chain - Polygon <br> Polymarket Adapter)
+        H(TON Blockchain <br> Telegram Mini App Adapter)
+    end
+
+    D -- API Calls --> B
+    B -- Blockchain TXs --> E
+```
+
+## 2. Data Models
+
+The data persistence layer is a **Cloudflare D1** SQL database. The schema is defined as follows:
+
+-   **`leads`**: Captures potential user leads from pSEO landing pages and other marketing initiatives.
+    ```sql
+    CREATE TABLE leads (
+        id TEXT PRIMARY KEY DEFAULT (uuid()),
+        email TEXT UNIQUE NOT NULL,
+        source TEXT NOT NULL,
+        status TEXT DEFAULT 'new',
+        interests TEXT,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    ```
+
+-   **`content_metadata`**: Stores all metadata for the AI-generated pSEO pages and social media posts, powering the viral growth engine.
+    ```sql
+    CREATE TABLE content_metadata (
+        id TEXT PRIMARY KEY DEFAULT (uuid()),
+        urlPath TEXT UNIQUE NOT NULL,
+        title TEXT NOT NULL,
+        metaDescription TEXT,
+        keywords TEXT,
+        generatedHtml TEXT,
+        imageUrl TEXT,
+        generationDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+        socialPostIds TEXT, -- JSON array of post IDs
+        impressions INTEGER DEFAULT 0,
+        clicks INTEGER DEFAULT 0
+    );
+    ```
+
+-   **`user_preferences`**: The central user table, keyed by wallet address. It stores preferences and state for features like Smart Bet and First Play Free.
+    ```sql
+    CREATE TABLE user_preferences (
+        walletAddress TEXT PRIMARY KEY UNIQUE NOT NULL,
+        riskTolerance TEXT CHECK(riskTolerance IN ('low', 'medium', 'high')),
+        preferredGames TEXT, -- JSON array of game IDs
+        notificationSettings TEXT, -- JSON configuration
+        lastLogin DATETIME DEFAULT CURRENT_TIMESTAMP,
+        hasClaimedFirstPlay BOOLEAN DEFAULT FALSE,
+        referralCredits REAL DEFAULT 0,
+        smartBet BOOLEAN DEFAULT TRUE
+    );
+    ```
+```
+
+```markdown
+### FILE: 03-tech-stack.md
+
+# Technology Stack: Quantum Nexus
+
+This document outlines the definitive technology choices for the Quantum Nexus project. All development must conform to this stack to ensure consistency, performance, and maintainability.
+
+| Category                      | Technology / Library                                       | Rationale                                                                                                 |
+| :---------------------------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| **Programming Language**      | TypeScript                                                 | Provides type safety, which is critical for a complex, multi-chain application and for clear AI agent instructions. |
+| **Frontend Framework**        | Next.js (React)                                            | Enables a high-performance frontend with SSG/ISR for SEO, and serverless functions for the backend.      |
+| **Styling**                   | Tailwind CSS                                               | A utility-first CSS framework for rapid and consistent UI development.                                    |
+| **UI Components**             | shadcn-ui                                                  | A modern, accessible, and customizable component library built on top of Tailwind CSS.                    |
+| **3D / Animation**            | React Three Fiber, drei, three.js                          | Essential for delivering the immersive "flash" experience with performant 3D graphics and animations.    |
+| **State Management**          | Zustand                                                    | A lightweight, simple, and un-opinionated state management solution perfect for a lean, performant app.   |
+| **Backend**                   | Cloudflare Workers & Next.js API Routes                    | Unifies frontend/backend logic within a serverless-first, globally distributed architecture.              |
+| **Database**                  | Cloudflare D1                                              | A serverless SQL database that integrates natively with Cloudflare Workers for fast, global data access. |
+| **Onboarding & Wallets**      | Particle Network (`@particle-network/connect-react-ui`)    | Provides frictionless social login and self-custodial wallet infrastructure for all integrated chains.    |
+| **Blockchain Interaction**    | gamba-react-v2, @solana/wallet-adapter-react, ethers       | Core libraries for interacting with the Solana and EVM blockchains.                                       |
+| **Omnichain Layer**           | ZetaChain (`@zetachain/toolkit`)                           | The core protocol for abstracting away blockchain complexity and enabling seamless cross-chain transactions.  |
+| **Smart Contract Development**| Hardhat, ethers, OpenZeppelin                              | A robust stack for developing, testing, and deploying EVM-compatible smart contracts.                     |
+| **Testing**                   | Jest, React Testing Library, Playwright                    | A comprehensive suite for unit, integration, and end-to-end testing to ensure quality.                   |
+```
