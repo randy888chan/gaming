@@ -40,6 +40,27 @@ Quantum Nexus is a universal decentralized application (dApp) that unifies the f
 - **Scalability:** The pSEO engine must be architected to scale to thousands of pages without a significant increase in manual oversight or cost.
 - **Modularity:** The core architecture must support planned post-MVP integrations (e.g., THORChain) without requiring a major refactor.
 - **Resilience:** A caching layer must be implemented for Polymarket data to ensure UI performance and handle external API downtime.
+
+#### **Proposed Update for `01-prd.md`**
+
+**FR11: Initial Language Support**
+The application UI shall be translated and localized for the following 10 languages to target key and emerging markets in online and crypto gaming. The IETF language tag should be used for implementation.
+
+| Language | IETF Tag | Target Markets & Justification |
+| :--- | :--- | :--- |
+| **English** | `en` | Global lingua franca and primary language for major markets like the USA, UK, Canada, and Australia. |
+| **Chinese (Simplified)** | `zh` | Targets the significant and growing Chinese online gaming market. |
+| **Japanese** | `ja` | High crypto adoption and a mature gaming culture. Japan is noted as a country to watch. |
+| **Korean** | `ko` | Strong e-sports and mobile gaming market with high user engagement. |
+| **Spanish** | `es` | Broad coverage for Spain and the large, rapidly growing Latin American market. |
+| **Portuguese** | `pt` | Specifically targets Brazil, a major emerging market that recently regulated online gambling. |
+| **Russian** | `ru` | Caters to a large, historically strong gaming and tech community in Eastern Europe. |
+| **German** | `de` | One of the largest and most established markets within Europe. |
+| **French** | `fr` | Covers another key European market and parts of Canada. |
+| **Italian** | `it` | A well-established and regulated European online gambling market. |
+
+---
+
 ```
 
 Does this document accurately reflect your project's requirements? If you'd like any changes, please let me know. If you approve, we will proceed to the `02-architecture.md` file.
