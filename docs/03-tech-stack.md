@@ -19,15 +19,4 @@ This document outlines the definitive technology choices for the Quantum Nexus p
 | **Omnichain Layer**           | ZetaChain (`@zetachain/toolkit`)                           | The core protocol for abstracting away blockchain complexity and enabling seamless cross-chain transactions.  |
 | **Smart Contract Development**| Hardhat, ethers, OpenZeppelin                              | A robust stack for developing, testing, and deploying EVM-compatible smart contracts.                     |
 | **Testing**                   | Jest, React Testing Library, Playwright                    | A comprehensive suite for unit, integration, and end-to-end testing to ensure quality.                   |
-
 ```
-
-With the technology stack confirmed, we will now move to the final document: **`04-coding-standards.md`**.
-
-This is where we define clear rules for the AI developers to follow. This ensures the codebase is clean, consistent, and easy to maintain.
-
-Please provide any specific rules you want the AI agents to adhere to. For example:
-*   'All function names must be in camelCase.'
-*   'API endpoints must be versioned (e.g., /api/v1/...)'
-*   'All new components must use TypeScript and have clearly defined props interfaces.'
-*   'All functions must include a comment block explaining their purpose, parameters, and return value.'
