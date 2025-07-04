@@ -96,8 +96,12 @@ All errors return standardized responses:
   - `409 Conflict`: User has already been referred.
 
 ## Rate Limiting
-- 100 requests/minute per IP address
-- 1000 requests/minute per authenticated user
+- **General Endpoints**:
+  - 100 requests/minute per IP address
+  - 1000 requests/minute per authenticated user
+- **Admin Endpoints (`/api/v1/admin/*`)**:
+  - 30 requests/minute per IP address
+  - Error handling: Returns `429 Too Many Requests` with a JSON body `{ success: false, error: 'Too many requests, please try again later.' }`
 
 ## Versioning
 API versioning is handled through the URL path: `/v1/api/...`

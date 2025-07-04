@@ -174,6 +174,15 @@ The integration testing will cover the following key areas:
         1.  As a new user, attempt to claim a first play free.
         2.  Verify the API call is successful and the user receives the free play.
         3.  Attempt to claim again, verify rejection.
+
+*   **Test ID:** QA-API-003
+    *   **Description:** Verify credit configuration API endpoints
+    *   **Steps:**
+        1.  Authenticate as admin user
+        2.  GET /api/admin/credit-config - verify configuration retrieval
+        3.  POST /api/admin/credit-config - update configuration
+        4.  Verify configuration changes reflect in game UI
+        5.  Test unauthorized access attempts
 *   **Test ID:** QA-API-002
     *   **Description:** Test `health` API endpoint.
     *   **Steps:**
@@ -251,6 +260,23 @@ The integration testing will cover the following key areas:
     *   Priority (High, Medium, Low)
     *   Screenshots/Videos (if applicable)
     *   Environment details (browser, OS, etc.)
+
+## 11. Security Validation
+*   **Test ID:** QA-SEC-001
+    *   **Description:** Verify credit config API security
+    *   **Steps:**
+        1.  Attempt unauthenticated GET/POST to /api/admin/credit-config
+        2.  Verify 401 Unauthorized response
+        3.  Attempt access with non-admin JWT token
+        4.  Verify 403 Forbidden response
+        5.  Verify audit log entry for failed attempts
+
+*   **Test ID:** QA-SEC-002
+    *   **Description:** Test rate limiting on config endpoints
+    *   **Steps:**
+        1.  Make 11 requests to /api/admin/credit-config within 60 seconds
+        2.  Verify 429 Too Many Requests response for 11th attempt
+        3.  Wait 1 minute and verify normal access resumes
 
 ## 10. Reporting
 *   Daily status reports will be provided during the testing phase.

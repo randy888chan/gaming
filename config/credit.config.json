@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "creditAmountUSDC": 1,
+  "chains": ["solana"],
+  "treasuryWallet": "",
+  "kmsProvider": "mock"
+}

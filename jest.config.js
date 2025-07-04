@@ -1,7 +1,10 @@
 module.exports = {
   testEnvironment: 'jsdom',
   rootDir: './',
-  testMatch: ['<rootDir>/tests/integration/**/*.test.[tj]s?(x)'],
+  testMatch: [
+    '<rootDir>/tests/integration/**/*.test.[tj]s?(x)',
+    '<rootDir>/tests/unit/**/*.test.[tj]s?(x)',
+  ],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

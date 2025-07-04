@@ -13,14 +13,14 @@ const mockD1: any = {
         if (query.includes('SELECT * FROM users WHERE particle_id = ?')) {
           const [particleId] = args;
           if (particleId === 'mock_existing_user_id') {
-            return { particle_id: 'mock_existing_user_id', has_claimed_first_play: 1 };
+            return { walletAddress: 'mock_existing_user_id', hasClaimedFirstPlay: 1 };
           }
           if (particleId === 'mock_new_user_id') {
             return null; // Simulate new user
           }
         }
         // Simulate insert/update
-        if (query.includes('INSERT INTO users') || query.includes('UPDATE users')) {
+        if (query.includes('INSERT INTO user_preferences') || query.includes('UPDATE user_preferences')) {
           return { success: true, changes: 1 };
         }
         return null;
@@ -69,11 +69,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Check if user exists and has claimed first play
-    const userRecord = await DB.prepare('SELECT * FROM users WHERE particle_id = ?')
+    const userRecord = await DB.prepare('SELECT * FROM user_preferences WHERE walletAddress = ?')
       .bind(particleId)
       .first();
 
-    if (userRecord && userRecord.has_claimed_first_play) {
+    if (userRecord && userRecord.hasClaimedFirstPlay) {
       return res.status(200).json({ success: false, error: 'First play free already claimed.' });
     }
 
@@ -82,35 +82,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!userRecord) {
       // Create new user record
       await DB.prepare(
-        'INSERT INTO users (particle_id, wallet_address, has_claimed_first_play, referred_by, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)'
+        'INSERT INTO user_preferences (walletAddress, hasClaimedFirstPlay, referralCredits, lastLogin) VALUES (?, ?, ?, CURRENT_TIMESTAMP)'
       )
-        .bind(particleId, decodedToken.walletAddress || 'unknown', 1, referralCode || null)
+        .bind(particleId, 1, 0.001, decodedToken.walletAddress || 'unknown') // Assuming 0.001 is the credit amount
         .run();
     } else {
       // Update existing user record
-      // Only update referred_by if it's not already set and a referralCode is provided
-      if (!userRecord.referred_by && referralCode) {
-        await DB.prepare(
-          'UPDATE users SET has_claimed_first_play = ?, referred_by = ?, updated_at = CURRENT_TIMESTAMP WHERE particle_id = ?'
-        )
-          .bind(1, referralCode, particleId)
-          .run();
-      } else {
-        await DB.prepare(
-          'UPDATE users SET has_claimed_first_play = ?, updated_at = CURRENT_TIMESTAMP WHERE particle_id = ?'
-        )
-          .bind(1, particleId)
-          .run();
-      }
+      // Update existing user record
+      await DB.prepare(
+        'UPDATE user_preferences SET hasClaimedFirstPlay = ?, lastLogin = CURRENT_TIMESTAMP WHERE walletAddress = ?'
+      )
+        .bind(1, particleId)
+        .run();
     }
-
-    // Here you would typically interact with your game's credit system
-    // For this example, we'll just return success.
-    console.log(`User ${particleId} successfully claimed first play free.`);
 
     return res.status(200).json({ success: true, creditAmount });
   } catch (error: any) {
     console.error('API Error:', error);
-    return res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    return res.status(500).json({ success: false, error: errorMessage });
   }
 }

@@ -14,7 +14,7 @@ This document outlines the complete fullstack architecture for Quantum Nexus, de
 
 ### Technical Summary
 
-Quantum Nexus is architected as a **serverless, omnichain application**. The frontend is a high-performance Next.js application, enhanced with immersive 3D/UI animations and deployed globally on **Cloudflare Pages**. It utilizes **Particle Network** for social logins and self-custodial wallet management across both Solana and EVM chains. Backend logic and automation are handled by a combination of Next.js API Routes (running on Cloudflare Functions) and dedicated **Cloudflare Workers**. All persistent state is managed by a **Cloudflare D1** SQL database. The entire system is orchestrated by **ZetaChain**, which acts as the messaging and value-transfer layer between the user's wallet, our application, and the various on-chain protocols like Gamba and Polymarket.
+Quantum Nexus is architected as a **serverless, omnichain application**. The frontend is a high-performance Next.js application, enhanced with immersive 3D/UI animations and deployed globally on **Cloudflare Pages**. It utilizes **Particle Network** for social logins and self-custodial wallet management across Solana, EVM, and TON chains. Backend logic and automation are handled by a combination of Next.js API Routes (running on Cloudflare Functions) and dedicated **Cloudflare Workers**. All persistent state is managed by a **Cloudflare D1** SQL database. The entire system is orchestrated by **ZetaChain**, which acts as the messaging and value-transfer layer between the user's wallet, our application, and the various on-chain protocols like Gamba, Polymarket, and TON-based services.
 
 ### Platform and Infrastructure Choice
 
@@ -42,8 +42,8 @@ Quantum Nexus is architected as a **serverless, omnichain application**. The fro
 ```mermaid
 graph TD
     subgraph User & Onboarding Layer
-        A[User via Browser/PWA/Telegram] --> B(Particle Network WaaS);
-        B -- Social Login --> C{Self-Custodial Wallets <br>(SOL & EVM)};
+        A[User via Browser/PWA/Telegram Mini App] --> B(Particle Network WaaS);
+        B -- Social Login --> C{Self-Custodial Wallets <br>(SOL, EVM, & TON)};
     end
 
     subgraph Presentation Layer - Cloudflare Pages
@@ -73,8 +73,10 @@ graph TD
     subgraph On-Chain Protocols
         L[Gamba Protocol on Solana];
         M[Polymarket Protocol on EVM];
+        N[TON Blockchain <br> Telegram Mini App Adapter];
         K -- Relays TX to --> L;
         K -- Relays TX to --> M;
+        K -- Relays TX to --> N;
     end
 ```
 
@@ -101,9 +103,10 @@ The following table outlines the definitive technology choices for Quantum Nexus
 | **Database**             | Cloudflare D1                             | A serverless SQL database that integrates natively with Cloudflare Workers for fast, global data access.     |
 | **Asset Storage**        | Cloudflare R2                             | S3-compatible object storage with zero egress fees, ideal for hosting AI-generated images and other assets.  |
 | **Omnichain Layer**      | ZetaChain                                 | The core protocol for abstracting away blockchain complexity and enabling seamless cross-chain transactions.  |
-| **Onboarding & Wallet**  | Particle Network                          | Provides frictionless social login and self-custodial wallet infrastructure for both Solana and EVM chains. |
+| **Onboarding & Wallet**  | Particle Network                          | Provides frictionless social login and self-custodial wallet infrastructure for Solana, EVM, and TON chains. |
 | **Gaming Protocol**      | Gamba Protocol V2 (on Solana)             | The foundational on-chain gaming protocol from the existing codebase.                                        |
 | **Prediction Market**    | Polymarket Protocol (on Polygon)          | The leading prediction market protocol we will integrate for our betting engine.                                |
+| **TON Integration**      | TON Blockchain                            | Integration for Telegram Mini App functionality and TON-based services.                                      |
 | **AI - Text Generation** | Mistral AI                                | High-performance and cost-effective text generation, ideal for pSEO content and "Smart Bet" suggestions.   |
 | **AI - Image Generation**| Gemini AI (or similar)                    | Chosen for its ability to generate high-quality, realistic images for our automated social marketing.          |
 | **Deployment & Hosting** | Cloudflare Pages / Workers                | Provides a seamless, Git-based CI/CD workflow, global edge deployment, and the serverless runtime.            |

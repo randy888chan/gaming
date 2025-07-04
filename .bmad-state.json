@@ -124,12 +124,16 @@
     {
       "id": "task-15",
       "type": "documentation",
-      "status": "queued",
+      "status": "completed",
       "agent": "bmad-dev",
-      "task": "Remove redundant document docs/QuantumNexus-FlashExperienceArchitecture-v1.0.md",
+      "completed_timestamp": "2025-07-04T00:17:37Z",
+      "task": "Align core documentation with current architecture",
       "priority": "high",
       "references": [
-        "docs/fullstack-architecture.md"
+        "project_docs/fullstack-architecture.md",
+        "project_docs/cross-chain-architecture.md",
+        "project_docs/zetachain-deployment.md",
+        "project_docs/testing-strategy.md"
       ]
     },
     {
@@ -188,26 +192,34 @@
     {
       "id": "task-04",
       "type": "development",
-      "status": "queued",
+      "status": "completed",
       "agent": "bmad-dev",
+      "completed_timestamp": "2025-07-04T08:23:42Z",
       "task": "Create leaderboards and tournaments (v1.1)",
       "priority": "medium",
       "references": [
         "docs/roadmap.md",
-        "src/components/game/"
+        "src/components/game/Leaderboard.tsx",
+        "src/components/game/GameGrid.tsx"
       ]
     },
     {
       "id": "task-05",
-      "type": "payment",
-      "status": "queued",
+      "type": "development",
+      "status": "qa_approved",
       "agent": "bmad-dev",
-      "task": "Integrate fiat on-ramp (v1.2)",
-      "priority": "low",
+      "qa_agent": "bmad-qa",
+      "completed_timestamp": "2025-07-04T08:30:43Z",
+      "qa_timestamp": "2025-07-04T08:34:09Z",
+      "task": "Implement tournament bracket visualization component with match progression logic",
+      "priority": "medium",
       "references": [
         "docs/roadmap.md",
-        "src/pages/api/"
-      ]
+        "src/types/tournament.d.ts",
+        "src/components/tournament/TournamentBracket.tsx",
+        "src/pages/play/tournament.tsx"
+      ],
+      "notes": "QA approved with suggestions: Add JSDoc comments to complex functions"
     },
     {
       "id": "task-07",
@@ -219,6 +231,19 @@
       "references": [
         "docs/roadmap.md",
         "src/services/"
+      ]
+    },
+    {
+      "id": "task-18",
+      "type": "qa_validation",
+      "status": "completed",
+      "agent": "bmad-qa",
+      "completed_timestamp": "2025-07-04T04:16:41Z",
+      "task": "CreditConfigPanel component validation",
+      "priority": "high",
+      "references": [
+        "src/components/admin/CreditConfigPanel.tsx",
+        "tests/unit/CreditConfigPanel.test.tsx"
       ]
     }
   ]

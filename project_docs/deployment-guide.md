@@ -43,6 +43,11 @@ ZETACHAIN_RPC_URL=https://zetachain-testnet-rpc.com
 VIRAL_GROWTH_API_ENDPOINT=https://api.viral-growth.com
 VIRAL_GROWTH_AUTH_TOKEN=your_viral_growth_auth_token
 VIRAL_GROWTH_FEATURE_TOGGLE=true
+
+# Credit Configuration
+CREDIT_CONFIG_API_KEY=your_credit_config_key
+CREDIT_CONFIG_UPDATE_INTERVAL=300
+CREDIT_CONFIG_AUDIT_ENABLED=true
 ```
 
 ### Smart Bet Feature Configuration
@@ -90,6 +95,30 @@ For new schema changes, follow these steps using `wrangler d1 migrations`:
     ```bash
     npx wrangler d1 migrations apply quantum-nexus-db
     ```
+
+## Database Schema Updates
+
+**Credit Configuration Tables:**
+```sql
+CREATE TABLE credit_config (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    config_key TEXT UNIQUE NOT NULL,
+    config_value TEXT NOT NULL,
+    updated_by TEXT NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE credit_audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    config_id INTEGER NOT NULL,
+    action TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    performed_by TEXT NOT NULL,
+    performed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(config_id) REFERENCES credit_config(id)
+);
+```
 
 ## Deployment Process
 ### Frontend Deployment (Cloudflare Pages)
@@ -146,6 +175,21 @@ The Flash Experience is designed for high concurrency and real-time interactions
 - **Caching:** Utilize in-memory caches (e.g., Redis) for session data, frequently accessed game assets, and user profiles to reduce database load and improve response times.
 - **Load Balancing:** Leverage Cloudflare's built-in load balancing to distribute incoming traffic efficiently across multiple instances of your services.
 - **Edge Computing:** Maximize the use of Cloudflare Workers for low-latency edge processing, reducing the load on origin servers and improving global responsiveness.
+
+## Security and Dependency Standards
+
+**Credit System Requirements:**
+1. **Vulnerability Scanning:**
+   - Weekly OWASP ZAP scans for `/api/admin/credit-config*` endpoints
+   - Dependency checks using `npm audit --production` during CI/CD
+   
+2. **Access Control:**
+   - Mandatory JWT validation with admin role verification
+   - Rate limiting (10 req/min) for configuration endpoints
+
+3. **Audit Requirements:**
+   - All credit configuration changes must be logged to credit_audit_log
+   - Monthly penetration testing for credit API surface
 
 ## Troubleshooting
 - **Database connection issues**: Verify D1 binding names in wrangler.toml

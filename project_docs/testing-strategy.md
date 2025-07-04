@@ -64,7 +64,7 @@ This document outlines the comprehensive testing approach for the Quantum Nexus 
 ## Test Environment
 - **Staging**: Mirrors production with test data
 - **Test Accounts**: Pre-configured with various balances
-- **Blockchain**: ZetaChain testnet, Solana devnet
+- **Blockchain**: ZetaChain testnet, Solana devnet, Polygon (for Polymarket), TON testnet (for Telegram Mini App)
 
 ## Quality Metrics
 - Defect density: < 0.5 defects/KLOC
