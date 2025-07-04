@@ -1,15 +1,12 @@
-
----
-
-#### `FILENAME: docs/architecture/database-schema.md`
-```markdown
 # Database Schema
 
-The official schema for the Cloudflare D1 database. This unified schema supports all platform features, including user preferences, pSEO content, and the new tournament system. The canonical definition is located at `infra/d1/schema.sql`.
+The official schema for the Cloudflare D1 database. This unified schema supports all platform features, including user preferences, pSEO content, and the new tournament system. The canonical SQL definition is intended for the file located at `infra/d1/schema.sql`.
 
 ### D1 Migration Command
 
-To apply this schema to a Cloudflare D1 database named `quantum-nexus-db`, use the following `wrangler` command. This should be run after setting up the D1 database in your Cloudflare account.
+When you are in a terminal environment with the Cloudflare `wrangler` CLI installed, you will use the following command to create and initialize your database. This command executes the `schema.sql` file against your D1 instance.
 
+**For Local Testing:**
 ```bash
-npx wrangler d1 execute quantum-nexus-db --file=infra/d1/schema.sql
+# This command applies the schema to a local database file for development.
+npx wrangler d1 execute quantum-nexus-db --file=infra/d1/schema.sql --local
