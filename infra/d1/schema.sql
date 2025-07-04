@@ -1,6 +1,7 @@
 -- FILE: infra/d1/schema.sql
 
 -- Drop existing tables to ensure a clean slate for initial setup.
+-- Note: This is for initial setup. For subsequent changes, use incremental migrations.
 DROP TABLE IF EXISTS matches;
 DROP TABLE IF EXISTS teams;
 DROP TABLE IF EXISTS tournaments;
