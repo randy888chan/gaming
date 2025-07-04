@@ -1,8 +1,3 @@
-
----
-
-#### `FILENAME: docs/architecture/smart-contract-integration.md`
-```markdown
 # Smart Contract Integration
 
 This document defines the integration patterns for smart contracts within Quantum Nexus.
