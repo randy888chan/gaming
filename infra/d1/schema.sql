@@ -1,7 +1,6 @@
 -- FILE: infra/d1/schema.sql
 
--- Drop existing tables to ensure a clean slate.
--- Note: This is for initial setup. In the future, use incremental migrations.
+-- Drop existing tables to ensure a clean slate for initial setup.
 DROP TABLE IF EXISTS matches;
 DROP TABLE IF EXISTS teams;
 DROP TABLE IF EXISTS tournaments;
@@ -11,7 +10,7 @@ DROP TABLE IF EXISTS leads;
 
 -- Captures leads from pSEO pages and marketing initiatives.
 CREATE TABLE leads (
-    id TEXT PRIMARY KEY DEFAULT (randomblob(16)),
+    id TEXT PRIMARY KEY DEFAULT (hex(randomblob(16))),
     email TEXT UNIQUE NOT NULL,
     source TEXT NOT NULL,
     status TEXT DEFAULT 'new',
@@ -21,7 +20,7 @@ CREATE TABLE leads (
 
 -- Stores metadata for AI-generated pSEO pages.
 CREATE TABLE content_metadata (
-    id TEXT PRIMARY KEY DEFAULT (randomblob(16)),
+    id TEXT PRIMARY KEY DEFAULT (hex(randomblob(16))),
     urlPath TEXT UNIQUE NOT NULL,
     title TEXT NOT NULL,
     metaDescription TEXT,
@@ -46,7 +45,7 @@ CREATE TABLE user_preferences (
 
 -- Stores tournament information.
 CREATE TABLE tournaments (
-    id TEXT PRIMARY KEY DEFAULT (randomblob(16)),
+    id TEXT PRIMARY KEY DEFAULT (hex(randomblob(16))),
     name TEXT NOT NULL,
     format TEXT CHECK(format IN ('single-elimination', 'double-elimination', 'round-robin')) NOT NULL,
     status TEXT CHECK(status IN ('upcoming', 'ongoing', 'completed')) NOT NULL,
@@ -55,7 +54,7 @@ CREATE TABLE tournaments (
 
 -- Stores team information linked to tournaments.
 CREATE TABLE teams (
-    id TEXT PRIMARY KEY DEFAULT (randomblob(16)),
+    id TEXT PRIMARY KEY DEFAULT (hex(randomblob(16))),
     tournament_id TEXT NOT NULL,
     name TEXT NOT NULL,
     players TEXT, -- JSON array of user wallet addresses
@@ -64,7 +63,7 @@ CREATE TABLE teams (
 
 -- Stores individual match information.
 CREATE TABLE matches (
-    id TEXT PRIMARY KEY DEFAULT (randomblob(16)),
+    id TEXT PRIMARY KEY DEFAULT (hex(randomblob(16))),
     tournament_id TEXT NOT NULL,
     round INTEGER NOT NULL,
     match_number INTEGER NOT NULL,
@@ -80,7 +79,7 @@ CREATE TABLE matches (
     FOREIGN KEY(winner_id) REFERENCES teams(id)
 );
 
--- Add some initial seed data for testing the new tournament system.
+-- Seed data for testing
 INSERT INTO tournaments (id, name, format, status) VALUES ('tournament-1', 'Quantum Nexus Genesis Cup', 'single-elimination', 'upcoming');
 INSERT INTO teams (id, tournament_id, name, players) VALUES ('team1', 'tournament-1', 'Team A', '["player1_wallet", "player2_wallet"]');
 INSERT INTO teams (id, tournament_id, name, players) VALUES ('team2', 'tournament-1', 'Team B', '["player3_wallet", "player4_wallet"]');
