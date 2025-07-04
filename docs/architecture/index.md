@@ -1,12 +1,3 @@
-
----
-
-#### 3. Updated: `docs/architecture/index.md`
-
-Finally, I have updated the main architecture index to include a link to our new `external-dependencies.md` document, ensuring all documentation is discoverable.
-
-##### `FILENAME: docs/architecture/index.md` (Updated Version)
-```markdown
 # Architecture Blueprint
 
 This section contains the complete technical architecture for Quantum Nexus. These documents are the primary reference for all development and operational work.
