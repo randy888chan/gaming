@@ -39,6 +39,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
   const router = useRouter();
   const { code: referralCodeFromUrl } = router.query;
 
+  // State to track if the first play free API call has been made
+  const [firstPlayApiCalled, setFirstPlayApiCalled] = useState(false);
+
   const handleNext = () => {
     if (currentStep < filteredSteps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -63,6 +66,18 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
     try {
       const userInfo = await connect({});
       if (userInfo) {
+        // Check if first play free API has already been called for this session
+        if (firstPlayApiCalled) {
+          console.log('First play free API already called, skipping.');
+          set((state) => ({
+            ...state,
+            user: userInfo,
+            referredBy: referralCodeFromUrl ? String(referralCodeFromUrl) : null,
+          }));
+          handleNext();
+          return;
+        }
+
         // Call the first-play-free API
         const response = await fetch('/api/first-play-free', {
           method: 'POST',
@@ -70,7 +85,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            userToken: userInfo.publicAddress,
+            userToken: (userInfo as any).publicAddress, // Assuming publicAddress is the correct field
             referralCode: referralCodeFromUrl,
           }),
         });
@@ -84,6 +99,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
             hasClaimedFirstPlay: true,
             referredBy: referralCodeFromUrl ? String(referralCodeFromUrl) : null,
           }));
+          setFirstPlayApiCalled(true); // Mark API call as made
           handleNext(); // Advance to next step after successful login
           // Clear referral code from URL after successful processing
           router.replace(router.pathname, undefined, { shallow: true });
@@ -137,13 +153,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
             </>
           )}
           <div className="flex justify-between">
-            {currentStep < steps.length - 1 ? (
+            {currentStep < filteredSteps.length - 1 ? (
               <Button variant="outline" onClick={handleSkip}>Skip Tour</Button>
             ) : (
               <div />
             )}
             <Button onClick={handleNext}>
-              {currentStep < steps.length - 1 ? 'Next' : 'Start Playing!'}
+              {currentStep < filteredSteps.length - 1 ? 'Next' : 'Start Playing!'}
             </Button>
           </div>
         </div>

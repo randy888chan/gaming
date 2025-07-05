@@ -1,0 +1,43 @@
+{
+  "project_status": "development",
+  "system_signals": [
+    {
+      "timestamp": "2025-07-05T06:42:08+07:00",
+      "signal_type": "system_init",
+      "payload": {
+        "planning_artifacts": [
+          "docs/prd.md",
+          "docs/architecture/system-overview.md"
+        ],
+        "next_phase": "development"
+      }
+    },
+    {
+      "timestamp": "2025-07-05T06:46:57+07:00",
+      "signal_type": "story_activated",
+      "payload": {
+        "story_id": "epic-1-story-1",
+        "story_title": "Implement \"First Play Free\" Credit System",
+        "status": "development"
+      }
+    }
+  ],
+  "agent_reports": [
+    {
+      "timestamp": "2025-07-05T06:46:57+07:00",
+      "agent_id": "bmad-sm",
+      "content": "# Story: Implement \"First Play Free\" Credit System\n\n**Epic:** Establish Core Platform Functionality and User Onboarding\n\n## User Story\nAs a new user, I want to receive a one-time, micro-value credit upon signup so I can try a game risk-free.\n\n## Acceptance Criteria\n*   A new user successfully signs up using a social login via Particle Network.\n*   Upon successful signup, the user is automatically granted a one-time, predefined micro-value credit.\n*   The system correctly records that the user has claimed their \"First Play Free\" credit.\n*   A returning user who has already claimed the credit is prevented from claiming it again.\n*   The credit amount is configurable via the `CreditConfigService`.\n\n## Technical Guidance\n*   **Frontend:** Trigger Particle Network signup and then call the `/api/first-play-free` endpoint.\n*   **Backend API (`src/pages/api/first-play-free.ts`):**\n    *   Implement the `/api/first-play-free` endpoint using Next.js API Routes.\n    *   Verify the user token provided by Particle Network.\n    *   Interact with the D1 database (`user_preferences` table) to check and update the `hasClaimedFirstPlay` status.\n    *   The credit amount should be fetched or configured via `CreditConfigService`. For MVP, a default of 0.001 can be used if configuration is not immediately available.\n    *   Handle errors gracefully.\n*   **Database:** Ensure `user_preferences` table in D1 has `walletAddress` and `hasClaimedFirstPlay` fields.\n*   **Security:** Secure token verification.\n*   **Cost-Effectiveness:** Adhere to Cloudflare free tier limits."
+    }
+  ],
+  "current_story": {
+    "epics": [],
+    "active_story": {
+      "id": "epic-1-story-1",
+      "title": "Implement \"First Play Free\" Credit System",
+      "path": "docs/stories/epic-1-story-1-first-play-free.md",
+      "status": "orchestration_initiated"
+    }
+  },
+  "system_signal": "STORY_ORCHESTRATION_STARTED",
+  "version": "1.0.0"
+}

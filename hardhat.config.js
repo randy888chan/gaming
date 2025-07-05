@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
+require('dotenv').config();
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -14,11 +15,11 @@ module.exports = {
   networks: {
     "zetachain-testnet": {
       url: "https://zetachain-athens-evm.blockpi.network/v1/rpc/public",
-      accounts: ["YOUR_PRIVATE_KEY"],
+      accounts: process.env.NODE_ENV === 'test' ? ["0123456789012345678901234567890123456789012345678901234567890123"] : [process.env.HARDHAT_PRIVATE_KEY],
     },
     "zetachain-mainnet": {
       url: "https://zetachain-evm.blockpi.network/v1/rpc/public",
-      accounts: ["YOUR_PRIVATE_KEY"],
+      accounts: process.env.NODE_ENV === 'test' ? ["0123456789012345678901234567890123456789012345678901234567890123"] : [process.env.HARDHAT_PRIVATE_KEY],
     },
   },
 };

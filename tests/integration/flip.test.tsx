@@ -6,8 +6,15 @@ import { useGamba } from 'gamba-react-v2';
 
 // Mock R3F Canvas
 jest.mock('@react-three/fiber', () => ({
-  ...jest.requireActual('@react-three/fiber'),
   Canvas: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  // Mock other exports if needed by the tests, e.g., useFrame, useThree, etc.
+  // For now, assuming only Canvas is directly used in the tests.
+  useFrame: jest.fn(),
+  useThree: jest.fn(() => ({
+    gl: { domElement: {} }, // Mock with a plain object
+    size: { width: 800, height: 600 },
+  })),
+  addEffect: jest.fn(), // Add addEffect mock
 }));
 
 // Mock Game components that use R3F hooks

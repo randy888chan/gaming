@@ -1,4 +1,6 @@
-interface CreditConfig {
+import { D1Database } from '@cloudflare/workers-types';
+
+export interface CreditConfig {
   id: string;
   name: string;
   rules: any;
@@ -11,7 +13,7 @@ class CreditConfigService {
 
   constructor() {
     // In Cloudflare Workers, DB would be injected via env
-    this.db = (process.env.NODE_ENV === 'test' ? mockD1 : process.env.DB) as D1Database;
+    this.db = (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development' ? mockD1 : process.env.DB) as D1Database;
   }
 
   async getConfig(id: string): Promise<CreditConfig | null> {
@@ -96,17 +98,32 @@ class CreditConfigService {
   }
 }
 
+export interface ICreditConfigService {
+  getConfig(id: string): Promise<CreditConfig | null>;
+  createConfig(data: Omit<CreditConfig, 'id' | 'created_at' | 'updated_at'>): Promise<CreditConfig>;
+  updateConfig(id: string, updates: Partial<Omit<CreditConfig, 'id' | 'created_at' | 'updated_at'>>): Promise<CreditConfig | null>;
+  deleteConfig(id: string): Promise<boolean>;
+}
+
 // Mock for D1Database in test environment
 const mockD1 = {
   prepare: (query: string) => ({
     bind: (...args: any[]) => ({
-      first: async () => ({
-        id: 'mock-config-1',
-        name: 'Mock Config',
-        rules: '{}',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }),
+      first: async (colName?: string) => {
+        if (query.includes('SELECT * FROM credit_configs WHERE id = ?')) {
+          const [id] = args;
+          if (id === 'first-play-free') {
+            return {
+              id: 'first-play-free',
+              name: 'First Play Free',
+              rules: { amount: 0.001 },
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+          }
+        }
+        return null;
+      },
       run: async () => ({ meta: { rows_written: 1 } })
     }),
   })

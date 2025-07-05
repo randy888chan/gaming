@@ -1,32 +1,18 @@
+require('dotenv').config();
 import '@testing-library/jest-dom';
 import React from 'react';
 import { signal } from '@preact/signals-react';
+import { TextEncoder, TextDecoder } from 'util';
 
 global.React = React; // Explicitly make React global
 
-// jest.mock('@preact/signals-react', () => ({
-//   signal: jest.fn((initialValue) => ({
-//     value: initialValue,
-//     subscribe: jest.fn(),
-//     valueOf: jest.fn(() => initialValue),
-//     toString: jest.fn(() => String(initialValue)),
-//   })),
-//   effect: jest.fn(),
-//   useSignal: jest.fn((initialValue) => ({ value: initialValue })),
-//   computed: jest.fn((computeFn) => {
-//     // Helper to ensure the computeFn result is captured for all methods
-//     const getComputedValue = () => computeFn();
-//     return {
-//       get value() {
-//         return getComputedValue();
-//       },
-//       subscribe: jest.fn(),
-//       valueOf: () => getComputedValue(),
-//       toString: () => String(getComputedValue()),
-//       peek: () => getComputedValue(), // Add peek for completeness if needed by actual code
-//     };
-//   }),
-// }));
+// Polyfill TextEncoder and TextDecoder for environments where they're not globally available (e.g., some Jest setups)
+if (typeof global.TextEncoder === 'undefined') {
+  global.TextEncoder = TextEncoder;
+}
+if (typeof global.TextDecoder === 'undefined') {
+  global.TextDecoder = TextDecoder;
+}
 
 // The custom mock for styled-components is removed.
 // jest-styled-components, added to setupFilesAfterEnv, will handle necessary setup.
@@ -114,7 +100,7 @@ global.OffscreenCanvas = class OffscreenCanvas {
       fill: jest.fn(),
       measureText: jest.fn(() => ({ width: 0 })),
       scale: jest.fn(),
-  translate: jest.fn(),
+      translate: jest.fn(),
       rotate: jest.fn(),
       arc: jest.fn(),
       strokeText: jest.fn(),

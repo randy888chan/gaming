@@ -23,21 +23,25 @@ describe('CreditConfigPanel', () => {
     jest.clearAllMocks();
     global.fetch = jest.fn((url: RequestInfo | URL, init?: RequestInit) => {
       console.log('Fetch intercepted:', { url, method: init?.method });
-      if (url === '/api/admin/credit-config' && (init?.method === 'GET' || init?.method === undefined)) {
+      if (url.toString().startsWith('/api/v1/admin/credit-config') && (init?.method === 'GET' || init?.method === undefined)) {
         return Promise.resolve(new Response(JSON.stringify({
           success: true,
           config: {
-            enabled: true,
-            creditAmountUSDC: 100,
-            chains: ['solana', 'ethereum'],
-            treasuryWallet: '0x123abc',
-            kmsProvider: 'mock',
+            id: 'default-credit-config',
+            name: 'Default Credit Configuration',
+            rules: {
+              enabled: true,
+              creditAmountUSDC: 100,
+              chains: ['solana', 'ethereum'],
+              treasuryWallet: '0x123abc',
+              kmsProvider: 'mock',
+            },
           },
         }), { status: 200 }));
-      } else if (url === '/api/admin/credit-config' && init?.method === 'POST') {
+      } else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') {
         const body = JSON.parse(init.body as string);
         // Simulate server-side validation for POST requests
-        if (body.creditAmountUSDC <= 0 || !body.treasuryWallet || body.chains.length === 0 || !body.kmsProvider) {
+        if (body.rules.creditAmountUSDC <= 0 || !body.rules.treasuryWallet || body.rules.chains.length === 0 || !body.rules.kmsProvider) {
           return Promise.resolve(new Response(JSON.stringify({ success: false, error: 'Server-side validation failed.' }), { status: 400 }));
         }
         return Promise.resolve(new Response(JSON.stringify({ success: true, config: body }), { status: 200 }));
@@ -122,15 +126,19 @@ describe('CreditConfigPanel', () => {
       expect(screen.getByText('Configuration saved successfully!')).toBeInTheDocument();
     });
     expect(global.fetch).toHaveBeenCalledWith(
-      '/api/admin/credit-config',
+      '/api/v1/admin/credit-config',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
-          enabled: true,
-          creditAmountUSDC: 150,
-          chains: ['solana', 'ethereum'],
-          treasuryWallet: '0x123abc',
-          kmsProvider: 'mock',
+          id: 'default-credit-config',
+          name: 'Default Credit Configuration',
+          rules: {
+            enabled: true,
+            creditAmountUSDC: 150,
+            chains: ['solana', 'ethereum'],
+            treasuryWallet: '0x123abc',
+            kmsProvider: 'mock',
+          },
         }),
       }),
     );
@@ -154,11 +162,15 @@ describe('CreditConfigPanel', () => {
         Promise.resolve(new Response(JSON.stringify({
           success: true,
           config: {
-            enabled: true,
-            creditAmountUSDC: 100,
-            chains: ['solana', 'ethereum'],
-            treasuryWallet: '0x123abc',
-            kmsProvider: 'mock',
+            id: 'default-credit-config',
+            name: 'Default Credit Configuration',
+            rules: {
+              enabled: true,
+              creditAmountUSDC: 100,
+              chains: ['solana', 'ethereum'],
+              treasuryWallet: '0x123abc',
+              kmsProvider: 'mock',
+            },
           },
         }), { status: 200 }))
       ) // Mock for the initial GET request

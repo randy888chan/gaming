@@ -1,0 +1,12 @@
+{
+  "id": "first-play-free",
+  "rules": {
+    "amount": 5000,
+    "currency": "credits",
+    "maxClaims": 1,
+    "cooldownDays": 30
+  },
+  "version": "1.0.0",
+  "createdAt": "2025-07-06T03:14:20Z",
+  "fallback": true
+}

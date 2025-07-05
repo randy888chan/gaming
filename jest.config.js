@@ -18,7 +18,7 @@ module.exports = {
     '^.+\\.(ts|tsx|js|jsx)$': ['babel-jest', { presets: [['@babel/preset-react', { runtime: 'classic' }]] }],
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2|@react-three/drei)/)',
+    '/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2|@react-three/drei|lucide-react)/)',
   ],
   verbose: true,
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js', 'jest-styled-components'],

@@ -1,36 +1,41 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-// import { D1Database } from '@cloudflare/workers-types'; // Assuming this type is available or can be mocked
-import jwt from 'jsonwebtoken'; // For token verification
+import { D1Database } from '@cloudflare/workers-types';
+import jwt from 'jsonwebtoken';
+import { creditConfigService } from '@/services/CreditConfigService';
+
 declare module 'jsonwebtoken';
 
+interface MockD1Database {
+  prepare: (query: string) => {
+    bind: (...args: any[]) => {
+      first: (colName?: string) => Promise<any | null>;
+      run: () => Promise<{ success: boolean; changes: number }>;
+    };
+  };
+}
+
 // Mock D1 Database for local development/testing
-// In a real Cloudflare Worker, D1 would be bound via environment.
-const mockD1: any = {
+const mockD1: MockD1Database = {
   prepare: (query: string) => ({
     bind: (...args: any[]) => ({
       first: async (colName?: string) => {
-        // Simulate user lookup
-        if (query.includes('SELECT * FROM users WHERE particle_id = ?')) {
-          const [particleId] = args;
-          if (particleId === 'mock_existing_user_id') {
-            return { walletAddress: 'mock_existing_user_id', hasClaimedFirstPlay: 1 };
+        if (query.includes('SELECT * FROM user_preferences WHERE walletAddress = ?')) {
+          const [walletAddress] = args;
+          if (walletAddress === 'mock_existing_user_id_claimed') {
+            return { walletAddress: 'mock_existing_user_id_claimed', hasClaimedFirstPlay: 1, referralCredits: 0 };
           }
-          if (particleId === 'mock_new_user_id') {
-            return null; // Simulate new user
+          if (walletAddress === 'mock_existing_user_id_unclaimed') {
+            return { walletAddress: 'mock_existing_user_id_unclaimed', hasClaimedFirstPlay: 0, referralCredits: 0 };
           }
-        }
-        // Simulate insert/update
-        if (query.includes('INSERT INTO user_preferences') || query.includes('UPDATE user_preferences')) {
-          return { success: true, changes: 1 };
+          if (walletAddress === 'mock_new_user_id') {
+            return null;
+          }
         }
         return null;
       },
-      all: async () => ({ results: [] }),
       run: async () => ({ success: true, changes: 1 }),
     }),
   }),
-  dump: async () => new ArrayBuffer(0),
-  batch: async () => [],
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -38,29 +43,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ success: false, error: 'Method Not Allowed' });
   }
 
-  const { userToken, referralCode } = req.body;
+  const { userToken } = req.body;
 
   if (!userToken) {
     return res.status(400).json({ success: false, error: 'User token is required.' });
   }
 
-  // In a real scenario, verify the userToken with Particle Network's SDK or a JWT secret
-  // For this example, we'll mock a simple JWT verification.
+  // Validate JWT configuration
+  const jwtSecret = process.env.PARTICLE_NETWORK_JWT_SECRET;
+  if (!jwtSecret) {
+    console.error('FATAL: PARTICLE_NETWORK_JWT_SECRET environment variable is not set');
+    return res.status(500).json({ success: false, error: 'Server configuration error' });
+  }
+  
+  // Validate JWT format (minimum 32 characters)
+  if (jwtSecret.length < 32) {
+    console.error('FATAL: PARTICLE_NETWORK_JWT_SECRET must be at least 32 characters');
+    return res.status(500).json({ success: false, error: 'Server configuration error' });
+  }
+
   let decodedToken: any;
   try {
-    // Replace 'YOUR_PARTICLE_NETWORK_JWT_SECRET' with your actual secret
-    // This secret should be stored securely, e.g., in environment variables.
-    decodedToken = jwt.verify(userToken, process.env.PARTICLE_NETWORK_JWT_SECRET || 'mock-jwt-secret');
+    decodedToken = jwt.verify(userToken, jwtSecret);
   } catch (error) {
     console.error('Token verification failed:', error);
     return res.status(401).json({ success: false, error: 'Invalid or expired token.' });
   }
 
-  const particleId = decodedToken.account || userToken; // Use account from decoded token or fallback to userToken
+  const particleId = decodedToken.account || decodedToken.publicAddress;
 
-  // Access D1 database (mocked for now)
-  // In a Cloudflare Worker, `env.DB` would be the D1 binding.
-  const DB = (process.env.NODE_ENV === 'development' ? mockD1 : (process.env as any).DB) as any;
+  const DB = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? mockD1 : (process.env as any).DB) as D1Database;
+
+  // Ensure DB is initialized
 
   if (!DB) {
     console.error('D1 Database not initialized.');
@@ -68,7 +82,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Check if user exists and has claimed first play
     const userRecord = await DB.prepare('SELECT * FROM user_preferences WHERE walletAddress = ?')
       .bind(particleId)
       .first();
@@ -77,22 +90,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ success: false, error: 'First play free already claimed.' });
     }
 
-    const creditAmount = 0.001; // Example micro-value credit
+    // Try to get config from service first, then fallback to local config
+    let firstPlayConfig = await creditConfigService.getConfig('first-play-free');
+    
+    // Fallback to local config if service unavailable
+    if (!firstPlayConfig || typeof firstPlayConfig.rules?.amount !== 'number') {
+      try {
+        firstPlayConfig = require('@/config/first-play-free.json');
+      } catch (e) {
+        console.error('Both service and fallback config failed:', e);
+        return res.status(500).json({
+          success: false,
+          error: 'Configuration system failure - contact support'
+        });
+      }
+      
+      if (typeof firstPlayConfig!.rules?.amount !== 'number') {
+        console.error('Fallback config validation failed');
+        return res.status(500).json({
+          success: false,
+          error: 'Fallback configuration invalid'
+        });
+      }
+    }
+    const creditAmount = firstPlayConfig.rules!.amount;
 
     if (!userRecord) {
-      // Create new user record
       await DB.prepare(
         'INSERT INTO user_preferences (walletAddress, hasClaimedFirstPlay, referralCredits, lastLogin) VALUES (?, ?, ?, CURRENT_TIMESTAMP)'
       )
-        .bind(particleId, 1, 0.001, decodedToken.walletAddress || 'unknown') // Assuming 0.001 is the credit amount
+        .bind(particleId, 1, creditAmount)
         .run();
     } else {
-      // Update existing user record
-      // Update existing user record
       await DB.prepare(
-        'UPDATE user_preferences SET hasClaimedFirstPlay = ?, lastLogin = CURRENT_TIMESTAMP WHERE walletAddress = ?'
+        'UPDATE user_preferences SET hasClaimedFirstPlay = ?, referralCredits = referralCredits + ?, lastLogin = CURRENT_TIMESTAMP WHERE walletAddress = ?'
       )
-        .bind(1, particleId)
+        .bind(1, creditAmount, particleId)
         .run();
     }
 

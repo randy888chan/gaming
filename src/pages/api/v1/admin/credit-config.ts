@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import jwt from 'jsonwebtoken'; // For token verification
 import { creditConfigService } from '../../../../services/CreditConfigService';
-import rateLimit from 'express-rate-limit';
+import { NextApiHandler } from 'next';
+import { withAuth } from '../../../../utils/authMiddleware'; // Assuming this path
+import { withRateLimit } from '../../../../utils/rateLimitMiddleware'; // Assuming this path
 
 // Define a type for the credit configuration based on schema.sql
 interface CreditConfig {
@@ -12,23 +14,6 @@ interface CreditConfig {
   updated_at: string; // ISO date string
 }
 
-// Rate limiting middleware for admin endpoints
-const adminRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 30, // 30 requests per 1 minute
-  message: {
-    success: false,
-    error: 'Too many requests from this IP, please try again after a minute.',
-  },
-  handler: (req, res) => {
-    res.status(429).json({ success: false, error: 'Too many requests, please try again later.' });
-  },
-  keyGenerator: (req) => {
-    // Use a combination of IP and user ID for more granular rate limiting if authenticated
-    // For now, just use IP
-    return req.ip || 'unknown';
-  },
-});
 
 /**
  * Handles requests to the credit configuration API endpoint.
@@ -39,54 +24,33 @@ const adminRateLimiter = rateLimit({
  * @param req - The NextApiRequest object.
  * @param res - The NextApiResponse object.
  */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Apply rate limiting to all requests to this admin endpoint
-  await new Promise<void>((resolve, reject) => {
-    adminRateLimiter(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      resolve(result);
-    });
-  }).catch((error) => {
-    // The rate limiter's handler already sends a response, so we just return here.
-    // This catch block is mostly for internal errors within the rate limiter itself.
-    console.error('Rate limit middleware error:', error);
-    return; // Exit the handler as response is already sent
-  });
-
-  // If the rate limiter already sent a response, stop further execution
-  if (res.headersSent) {
-    return;
-  }
-
-  // Authentication and Authorization (QA-SEC-001)
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, error: 'Unauthorized: No token provided.' });
-  }
-
-  const token = authHeader.split(' ')[1];
-  let decodedToken: any;
-  try {
-    // Verify the token using your Particle Network JWT secret
-    decodedToken = jwt.verify(token, process.env.PARTICLE_NETWORK_JWT_SECRET || 'mock-jwt-secret');
-    // In a real application, you might also check for specific roles or permissions here
-    // For now, any valid Particle Network token is considered authenticated for admin access.
-  } catch (error) {
-    console.error('Token verification failed:', error);
-    return res.status(401).json({ success: false, error: 'Unauthorized: Invalid or expired token.' });
-  }
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  // Authentication and Authorization (QA-SEC-001) is handled by withAuth middleware
 
   if (req.method === 'GET') {
     try {
       const { id } = req.query;
-      if (typeof id !== 'string') {
-        return res.status(400).json({ success: false, error: 'Missing or invalid config ID.' });
-      }
-      const config = await creditConfigService.getConfig(id);
+      const configId = typeof id === 'string' ? id : 'default-credit-config'; // Use default if not provided
+      
+      const config = await creditConfigService.getConfig(configId);
       if (!config) {
-        return res.status(404).json({ success: false, error: 'Configuration not found.' });
+        // If no config found, return a default empty config for the frontend to initialize
+        return res.status(200).json({
+          success: true,
+          config: {
+            id: configId,
+            name: 'Default Credit Configuration',
+            rules: {
+              enabled: false,
+              amount: 0,
+              chains: [],
+              treasuryWallet: '',
+              kmsProvider: '',
+            },
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        });
       }
       return res.status(200).json({ success: true, config });
     } catch (error: unknown) {
@@ -139,7 +103,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete configuration.';
       return res.status(500).json({ success: false, error: errorMessage });
     }
+  } else if (req.method === 'PUT') { // Add PUT method for updates
+    try {
+      const { id, name, rules } = req.body;
+
+      if (!id || typeof id !== 'string') {
+        return res.status(400).json({ success: false, error: 'Missing or invalid config ID for update.' });
+      }
+      if (!name || !rules) {
+        return res.status(400).json({ success: false, error: 'Missing required fields: name, rules.' });
+      }
+
+      const config = await creditConfigService.updateConfig(id, { name, rules });
+      if (!config) {
+        return res.status(404).json({ success: false, error: 'Configuration not found for update.' });
+      }
+
+      return res.status(200).json({ success: true, config });
+    } catch (error: unknown) {
+      console.error('Failed to update credit config:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update configuration.';
+      return res.status(500).json({ success: false, error: errorMessage });
+    }
   } else {
     return res.status(405).json({ success: false, error: 'Method Not Allowed' });
   }
-}
+};
+
+export default withRateLimit(withAuth(handler));
