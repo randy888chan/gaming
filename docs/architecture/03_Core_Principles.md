@@ -22,6 +22,24 @@ SM dispatch → STORY_APPROVED → Orchestrator dispatch → EPIC_COMPLETE →
 PERFORMANCE_AUDIT_PENDING → PROJECT_COMPLETE
 ```
 
+## ARCHITECTURAL COMPLIANCE
+All agents must adhere to the `04_Architectural_Compliance_Protocol.md`. This is non-negotiable.
+
+## AGENT MANIFEST INTEGRITY
+1. The agent manifest (`bmad-core/02_Agent_Manifest.md`) is immutable and may only be modified by `@bmad-master`
+2. `@bmad-validator` will enforce this principle through cryptographic checks
+3. Any attempt to violate this principle will result in immediate suspension of the offending agent and a critical system alert
+
+## INTERNAL AGENT PROTOCOL
+1. All agent interactions must be with agents defined in `docs/architecture/02_Agent_Directory.md`.
+2. Any attempt to interact with an undefined agent will be considered a critical system failure.
+3. `@bmad-validator` will enforce this principle.
+
+## AGENT MANIFEST INTEGRITY
+1. The agent manifest (`bmad-core/02_Agent_Manifest.md`) is immutable and may only be modified by `@bmad-master`.
+2. `@bmad-validator` will enforce this principle through cryptographic checks.
+3. Any attempt to violate this principle will result in immediate suspension of the offending agent and a critical system alert.
+
 ## ESCALATION PROTOCOL
 1. Workers may signal `escalation_required`
 2. Chief Orchestrator must dispatch @debugger within 3 state cycles

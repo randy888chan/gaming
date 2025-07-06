@@ -95,6 +95,7 @@ export default function Header() {
         <div className="absolute top-0 left-0 right-0 backdrop-blur w-full h-full rounded-b-2xl -z-20" />
         <div className="flex gap-2 items-center">
           <NexusOrb href="/" label={t('home')} icon={<Home />} isActive={router.pathname === "/"} />
+          <NexusOrb href="/profile" label={t('profile')} icon={<User />} isActive={router.pathname === "/profile"} />
           <NexusOrb href="/polymarket" label={t('polymarket')} icon={<BarChart />} isActive={router.pathname === "/polymarket"} />
           <NexusOrb href="/games" label={t('games')} icon={<Gamepad />} isActive={router.pathname === "/games"} />
           <NexusOrb href="/info" label={t('info')} icon={<Info />} isActive={router.pathname === "/info"} />

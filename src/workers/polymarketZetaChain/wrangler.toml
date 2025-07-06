@@ -1,0 +1,15 @@
+name = "polymarket-zetachain-worker"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+workers_dev = true
+
+[vars]
+POLYMARKET_API_KEY = "YOUR_POLYMARKET_API_KEY"
+POLYMARKET_API_SECRET = "YOUR_POLYMARKET_API_SECRET"
+ZETACHAIN_RPC_URL = "https://rpc.zetachain.com/evm"
+ZETACHAIN_PRIVATE_KEY = "YOUR_ZETACHAIN_PRIVATE_KEY" # IMPORTANT: Securely manage this key, e.g., using a secret management system. Do NOT hardcode in production.
+ZETACHAIN_CONTRACT_ADDRESS = "0x..." # To be replaced with actual deployed contract address after deployment
+ZETACHAIN_CONTRACT_ABI = "[]" # To be replaced with actual contract ABI after deployment
+
+[triggers]
+crons = ["0 * * * *"] # Run every hour for market settlement checks

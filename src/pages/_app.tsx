@@ -132,6 +132,7 @@ function MyApp({ Component, pageProps }: AppProps) {
               <DefaultSeo {...BASE_SEO_CONFIG} />
               <main className="pt-12">
               <Component {...pageProps} />
+              {showOnboarding && <OnboardingModal isOpen={showOnboarding} onClose={handleCloseOnboarding} />}
               </main>
               <Footer />
               <Toaster

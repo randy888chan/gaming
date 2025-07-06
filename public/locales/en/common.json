@@ -1,5 +1,7 @@
 {
   "welcome": "Welcome to Gamba Play!",
   "play_games": "Play Games",
-  "language": "Language"
+  "language": "Language",
+  "profile": "Profile",
+  "view_profile": "View Profile"
 }

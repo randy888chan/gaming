@@ -11,6 +11,7 @@ These standards are mandatory for all development.
 -   **No Hardcoded Secrets:** Private keys, API keys, and JWT secrets MUST NOT be committed to the codebase.
 -   **Environment Variables:** All secrets must be loaded from environment variables (`process.env`) and referenced in a `.env.example` file.
 -   **Secure Fallback:** Applications MUST fail if a required secret is not present in the environment. Do not use insecure default values.
+-   **Vault Verification:** Before initiating development on a story, the assigned agent MUST verify that all required secrets are present in the designated secure vault. This check must be logged as a prerequisite in the agent's operational report before any code is written.
 
 ### 2. API Security
 -   **Authentication:** All administrative or user-specific API endpoints MUST be protected via JWT validation.
