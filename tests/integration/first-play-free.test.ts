@@ -4,6 +4,7 @@ import firstPlayFreeHandler from '../../src/pages/api/first-play-free';
 import { creditConfigService, ICreditConfigService, CreditConfig } from '../../src/services/CreditConfigService';
 import * as jwt from 'jsonwebtoken';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { JwtPayload, VerifyOptions } from 'jsonwebtoken'; // Import JwtPayload and VerifyOptions directly
 
 // Define a type for the D1 database mock
 interface D1DatabaseMock {
@@ -183,7 +184,7 @@ jest.mock('../../src/services/CreditConfigService', () => ({
 // Mock jwt.verify
 // Mock jwt.verify with validation
 jest.mock('jsonwebtoken', () => ({
-  verify: jest.fn((token: string, secret: string, options?: jwt.VerifyOptions) => {
+  verify: jest.fn((token: string, secret: string, options?: any) => { // Use any for options
     if (typeof secret !== 'string' || secret.length < 32) {
       throw new Error('JWT Secret must be a string of at least 32 characters.');
     }
@@ -192,35 +193,35 @@ jest.mock('jsonwebtoken', () => ({
         sub: 'test_user',
         w: 'test_wallet_address',
         exp: Date.now() / 1000 + 3600, // 1 hour from now
-      } as jwt.JwtPayload;
+      } as any; // Use any for return type
     }
     if (token === 'new_user_token') {
       return {
         sub: 'new_user',
         w: 'new_user_wallet_address',
         exp: Date.now() / 1000 + 3600,
-      } as jwt.JwtPayload;
+      } as any; // Use any for return type
     }
     if (token === 'existing_user_token') {
       return {
         sub: 'existing_user',
         w: 'existing_user_wallet_address',
         exp: Date.now() / 1000 + 3600,
-      } as jwt.JwtPayload;
+      } as any; // Use any for return type
     }
     if (token === 'unclaimed_user_token') {
       return {
         sub: 'unclaimed_user',
         w: 'unclaimed_user_wallet_address',
         exp: Date.now() / 1000 + 3600,
-      } as jwt.JwtPayload;
+      } as any; // Use any for return type
     }
     if (token === 'config_test_token') {
       return {
         sub: 'config_test_user',
         w: 'config_test_user',
         exp: Date.now() / 1000 + 3600,
-      } as jwt.JwtPayload;
+      } as any; // Use any for return type
     }
     throw new Error('Invalid or expired token.');
   }),
@@ -253,52 +254,52 @@ describe('/api/first-play-free', () => {
     // Reset mock D1 and CreditConfigService before each test
     mockD1.prepare.mockClear();
     mockD1.prepare.mockReset();
+    // Simplified default mock for D1.prepare
     mockD1.prepare.mockImplementation((query: string) => {
-      const mockBind = jest.fn((...args: any[]) => {
-        const mockFirst = jest.fn(async (colName?: string) => {
-          if (query.includes('SELECT * FROM user_preferences WHERE walletAddress = ?')) {
-            const [walletAddress] = args;
-            if (walletAddress === 'new_user_wallet_address') {
-              return null; // Simulate new user
-            }
-            if (walletAddress === 'existing_user_wallet_address') {
-              return { walletAddress: 'existing_user_wallet_address', hasClaimedFirstPlay: 1, referralCredits: 0 }; // Simulate already claimed
-            }
-            if (walletAddress === 'unclaimed_user_wallet_address') {
-              return { walletAddress: 'unclaimed_user_wallet_address', hasClaimedFirstPlay: 0, referralCredits: 0 }; // Simulate unclaimed existing user
-            }
-            if (walletAddress === 'config_test_user') {
-              return null; // Simulate new user for config test
-            }
-          }
-          return null;
-        });
-        const mockRun = jest.fn(async () => ({ success: true, changes: 1 }));
-        return { first: mockFirst, run: mockRun };
-      });
-      return { bind: mockBind };
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
+        first: jest.fn(),
+        run: jest.fn(),
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
     });
 
     (creditConfigService.getConfig as jest.Mock).mockReset();
     (creditConfigService.getConfig as jest.Mock).mockResolvedValue({ rules: { amount: 0.005 } }); // Default mock for config service
     (jwt.verify as jest.Mock).mockReset();
+    // Set a default mock for jwt.verify to avoid "invalid token" errors in tests that don't explicitly mock it
+    (jwt.verify as jest.Mock).mockReturnValue({
+      sub: 'default_user',
+      w: 'default_wallet_address',
+      exp: Date.now() / 1000 + 3600,
+    });
   });
 
   it('should grant first play free credit to a new user', async () => {
     (jwt.verify as jest.Mock).mockReturnValue({ account: 'new_user_wallet_address' });
     // Specific mocks for this test
-    mockD1.prepare.mockImplementationOnce((query: string) => ({
-      bind: jest.fn((...args: any[]) => ({
+    mockD1.prepare.mockImplementationOnce((query: string) => {
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
         first: jest.fn(async () => null), // User not found
+        run: jest.fn(),
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
+    });
+    mockD1.prepare.mockImplementationOnce((query: string) => {
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
+        first: jest.fn(),
         run: jest.fn(async () => ({ success: true, changes: 1 })), // Insert success
-      })),
-    }));
-    mockD1.prepare.mockImplementationOnce((query: string) => ({
-      bind: jest.fn((...args: any[]) => ({
-        first: jest.fn(async () => null), // User not found
-        run: jest.fn(async () => ({ success: true, changes: 1 })), // Insert success
-      })),
-    }));
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
+    });
     (creditConfigService.getConfig as jest.Mock).mockResolvedValueOnce({ rules: { amount: 0.005 } });
 
     const res = await agent.post('/api/first-play-free').send({ userToken: 'mock_jwt_token' });
@@ -317,11 +318,14 @@ describe('/api/first-play-free', () => {
   it('should prevent a user from claiming first play free credit twice', async () => {
     (jwt.verify as jest.Mock).mockReturnValue({ account: 'existing_user_wallet_address' });
     mockD1.prepare.mockImplementationOnce((query: string) => {
-      const mockBind = jest.fn((...args: any[]) => ({
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
         first: jest.fn(async () => ({ walletAddress: 'existing_user_wallet_address', hasClaimedFirstPlay: 1, referralCredits: 0 })), // User already claimed
-        run: jest.fn(async () => ({ success: true, changes: 0 })),
-      }));
-      return { bind: mockBind };
+        run: jest.fn(),
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
     });
 
     const res = await agent.post('/api/first-play-free').send({ userToken: 'mock_jwt_token' });
@@ -338,18 +342,24 @@ describe('/api/first-play-free', () => {
   it('should update an existing user who has not claimed first play free credit', async () => {
     (jwt.verify as jest.Mock).mockReturnValue({ account: 'unclaimed_user_wallet_address' });
     mockD1.prepare.mockImplementationOnce((query: string) => {
-      const mockBind = jest.fn((...args: any[]) => ({
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
         first: jest.fn(async () => ({ walletAddress: 'unclaimed_user_wallet_address', hasClaimedFirstPlay: 0, referralCredits: 0 })), // User exists, not claimed
-        run: jest.fn(async () => ({ success: true, changes: 0 })),
-      }));
-      return { bind: mockBind };
+        run: jest.fn(),
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
     });
     mockD1.prepare.mockImplementationOnce((query: string) => {
-      const mockBind = jest.fn((...args: any[]) => ({
-        first: jest.fn(async () => ({ walletAddress: 'unclaimed_user_wallet_address', hasClaimedFirstPlay: 0, referralCredits: 0 })), // User exists, not claimed
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
+        first: jest.fn(),
         run: jest.fn(async () => ({ success: true, changes: 1 })), // Update success
-      }));
-      return { bind: mockBind };
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
     });
     (creditConfigService.getConfig as jest.Mock).mockResolvedValueOnce({ rules: { amount: 0.01 } });
 
@@ -411,11 +421,14 @@ describe('/api/first-play-free', () => {
   it('should return 500 if CreditConfigService fails', async () => {
     (jwt.verify as jest.Mock).mockReturnValue({ account: 'new_user_wallet_address' });
     mockD1.prepare.mockImplementationOnce((query: string) => {
-      const mockBind = jest.fn((...args: any[]) => ({
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
         first: jest.fn(async () => null), // User not found
-        run: jest.fn(async () => ({ success: true, changes: 0 })),
-      }));
-      return { bind: mockBind };
+        run: jest.fn(),
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
     });
     (creditConfigService.getConfig as jest.Mock).mockRejectedValueOnce(new Error('Config service error'));
 
@@ -429,19 +442,25 @@ describe('/api/first-play-free', () => {
   it('should return 500 if D1 database operation fails', async () => {
     (jwt.verify as jest.Mock).mockReturnValue({ account: 'new_user_wallet_address' });
     mockD1.prepare.mockImplementationOnce((query: string) => {
-      const mockBind = jest.fn((...args: any[]) => ({
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
         first: jest.fn(async () => null), // User not found
-        run: jest.fn(async () => ({ success: true, changes: 0 })),
-      }));
-      return { bind: mockBind };
+        run: jest.fn(),
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
     });
     (creditConfigService.getConfig as jest.Mock).mockResolvedValueOnce({ rules: { amount: 0.005 } });
     mockD1.prepare.mockImplementationOnce((query: string) => {
-      const mockBind = jest.fn((...args: any[]) => ({
-        first: jest.fn(async () => null), // User not found
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
+        first: jest.fn(),
         run: jest.fn(async () => { throw new Error('Database write error'); }), // Simulate database write error
-      }));
-      return { bind: mockBind };
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
     });
 
     const res = await agent.post('/api/first-play-free').send({ userToken: 'mock_jwt_token' });
@@ -454,20 +473,26 @@ describe('/api/first-play-free', () => {
   it('should use the configured amount from CreditConfigService', async () => {
     (jwt.verify as jest.Mock).mockReturnValue({ account: 'config_test_user' });
     mockD1.prepare.mockImplementationOnce((query: string) => {
-      const mockBind = jest.fn((...args: any[]) => ({
-        first: jest.fn(async () => null),
-        run: jest.fn(async () => ({ success: true, changes: 0 })),
-      }));
-      return { bind: mockBind };
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
+        first: jest.fn(async () => null), // User not found
+        run: jest.fn(),
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
     });
     mockD1.prepare.mockImplementationOnce((query: string) => {
-      const mockBind = jest.fn((...args: any[]) => ({
-        first: jest.fn(async () => null),
-        run: jest.fn(async () => ({ success: true, changes: 1 })),
-      }));
-      return { bind: mockBind };
+      const mockStatement: D1PreparedStatementMock = {
+        bind: jest.fn().mockReturnThis(),
+        first: jest.fn(),
+        run: jest.fn(async () => ({ success: true, changes: 1 })), // Insert success
+        all: jest.fn(),
+        raw: jest.fn(),
+      };
+      return mockStatement;
     });
-    (creditConfigService.getConfig as jest.Mock).mockResolvedValueOnce({ rules: { amount: 0.123 } }); // Specific configured amount
+    (creditConfigService.getConfig as jest.Mock).mockResolvedValueOnce({ rules: { amount: 0.123 } });
 
     const res = await agent.post('/api/first-play-free').send({ userToken: 'mock_jwt_token' });
 

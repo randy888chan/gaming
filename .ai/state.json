@@ -38,6 +38,15 @@
       "status": "orchestration_initiated"
     }
   },
-  "system_signal": "STORY_ORCHESTRATION_STARTED",
+  "issue_log": [
+    {
+      "id": "issue-20250706-094605",
+      "description": "Integration tests for first-play-free feature failing: 5 failed, 5 passed, 10 total. Test file: tests/integration/first-play-free.test.ts",
+      "status": "OPEN",
+      "created_at": "2025-07-06T09:46:05+07:00",
+      "assigned_to": "bmad-debugger"
+    }
+  ],
+  "system_signal": "ISSUE_DETECTED",
   "version": "1.0.0"
 }
