@@ -1,37 +1,21 @@
-# Gaming Platform Coding Standards v1.0
+# Gaming Platform Coding Standards
 
-## Cross-Chain Smart Contracts
-1. **EVM Chains (Polygon, BSC)**:
-   - Solidity 0.8.20 with `checked` math
-   - OpenZeppelin Contracts 4.9.3
-   - Chainlink VRF for randomness
-2. **Solana**:
-   - Anchor framework 0.29.0
-   - Security audits via Sec3
-3. **TON**:
-   - Func language compliance
-   - Jetton token standard integration
+## Language Conventions
+- TypeScript: Strict mode enforced
+- Solidity: 0.8.19+ with OpenZeppelin contracts
+- React: Functional components with hooks
 
-## Frontend Requirements
-- TypeScript strict mode (`"strict": true`)
-- React Query for API state management
-- Isolated game logic in Web Workers
-- Linting: ESLint + typescript-eslint
+## Security Requirements
+1. All EVM contracts must have Slither analysis passes
+2. Frontend must validate all ZetaChain responses
+3. Cryptographic functions use audited libraries only
 
-## Security Protocols
-```mermaid
-graph TD
-    A[Commit] --> B[Slither Scan]
-    B --> C{Pass?}
-    C -->|Yes| D[Deploy Testnet]
-    C -->|No| E[Reject + Audit]
-    D --> F[Certik Audit]
-    F --> G[Mainnet Deployment]
-```
+## Style Guidelines
+- Airbnb TypeScript style guide
+- Smart contract NatSpec documentation
+- 120 character line limits
+- 2 space indentation
 
-## Code Review Process
-1. All PRs require:
-   - 2 senior engineer approvals
-   - Security lead sign-off for financial logic
-   - 90% test coverage threshold
-   - Gas optimization report for contracts
+## Review Process
+- 2 senior dev approvals for cross-chain features
+- Automated SonarCloud checks required
