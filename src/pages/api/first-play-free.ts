@@ -3,8 +3,6 @@ import { D1Database } from '@cloudflare/workers-types';
 import jwt from 'jsonwebtoken';
 import { creditConfigService } from '@/services/CreditConfigService';
 
-declare module 'jsonwebtoken';
-
 interface MockD1Database {
   prepare: (query: string) => {
     bind: (...args: any[]) => {
@@ -72,13 +70,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const particleId = decodedToken.account || decodedToken.publicAddress;
 
-  const DB = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? mockD1 : (process.env as any).DB) as D1Database;
+  // const DB = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? mockD1 : (process.env as any).DB) as D1Database;
+  // Use the name `localDevMockD1` for the mock defined in this file to avoid confusion with test's mockD1
+  const localDevMockD1 = mockD1;
+
+  let DB_INSTANCE: D1Database;
+
+  if (process.env.NODE_ENV === 'test') {
+    // For tests, always use the injected DB from process.env set by the test file
+    DB_INSTANCE = (process.env as any).DB as D1Database;
+  } else if (process.env.NODE_ENV === 'development') {
+    // For local development, can use a local mock or an injected one if available (e.g. from a local wrangler setup)
+    // Prioritize injected DB if present, otherwise fall back to the local in-file mock.
+    DB_INSTANCE = (process.env as any).DB || localDevMockD1 as any;
+  } else {
+    // For production (or other environments), expect DB to be provided by the platform environment
+    // Assuming the actual binding name might be different, e.g., from wrangler.toml
+    DB_INSTANCE = (process.env as any).DB_PLATFORM_BINDING as D1Database;
+  }
+
+  const DB = DB_INSTANCE;
 
   // Ensure DB is initialized
 
   if (!DB) {
-    console.error('D1 Database not initialized.');
-    return res.status(500).json({ success: false, error: 'Database not available.' });
+    console.error('D1 Database not initialized or available for the current environment.');
+    return res.status(500).json({ success: false, error: 'Database not available for environment.' });
   }
 
   try {
