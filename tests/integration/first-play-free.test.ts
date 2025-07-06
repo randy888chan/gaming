@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import firstPlayFreeHandler from '../../src/pages/api/first-play-free';
+import { testDbHolder } from '../../src/lib/test-db-holder';
 import { creditConfigService, ICreditConfigService, CreditConfig } from '../../src/services/CreditConfigService';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { JwtPayload, VerifyOptions, JsonWebTokenError } from 'jsonwebtoken'; // Import VerifyOptions and JsonWebTokenError
@@ -148,7 +149,8 @@ describe('/api/first-play-free', () => {
   beforeAll(() => {
     process.env.NODE_ENV = 'test';
     process.env.PARTICLE_NETWORK_JWT_SECRET = 'supersecretjwtkeythatisatleast32characterslong';
-    (process.env as any).DB = mockD1;
+    // (process.env as any).DB = mockD1; // Old way
+    testDbHolder.instance = mockD1;
 
     // Set up the default implementation for mockD1.prepare once here
     // This will be the fallback if a test doesn't use mockImplementationOnce
@@ -169,6 +171,7 @@ describe('/api/first-play-free', () => {
 
   afterAll((done) => {
     process.env = { ...ORIGINAL_ENV };
+    testDbHolder.instance = null; // Clean up
     server.close(done);
   });
 
@@ -300,6 +303,14 @@ describe('/api/first-play-free', () => {
         id: 'first-play-free', name: 'First Play Free', rules: { amount: 0.005 },
         created_at: new Date().toISOString(), updated_at: new Date().toISOString()
     });
+
+    // Diagnostic logs
+    // Diagnostic logs (removed)
+    // console.log('Test File - mockD1:', mockD1);
+    // console.log('Test File - typeof mockD1.prepare:', typeof mockD1.prepare);
+    // console.log('Test File - mockD1.prepare is mock:', jest.isMockFunction(mockD1.prepare));
+    // console.log('Test File - process.env.DB === mockD1:', (process.env as any).DB === mockD1);
+
 
     const res = await agent.post('/api/first-play-free').send({ userToken: 'token_grant_new' }); // Unique token
 

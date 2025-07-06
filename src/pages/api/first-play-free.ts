@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { D1Database } from '@cloudflare/workers-types';
 import jwt from 'jsonwebtoken';
 import { creditConfigService } from '@/services/CreditConfigService';
+import { testDbHolder } from '@/lib/test-db-holder';
 
 interface MockD1Database {
   prepare: (query: string) => {
@@ -73,30 +74,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // const DB = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test' ? mockD1 : (process.env as any).DB) as D1Database;
   // Use the name `localDevMockD1` for the mock defined in this file to avoid confusion with test's mockD1
   const localDevMockD1 = mockD1;
+  // import { testDbHolder } from '@/lib/test-db-holder'; // Moved to top level
 
   let DB_INSTANCE: D1Database;
 
   if (process.env.NODE_ENV === 'test') {
-    // For tests, always use the injected DB from process.env set by the test file
-    DB_INSTANCE = (process.env as any).DB as D1Database;
+  // For tests, use the instance from testDbHolder
+  if (testDbHolder.instance) {
+    DB_INSTANCE = testDbHolder.instance as D1Database;
+  } else {
+    console.error('TEST FATAL ERROR: testDbHolder.instance is not set! Ensure tests correctly provide the mock DB.');
+    return res.status(500).json({ success: false, error: 'Test setup error: DB mock not provided.' });
+  }
   } else if (process.env.NODE_ENV === 'development') {
-    // For local development, can use a local mock or an injected one if available (e.g. from a local wrangler setup)
-    // Prioritize injected DB if present, otherwise fall back to the local in-file mock.
+  // For local development, can use a local mock or an injected one if available
     DB_INSTANCE = (process.env as any).DB || localDevMockD1 as any;
   } else {
-    // For production (or other environments), expect DB to be provided by the platform environment
-    // Assuming the actual binding name might be different, e.g., from wrangler.toml
-    DB_INSTANCE = (process.env as any).DB_PLATFORM_BINDING as D1Database;
+  // For production, expect DB to be provided by the platform environment
+  DB_INSTANCE = (process.env as any).DB_PLATFORM_BINDING as D1Database; // Ensure this binding name matches your deployment
   }
 
   const DB = DB_INSTANCE;
 
   // Ensure DB is initialized
-
   if (!DB) {
     console.error('D1 Database not initialized or available for the current environment.');
     return res.status(500).json({ success: false, error: 'Database not available for environment.' });
   }
+
+// Diagnostic logs (removed)
+// console.log('API Handler - process.env.NODE_ENV:', process.env.NODE_ENV);
+// console.log('API Handler - (process.env as any).DB:', (process.env as any).DB);
+// console.log('API Handler - DB_INSTANCE:', DB_INSTANCE);
+// console.log('API Handler - typeof DB_INSTANCE?.prepare:', typeof DB_INSTANCE?.prepare);
+// console.log('API Handler - DB_INSTANCE keys:', Object.keys(DB_INSTANCE || {}));
 
   try {
     const userRecord = await DB.prepare('SELECT * FROM user_preferences WHERE walletAddress = ?')
