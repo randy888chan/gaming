@@ -1,111 +1,89 @@
-# Quantum Nexus Architecture Blueprint v1.3
+# Quantum Nexus Architecture Blueprint v1.4 (Complete)
 
-This document is the technical implementation of the `docs/prd.md`. It provides a complete, end-to-end technical design for the Quantum Nexus project. All development must strictly adhere to these specifications.
+**Governing Document:** This architecture is the technical implementation of `docs/prd.md`. It provides the complete technical design for the project. All development must strictly adhere to this blueprint.
 
 ### **1. Core Architectural Principle: The Universal App**
 
-The entire system is a **Universal App** built on ZetaChain. Our backend logic is deployed once to the ZetaChain zEVM, and it orchestrates interactions with all connected chains. The frontend interacts with ZetaChain as its primary backend, abstracting away the complexity of the underlying chains.
+The system is a **Universal App** built on ZetaChain. Our core logic is deployed once to the ZetaChain zEVM and orchestrates interactions with all connected chains, abstracting away their complexity. The frontend, powered by Particle Network's WaaS, interacts with ZetaChain as its primary backend.
 
 ### **2. System Overview Diagram**
 
 ```mermaid
 graph TD
-    subgraph User Layer
-        A[User] -- "Social Login" --> B{Particle Network ConnectKit};
-        B -- "Provides Smart Wallet & Gas Sponsorship" --> C[Quantum Nexus UI on Cloudflare Pages];
+    subgraph User & Onboarding
+        A[User via Browser/PWA/Telegram] --> B{Particle Network ConnectKit};
+        B -- "Handles Social Login, Smart Wallet Creation, & Gas Sponsoring (Paymaster)" --> C[Quantum Nexus UI on Cloudflare Pages];
     end
 
-    subgraph Application Layer
-        C -- "Places Bet (e.g., on Polymarket)" --> D[Backend API on Cloudflare Workers];
-        D -- "Triggers Cross-Chain Call" --> E[zetaChainService.ts];
+    subgraph Presentation & API Layer
+        C -- "API Calls" --> D[Next.js API Routes on Cloudflare];
     end
 
-    subgraph ZetaChain (The Core Logic)
-        E -- "Calls zEVM Contract" --> F[CrossChainSettlement.sol on zEVM];
-        F -- "Instructs ZetaChain Protocol" --> G{ZetaChain Gateway};
+    subgraph Backend & Automation Layer - Cloudflare Workers
+        F[Automated Workers (CRON/Event)] -- "Fetches Data & Generates Content" --> G[AI Service Adapter];
+        G -- "Uses various LLMs" --> H[External LLM APIs];
+        F -- "Writes/Reads" --> I[(Cloudflare D1 Database)];
+        D -- "Reads/Writes" --> I;
     end
 
-    subgraph Target Chains
-        G -- "Executes on Solana" --> H[Gamba v2 Protocol];
-        G -- "Executes on EVM" --> I[Polymarket Protocol];
-        G -- "Executes on TON" --> J[TON Contracts];
-    end
-
-    subgraph Database
-        D -- "Reads/Writes State" --> K[(Cloudflare D1)];
+    subgraph Blockchain Layer
+        D -- "Initiates Cross-Chain Actions" --> J[zetaChainService.ts];
+        J -- "Calls zEVM Contract" --> K[CrossChainSettlement.sol on zEVM];
+        K -- "Instructs ZetaChain Protocol" --> L{ZetaChain Gateway};
+        L -- "Executes on Target Chains" --> M[Gamba v2 on Solana];
+        L -- "Executes on Target Chains" --> N[Polymarket on EVM];
+        L -- "Executes on Target Chains" --> O[TON Contracts];
     end
 ```
 
 ### **3. Smart Contract Architecture (zEVM)**
 
+The smart contract architecture is lean and focused, offloading all cross-chain complexity to the ZetaChain protocol.
+
 *   **`CrossChainSettlement.sol` (The Universal Contract)**
-    *   **Deployment:** This contract is deployed **only** to the ZetaChain zEVM.
-    *   **Purpose:** To serve as the single, chain-agnostic entry point for all cross-chain operations. It contains no logic specific to Solana, TON, or any other chain.
+    *   **Deployment:** Only to the ZetaChain zEVM.
+    *   **Purpose:** To be the single, chain-agnostic entry point for all cross-chain operations.
     *   **Required Function:**
         ```solidity
-        /**
-         * @notice A generic function to dispatch a message to any connected chain.
-         * @param destinationChainId The chain ID of the target chain (from ZetaChain's registry).
-         * @param destinationAddress The address of the target contract on the destination chain.
-         * @param message The encoded payload for the target contract.
-         */
-        function dispatchCrossChainCall(
-            uint256 destinationChainId,
-            bytes memory destinationAddress,
-            bytes memory message
-        ) external payable;
+        function dispatchCrossChainCall(uint256 destinationChainId, bytes memory destinationAddress, bytes memory message) external payable;
         ```
 
 *   **`PolymarketAdapter.sol` (The Target Contract)**
-    *   **Deployment:** This contract is deployed to the EVM chain where Polymarket resides (e.g., Polygon).
-    *   **Purpose:** To be the *target* of a ZetaChain cross-chain call. It unwraps the message from ZetaChain and interacts directly with the Polymarket protocol contracts.
+    *   **Deployment:** To the EVM chain where Polymarket resides (e.g., Polygon).
+    *   **Purpose:** To be the *target* of a ZetaChain cross-chain call. It unwraps the message and interacts with the Polymarket protocol.
     *   **Required Function:**
         ```solidity
-        /**
-         * @notice The function called by the ZetaChain protocol upon receiving a cross-chain message.
-         * It decodes the message and interacts with the Polymarket contracts.
-         */
-        function onZetaMessage(
-            ZetaInterfaces.ZetaMessage calldata zetaMessage
-        ) external override isValidMessage(zetaMessage);
+        function onZetaMessage(ZetaInterfaces.ZetaMessage calldata zetaMessage) external override;
         ```
 
-### **4. Backend Services Architecture**
+### **4. Backend Services & AI Engine Architecture**
 
-*   **`zetaChainService.ts`:**
-    *   **Purpose:** The sole interface for communicating with our zEVM contract.
-    *   **Key Function (`placePolymarketBet`):**
-        1.  Takes bet details (market, outcome, amount) as input.
-        2.  ABI-encodes the `placeBet` instruction for the `PolymarketAdapter.sol`.
-        3.  Calls the `dispatchCrossChainCall` function on our `CrossChainSettlement.sol` contract, passing the destination chain ID for Polymarket and the encoded message.
+*   **API Routes (`src/pages/api/`)**: Handle synchronous, user-facing requests.
+    *   `/api/v1/tournaments/...`: CRUD endpoints for tournament management.
+    *   `/api/smart-bet`: Provides real-time AI bet suggestions.
 
-*   **`polymarketService.ts`:**
-    *   **Purpose:** Read-only interaction with Polymarket's public API.
-    *   **Implementation:** MUST use the `@polymarket/clob-client` SDK.
-    *   **Function (`getMarkets`):** Fetches active markets. MUST respect the API's rate limits. Results will be cached in the D1 `polymarket_markets` table to reduce API calls.
+*   **Cloudflare Workers (`src/workers/`)**: Handle asynchronous, automated tasks.
+    *   **`pSeoGenerator-worker.ts`**:
+        1.  **Trigger:** CRON schedule (e.g., every 6 hours).
+        2.  **Action:** Fetches trending markets from the `polymarketService`.
+        3.  **AI Interaction:** Calls the `aiAdapter` to generate a title, meta description, keywords, and a short article for each trending market.
+        4.  **Output:** Saves the generated content to the `content_metadata` table in D1.
+    *   **`socialPoster-worker.ts`**:
+        1.  **Trigger:** New entry in the `content_metadata` table (via a database trigger or a queue).
+        2.  **Action:** Constructs a social media post (e.g., for Twitter) using the title and URL from the new entry.
+        3.  **Output:** Posts to the configured social media accounts via their respective APIs.
 
-### **5. Database Schema (Definitive)**
+*   **AI Service Adapter (`src/services/aiAdapter.ts`)**:
+    *   **Purpose:** A modular service that acts as a unified interface for various LLMs. It will be configured via environment variables.
+    *   **Required Function:** `generate({ provider: 'mistral' | 'gemini', type: 'text' | 'image', prompt: string }): Promise<AIResponse>`
+    *   This adapter allows us to switch LLM providers without changing the worker code.
 
-*   **Location:** `infra/d1/schema.sql`
-*   **Content:** The SQL provided in the previous response is the final, complete schema and must be implemented exactly as written. It correctly uses a universal `user_id`, caches Polymarket data, and logs ZetaChain transactions.
+### **5. Internationalization (i18n) Architecture**
 
-### **6. User Onboarding Flow (Particle Network)**
+*   **Framework:** `next-i18next`.
+*   **File Structure:** All translation strings will be stored in JSON files within `public/locales/{language_code}/`. For example: `public/locales/en/common.json`, `public/locales/es/common.json`.
+*   **Initial Translations:** The initial set of JSON files for the 10 required languages (`en, es, fr, de, it, pt, ru, zh, ja, ko`) will be generated by a script that uses the AI Service Adapter.
+*   **Dynamic Content:** Content from the database (like pSEO articles) will be stored in English. It will be translated on-the-fly when requested by a user in a different language, with the results being cached (e.g., in Cloudflare KV) to reduce redundant API calls.
 
-1.  User clicks "Login with Google."
-2.  Particle Network's ConnectKit SDK is invoked.
-3.  Upon successful social authentication, Particle creates a new Smart Wallet for the user.
-4.  The application frontend receives the user's information, including a universal `user_id`.
-5.  When the user performs their first on-chain action (e.g., playing a game), the application will construct the transaction.
-6.  Instead of prompting the user to sign, the transaction is sent to the **Particle Network Paymaster API**.
-7.  The Paymaster signs and pays the gas fee for the transaction.
-8.  The transaction is executed on-chain, completely free and seamless for the new user.
-
-### **7. Full Project Plan & CI/CD**
-
-*   **Task Management:** The Epics and User Stories defined in the PRD will be used to generate specific, actionable tasks for the development agents.
-*   **CI/CD:** A GitHub Actions workflow will be created to:
-    1.  Install dependencies (`npm ci`).
-    2.  Run all tests (`npm test`). This includes unit and integration tests.
-    3.  Run a security audit (`npm audit --audit-level=high`). The build **MUST** fail if vulnerabilities are found.
-    4.  On a push to the `main` branch, deploy the application to Cloudflare using the Wrangler CLI.
-```
+### **6. Database Schema (Definitive)**
+The schema defined in the previous blueprint (v1.3) is complete and correct. It includes tables for `user_preferences` (keyed by universal `user_id`), `polymarket_markets` (for caching and pSEO), `zetachain_transactions` (for auditing), and the tournament tables. That schema is the final version.
