@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers } = require("ethers");
 
 describe("PolymarketAdapter", function () {
   let PolymarketAdapter;

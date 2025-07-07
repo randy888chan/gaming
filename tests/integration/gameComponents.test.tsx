@@ -18,6 +18,7 @@ const mockRouter = {
     emit: jest.fn(),
   },
   isFallback: false,
+  beforePopState: jest.fn(() => true),
   isLocaleDomain: false,
   isReady: true,
   isPreview: false,

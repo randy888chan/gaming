@@ -2,7 +2,7 @@ import request from 'supertest';
 import { createServer } from 'http';
 import { apiResolver } from 'next/dist/server/api-utils/node';
 import creditConfigHandler from '../../src/pages/api/v1/admin/credit-config';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import type { D1Database } from '@cloudflare/workers-types';
 
 // Mock D1Database implementation

@@ -38,7 +38,7 @@ describe('CreditConfigPanel', () => {
             },
           },
         }), { status: 200 }));
-      } else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') {
+      } else if (url.toString().startsWith('/api/v1/admin/credit-config') else if (url.toString().startsWith('/api/v1/admin/credit-config') else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') {else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') { init?.method === 'POST') {else if (url.toString().startsWith('/api/v1/admin/credit-config') else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') {else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') { init?.method === 'POST') { init?.method === 'POST') {
         const body = JSON.parse(init.body as string);
         // Simulate server-side validation for POST requests
         if (body.rules.creditAmountUSDC <= 0 || !body.rules.treasuryWallet || body.rules.chains.length === 0 || !body.rules.kmsProvider) {

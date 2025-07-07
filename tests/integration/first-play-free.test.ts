@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
-import firstPlayFreeHandler from '../../src/pages/api/first-play-free';
+import firstPlayFreeHandler from '/Users/user/Documents/GitHub/gaming/src/pages/api/first-play-free';
 import { testDbHolder } from '../../src/lib/test-db-holder';
 import { creditConfigService, ICreditConfigService, CreditConfig } from '../../src/services/CreditConfigService';
 import { NextApiRequest, NextApiResponse } from 'next';
