@@ -70,28 +70,43 @@ export class ZetaChainSettlement {
       try {
         return await fn();
       } catch (error: unknown) {
+        // Check if it's a known, specific error type for detailed logging
         if (error && typeof error === 'object' && 'code' in error) {
           const errorCode = (error as any).code;
           if (errorCode === -32000 || errorCode === -32001 || errorCode === -32002 || errorCode === 'REPLACEMENT_UNDERPRICED' || errorCode === 'NONCE_EXPIRED' || errorCode === 'NONCE_TOO_LOW') {
             console.warn(`Chain reorg detected or transaction replaced. Retrying in ${delayMs / 1000}s... Attempt ${i + 1}/${retries}. Error code: ${errorCode}`);
+          } else {
+            // Log a generic retry message for other errors if we are going to retry
             if (i < retries - 1) {
-              await delay(delayMs);
-              delayMs *= 2; // Exponential backoff
-              continue; // Continue to the next retry attempt
+              const errorMessage = error instanceof Error ? error.message : String(error);
+              console.warn(`Attempt ${i + 1}/${retries} failed with error: ${errorMessage}. Retrying in ${delayMs / 1000}s...`);
             }
           }
-        }
-        // If the error is not a retryable error, or if all retries have been exhausted, re-throw the error
-        if (error instanceof Error) {
-          throw new Error(`Failed after ${i + 1} attempts: ${error.message}`);
-        } else if (error && typeof error === 'object' && 'message' in error) {
-          throw new Error(`Failed after ${i + 1} attempts: ${(error as any).message}`);
         } else {
-          throw new Error(`Failed after ${i + 1} attempts: ${String(error)}`);
+            // Log a generic retry message if error has no 'code' property and we are going to retry
+            if (i < retries - 1) {
+              const errorMessage = error instanceof Error ? error.message : String(error);
+              console.warn(`Attempt ${i + 1}/${retries} failed with error: ${errorMessage}. Retrying in ${delayMs / 1000}s...`);
+            }
         }
+
+        // If more retries are available, delay and continue
+        if (i < retries - 1) {
+          await delay(delayMs);
+          delayMs *= 2; // Exponential backoff
+          continue; // Continue to the next retry attempt
+        }
+
+        // If all retries have been exhausted, re-throw the error
+        // This part will only be reached on the last attempt if it also fails
+        const finalErrorMessage = error instanceof Error ? error.message : (error && typeof error === 'object' && 'message' in error) ? (error as any).message : String(error);
+        // Ensure the error message reflects the total number of retries, not i + 1
+        throw new Error(`Failed after ${retries} attempts: ${finalErrorMessage}`);
       }
     }
-    throw new Error('Unexpected error in retry mechanism'); // Should not be reached
+    // This line should ideally not be reached if retries > 0,
+    // but acts as a fallback for an exhausted loop without success or proper error throw.
+    throw new Error(`Unexpected error in retry mechanism: All ${retries} retries failed without throwing properly.`);
   }
 
   private async confirmTransaction(
