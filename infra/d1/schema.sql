@@ -38,8 +38,6 @@ CREATE TABLE user_preferences (
     riskTolerance TEXT CHECK(riskTolerance IN ('low', 'medium', 'high')),
     preferredGames TEXT, -- JSON array of game IDs
     notificationSettings TEXT, -- JSON configuration
-    hasClaimedFirstPlay BOOLEAN DEFAULT FALSE,
-    referralCredits REAL DEFAULT 0,
     smartBet BOOLEAN DEFAULT TRUE,
     lastLogin DATETIME DEFAULT CURRENT_TIMESTAMP
 );

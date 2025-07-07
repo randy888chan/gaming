@@ -9,6 +9,8 @@ module.exports = {
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@services/(.*)$': '<rootDir>/src/services/$1',
+    '^@workers/(.*)$': '<rootDir>/src/workers/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^three-stdlib/(.*)$': '<rootDir>/node_modules/three-stdlib/$1',
     '^@preact/signals-react/(.*)$': '<rootDir>/node_modules/@preact/signals-react/$1',

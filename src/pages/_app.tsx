@@ -26,6 +26,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 
 import { ParticleProviderWrapper } from "@/components/ParticleProviderWrapper";
+import { ConnectKitProvider } from "@particle-network/connectkit";
 
 const GambaPlatformProvider = dynamic(
   () => import("gamba-react-ui-v2").then((mod) => mod.GambaPlatformProvider),
@@ -102,56 +103,71 @@ function MyApp({ Component, pageProps }: AppProps) {
         enableSystem
         disableTransitionOnChange
       >
-        <ParticleProviderWrapper
-          wallets={wallets} // This still passes an empty array, needs verification if Particle can populate Solana WalletProvider context
-          sendTransactionConfig={sendTransactionConfig}
-          PLATFORM_CREATOR_ADDRESS={PLATFORM_CREATOR_ADDRESS}
-          PLATFORM_CREATOR_FEE={PLATFORM_CREATOR_FEE}
-          PLATFORM_JACKPOT_FEE={PLATFORM_JACKPOT_FEE}
-          PLATFORM_REFERRAL_FEE={PLATFORM_REFERRAL_FEE}
-          BASE_SEO_CONFIG={BASE_SEO_CONFIG}
-          LIVE_EVENT_TOAST={LIVE_EVENT_TOAST}
-          showDisclaimer={showDisclaimer}
-          DisclaimerModal={DisclaimerModal}
-          OnboardingModal={OnboardingModal}
-          showOnboarding={showOnboarding}
-          handleCloseOnboarding={handleCloseOnboarding}
+        <ConnectKitProvider
+          projectId={process.env.NEXT_PUBLIC_PARTICLE_PROJECT_ID!}
+          clientKey={process.env.NEXT_PUBLIC_PARTICLE_CLIENT_KEY!}
+          appId={process.env.NEXT_PUBLIC_PARTICLE_APP_ID!}
+          paymasterConfig={{
+            // This is a placeholder. Actual paymaster configuration might vary based on Particle Network's dashboard settings.
+            // The story specifies "first 2 on-chain transactions", which is typically handled by the Paymaster service itself.
+            // We assume the Paymaster is configured on the Particle Network dashboard to sponsor the first 2 transactions.
+            // The `paymasterUrl` and `paymasterMode` are standard for Particle Network's gasless feature.
+            paymasterUrl: "https://paymaster.particle.network/solana", // Example URL, verify with Particle Network docs
+            paymasterMode: "Biconomy", // Or "Particle" depending on setup
+          }}
+          solanaChainConfig={{
+            rpcUrl: process.env.NEXT_PUBLIC_SOLANA_RPC_URL!,
+          }}
         >
-          {/* SendTransactionProvider is now inside ParticleProviderWrapper, so no need to wrap GambaProvider with it here */}
-          <GambaProvider>
-            <GambaPlatformProvider
-              creator={PLATFORM_CREATOR_ADDRESS}
-              defaultCreatorFee={PLATFORM_CREATOR_FEE}
-              defaultJackpotFee={PLATFORM_JACKPOT_FEE}
-              referral={{
-                fee: PLATFORM_REFERRAL_FEE,
-                prefix: "code",
-              }}
-            >
-              <Header />
-              <DefaultSeo {...BASE_SEO_CONFIG} />
-              <main className="pt-12">
-              <Component {...pageProps} />
-              {showOnboarding && <OnboardingModal isOpen={showOnboarding} onClose={handleCloseOnboarding} />}
-              </main>
-              <Footer />
-              <Toaster
-                position="bottom-right"
-                richColors
-                toastOptions={{
-                  style: {
-                    backgroundImage:
-                      "linear-gradient(to bottom right, #1e3a8a, #6b21a8)",
-                  },
+          <ParticleProviderWrapper
+            sendTransactionConfig={sendTransactionConfig}
+            PLATFORM_CREATOR_ADDRESS={PLATFORM_CREATOR_ADDRESS}
+            PLATFORM_CREATOR_FEE={PLATFORM_CREATOR_FEE}
+            PLATFORM_JACKPOT_FEE={PLATFORM_JACKPOT_FEE}
+            PLATFORM_REFERRAL_FEE={PLATFORM_REFERRAL_FEE}
+            BASE_SEO_CONFIG={BASE_SEO_CONFIG}
+            LIVE_EVENT_TOAST={LIVE_EVENT_TOAST}
+            showDisclaimer={showDisclaimer}
+            DisclaimerModal={DisclaimerModal}
+            OnboardingModal={OnboardingModal}
+            showOnboarding={showOnboarding}
+            handleCloseOnboarding={handleCloseOnboarding}
+          >
+            {/* SendTransactionProvider is now inside ParticleProviderWrapper, so no need to wrap GambaProvider with it here */}
+            <GambaProvider>
+              <GambaPlatformProvider
+                creator={PLATFORM_CREATOR_ADDRESS}
+                defaultCreatorFee={PLATFORM_CREATOR_FEE}
+                defaultJackpotFee={PLATFORM_JACKPOT_FEE}
+                referral={{
+                  fee: PLATFORM_REFERRAL_FEE,
+                  prefix: "code",
                 }}
-              />
-              {LIVE_EVENT_TOAST && <GameToast />}
-              {showDisclaimer && <DisclaimerModal />}
-              <OnboardingModal isOpen={showOnboarding} onClose={handleCloseOnboarding} />
-            </GambaPlatformProvider>
-          </GambaProvider>
-          {/* </SendTransactionProvider> */} {/* Moved inside ParticleProviderWrapper */}
-        </ParticleProviderWrapper>
+              >
+                <Header />
+                <DefaultSeo {...BASE_SEO_CONFIG} />
+                <main className="pt-12">
+                <Component {...pageProps} />
+                {showOnboarding && <OnboardingModal isOpen={showOnboarding} onClose={handleCloseOnboarding} />}
+                </main>
+                <Footer />
+                <Toaster
+                  position="bottom-right"
+                  richColors
+                  toastOptions={{
+                    style: {
+                      backgroundImage:
+                        "linear-gradient(to bottom right, #1e3a8a, #6b21a8)",
+                    },
+                  }}
+                />
+                {LIVE_EVENT_TOAST && <GameToast />}
+                {showDisclaimer && <DisclaimerModal />}
+              </GambaPlatformProvider>
+            </GambaProvider>
+            {/* </SendTransactionProvider> */} {/* Moved inside ParticleProviderWrapper */}
+          </ParticleProviderWrapper>
+        </ConnectKitProvider>
       </ThemeProvider>
     </ConnectionProvider>
   );

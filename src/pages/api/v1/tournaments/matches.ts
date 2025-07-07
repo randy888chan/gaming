@@ -10,6 +10,7 @@ declare global {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log(`[API] /api/v1/tournaments/matches - Method: ${req.method}`);
   // Prioritize req.db for testing, fallback to process.env.DB for runtime
   const db = (req as any).db || process.env.DB;
 
@@ -20,10 +21,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   switch (req.method) {
     case 'GET':
       try {
-        const { id, tournament_id } = req.query;
+        const { id, tournament_id } = req.query || {};
         if (id) {
-          const { results } = await db.prepare('SELECT * FROM matches WHERE id = ?').bind(id).all();
-          return res.status(200).json(results[0] || null);
+          const match = await db.prepare('SELECT * FROM matches WHERE id = ?').bind(id).first();
+          return res.status(200).json(match || null);
         } else if (tournament_id) {
           const { results } = await db.prepare('SELECT * FROM matches WHERE tournament_id = ?').bind(tournament_id).all();
           return res.status(200).json(results);
@@ -32,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(200).json(results);
         }
       } catch (error: any) {
+        console.error('API Error in matches GET:', error);
         return res.status(500).json({ error: error.message });
       }
     case 'POST':
@@ -47,6 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(500).json({ error: 'Failed to create match' });
         }
       } catch (error: any) {
+        console.error('API Error in matches POST:', error);
         return res.status(500).json({ error: error.message });
       }
     case 'PUT':
@@ -92,6 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(500).json({ error: 'Failed to update match' });
         }
       } catch (error: any) {
+        console.error('API Error in matches PUT:', error);
         return res.status(500).json({ error: error.message });
       }
     case 'DELETE':
@@ -107,6 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(500).json({ error: 'Failed to delete match' });
         }
       } catch (error: any) {
+        console.error('API Error in matches DELETE:', error);
         return res.status(500).json({ error: error.message });
       }
     default:

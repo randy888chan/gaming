@@ -1,4 +1,6 @@
-import { RateLimiter } from './RateLimiter'; // Assuming RateLimiter is in the same directory
+import { RateLimiter } from './RateLimiter';
+import { ZetaChainService, Chain } from '../../services/ZetaChainService'; // Corrected path
+import { TransactionReceipt } from 'ethers';
 
 export interface PolymarketMarket {
   id: string;
@@ -17,22 +19,30 @@ export interface PolymarketMarket {
   // Add other relevant fields from Polymarket API
 }
 
+export interface PolymarketEscrowResponse {
+  escrowId: string;
+  transactionHash: string;
+  // Add other relevant escrow details
+}
+
 export class PolymarketAdapter {
-  private baseUrl: string = 'https://api.polymarket.com/v2'; // Example base URL
+  private baseUrl: string = 'https://api.polymarket.com/v2';
   private rateLimiter: RateLimiter;
+  private zetaChainService: ZetaChainService;
 
   constructor(
     private apiKey: string,
     private apiSecret: string,
-    // Rate limit to 10 requests per second, with a burst of 20
+    zetaChainService: ZetaChainService,
     rateLimitCapacity: number = 20,
     rateLimitRefillRate: number = 10,
   ) {
     this.rateLimiter = new RateLimiter(rateLimitCapacity, rateLimitRefillRate);
+    this.zetaChainService = zetaChainService;
   }
 
   async getMarkets(): Promise<PolymarketMarket[]> {
-    await this.rateLimiter.acquire(); // Wait for a token before making the request
+    await this.rateLimiter.acquire();
     const response = await fetch(`${this.baseUrl}/markets`, {
       headers: {
         'X-API-Key': this.apiKey,
@@ -42,8 +52,57 @@ export class PolymarketAdapter {
     if (!response.ok) {
       throw new Error(`Polymarket API error: ${response.statusText}`);
     }
-    const data = await response.json();
-    return data.markets as PolymarketMarket[];
+    const data: { markets: PolymarketMarket[] } = await response.json();
+    return data.markets;
+  }
+
+  async createEscrow(
+    marketId: string,
+    amount: bigint,
+    currency: string,
+    sourceChain: Chain,
+    polymarketEscrowContractAddress: string // Address of the Polymarket escrow contract
+  ): Promise<PolymarketEscrowResponse> {
+    console.log(`Creating escrow for market ${marketId} with ${amount.toString()} ${currency} from ${sourceChain}`);
+    // This is a simplified representation. In a real scenario, you'd interact with
+    // Polymarket's smart contract or API to initiate the escrow.
+    // For cross-chain, this would involve a ZetaChain transfer to the escrow contract.
+
+    // Example: Simulate a cross-chain transfer to the Polymarket escrow contract
+    const tx = await this.zetaChainService.crossChainTransfer(
+      sourceChain,
+      Chain.ZETACHAIN, // Assuming Polymarket escrow is settled via ZetaChain
+      currency,
+      amount
+    );
+
+    // In a real scenario, you'd get the actual escrow ID and transaction hash from Polymarket's response
+    return {
+      escrowId: `polymarket-escrow-${marketId}-${Date.now()}`,
+      transactionHash: tx.cctxId, // Using CCTX ID as a placeholder for transaction hash
+    };
+  }
+
+  async releaseEscrow(
+    escrowId: string,
+    recipientAddress: string,
+    amount: bigint,
+    currency: string,
+    targetChain: Chain
+  ): Promise<TransactionReceipt> {
+    console.log(`Releasing escrow ${escrowId} to ${recipientAddress} with ${amount.toString()} ${currency} on ${targetChain}`);
+    // This would involve interacting with Polymarket's smart contract or API to release the escrow.
+    // For cross-chain, this would involve a ZetaChain transfer from the escrow contract.
+
+    // Example: Simulate a cross-chain transfer from the escrow to the recipient
+    const tx = await this.zetaChainService.crossChainTransfer(
+      Chain.ZETACHAIN, // Assuming Polymarket escrow is settled via ZetaChain
+      targetChain,
+      currency,
+      amount
+    );
+
+    return {} as TransactionReceipt; // Placeholder for actual tx receipt
   }
 
   // Implement other PolymarketMarket interface methods as needed

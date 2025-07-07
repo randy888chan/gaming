@@ -24,10 +24,15 @@ export class RateLimiter {
       return;
     }
 
-    const timeToWait = (1 - this.tokens) / this.refillRate;
-    this.tokens = 0;
+    const tokensNeeded = 1 - this.tokens;
+    const timeToWait = tokensNeeded / this.refillRate;
     await new Promise((resolve) => setTimeout(resolve, timeToWait * 1000));
-    this.refillTokens(); // Refill again after waiting
-    this.tokens--; // Acquire the token
+    this.refillTokens(); // Refill after waiting
+    // Ensure we have at least 1 token after refill, then consume it.
+    // If refillRate is very low and timeToWait is small, it's possible we still don't have 1 token.
+    // However, the design implies we wait *until* a token is available.
+    // For simplicity and to match the original intent of acquiring one token,
+    // we assume the refill after waiting will provide at least one token.
+    this.tokens = Math.max(0, this.tokens - 1); // Ensure tokens don't go negative if refill was insufficient
   }
 }

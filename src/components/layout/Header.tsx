@@ -24,16 +24,16 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { useUserStore } from "@/hooks/useUserStore"
-import { useWallet } from "@solana/wallet-adapter-react"
-import { useWalletModal } from "@solana/wallet-adapter-react-ui"
+import { useConnectKit } from "@particle-network/connectkit/react"
+import { useAccount } from "@particle-network/connectkit"
 
 export default function Header() {
   const { t } = useTranslation('common')
   const router = useRouter()
   const { i18n } = useTranslation()
   const context = React.useContext(GambaPlatformContext)
-  const { connected, publicKey, disconnect, wallet, connecting, connect } = useWallet()
-  const walletModal = useWalletModal()
+  const { address, connected, disconnect } = useAccount()
+  const connectKit = useConnectKit()
   const pool = useCurrentPool()
   const token = useCurrentToken()
   const balance = useTokenBalance()
@@ -73,8 +73,8 @@ export default function Header() {
   }
 
   const copyInvite = () => {
-    if (!publicKey) {
-      return walletModal.setVisible(true)
+    if (!connected) {
+      return connectKit.openConnectModal()
     }
     copyLinkToClipboard()
     toast.success(
@@ -84,10 +84,6 @@ export default function Header() {
 
   const truncateString = (s: string, startLen = 4, endLen = startLen) =>
     s ? `${s.slice(0, startLen)}...${s.slice(-endLen)}` : ""
-
-  const handleConnect = useCallback(() => {
-    walletModal.setVisible(true)
-  }, [walletModal])
 
   return (
     <>
@@ -231,11 +227,11 @@ export default function Header() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium">{t('connected_wallet')}</p>
-                        <p className="text-xs opacity-70">{truncateString(publicKey?.toString() || "", 8, 8)}</p>
+                        <p className="text-xs opacity-70">{truncateString(address || "", 8, 8)}</p>
                       </div>
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={wallet?.adapter.icon} alt="Wallet Icon" />
-                        <AvatarFallback>WL</AvatarFallback>
+                        <AvatarImage src="/particle-logo.svg" alt="Particle Network Logo" />
+                        <AvatarFallback>PN</AvatarFallback>
                       </Avatar>
                     </div>
                     <div>
@@ -313,7 +309,7 @@ export default function Header() {
                   <div className="space-y-4">
                     <p className="text-sm font-medium">{t('referral_link')}</p>
                     <div className="flex space-x-2">
-                      <Input value={`${window.location.origin}?code=${publicKey?.toString() || ""}`} readOnly />
+                      <Input value={`${window.location.origin}?code=${address || ""}`} readOnly />
                       <Button onClick={copyInvite} variant="outline">
                         <ClipboardCopy className="h-4 w-4 mr-2" />
                         {t('copy')}
@@ -345,8 +341,8 @@ export default function Header() {
               </DialogContent>
             </Dialog>
           ) : (
-            <Button onClick={handleConnect} variant="outline">
-              {connecting ? t('connecting') : t('connect_wallet')}
+            <Button onClick={() => connectKit.openConnectModal()} variant="outline">
+              {connectKit.connecting ? t('connecting') : t('connect_wallet')}
             </Button>
           )}
         </div>
