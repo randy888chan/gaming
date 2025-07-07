@@ -1,0 +1,58 @@
+# Story 4.2: Platform Internationalization (i18n)
+
+## Status: Draft
+
+## Story
+
+-   **As a non-English speaking user,** I want to be able to use the entire platform in my native language.
+-   **So that** I can have a comfortable and intuitive user experience.
+
+## Acceptance Criteria
+
+1.  The `next-i18next` library is installed and configured in `next-i18next.config.js`.
+2.  All static UI text in the application is replaced with `t('key')` function calls from the `useTranslation` hook.
+3.  JSON translation files are created in `public/locales/` for all 10 target languages: `en, es, fr, de, it, pt, ru, zh, ja, ko`.
+4.  The initial translations for all keys are generated using the `aiAdapter` service.
+5.  A language switcher component is added to the `Header.tsx`, allowing users to select their preferred language.
+6.  The application correctly displays the translated content when a new language is selected.
+
+## Tasks / Subtasks
+
+-   [ ] **Task 1 (AC: #1):** Install `next-i18next` and `react-i18next`. Create the `next-i18next.config.js` file at the project root and configure it with the 10 target locales.
+-   [ ] **Task 2 (AC: #2):** Go through all components in `src/components/` and pages in `src/pages/` and replace hardcoded English text with `t('some.key')` calls from the `useTranslation()` hook.
+-   [ ] **Task 3 (AC: #3, #4):** Create a new script (e.g., `scripts/generate-translations.ts`).
+    -   [ ] **Subtask 3.1:** This script should first scan the entire `src` directory to find all unique translation keys used.
+    -   [ ] **Subtask 3.2:** It should then create the directory structure `public/locales/{lang_code}/` for all target languages.
+    -   [ ] **Subtask 3.3:** For each language, it should iterate through the unique keys and call the `aiAdapter` to get the translation.
+    -   [ ] **Subtask 3.4:** The script will save the translations into the appropriate `common.json` file for each language.
+-   [ ] **Task 4 (AC: #5):** Create a `LanguageSwitcher.tsx` component that uses the `router` from `next/router` to change the `locale`. Add this component to the main `Header.tsx`.
+-   [ ] **Task 5 (AC: #6):** Manually test the language switching functionality to ensure the UI updates correctly.
+
+## Dev Notes
+
+### Technical Guidance from `docs/architecture.md`
+
+*   **Framework:** The chosen framework for this task is `next-i18next`, as it integrates seamlessly with Next.js page-based routing and server-side rendering.
+*   **Static vs. Dynamic Content:** This story focuses exclusively on **static content** (UI text hardcoded in components). The translation of dynamic content from the database (like pSEO articles) will be handled separately by translating it on-demand with caching.
+*   **Translation Script:** The translation generation script (Task 3) is a critical piece of automation. It should be designed to be run whenever new translation keys are added to the codebase to keep all language files in sync.
+
+### Testing
+
+*   **Manual Test Steps:**
+    1.  Navigate to the application.
+    2.  Find the new language switcher in the header.
+    3.  Select "Español" (Spanish). Verify that the UI text in the header, footer, and main content areas changes to Spanish.
+    4.  Select "日本語" (Japanese). Verify that the UI text changes to Japanese.
+    5.  Repeat for a few other languages to ensure the system works correctly.
+    6.  Check the browser console for any i18n-related errors.
+
+## Dev Agent Record
+
+### Agent Model Used:
+
+### Completion Notes List
+
+### Change Log
+
+| Date       | Version | Description | Author |
+| :---       | :---    | :---------- | :----- |
