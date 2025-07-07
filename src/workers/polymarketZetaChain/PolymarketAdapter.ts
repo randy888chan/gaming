@@ -1,5 +1,5 @@
 import { RateLimiter } from './RateLimiter';
-import { ZetaChainService, Chain } from '../../services/ZetaChainService'; // Corrected path
+import { ZetaChainService, Chain } from '../../services/zetaChainService'; // Corrected path and casing
 import { TransactionReceipt } from 'ethers';
 
 export interface PolymarketMarket {

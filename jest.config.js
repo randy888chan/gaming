@@ -6,7 +6,7 @@ module.exports = {
     '<rootDir>/tests/unit/**/*.test.[tj]s?(x)',
     '<rootDir>/src/**/*.test.[tj]s?(x)',
   ],
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  // extensionsToTreatAsEsm: ['.ts', '.tsx'], // Commenting this out to see if it resolves "require is not defined"
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@services/(.*)$': '<rootDir>/src/services/$1',
@@ -21,7 +21,7 @@ module.exports = {
     '^.+\\.(ts|tsx|js|jsx)$': ['babel-jest', { presets: [['@babel/preset-react', { runtime: 'classic' }]] }],
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2|@react-three/drei|lucide-react)/)',
+    '/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2|@react-three/drei|lucide-react|hardhat-gas-reporter)/)',
   ],
   verbose: true,
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js', 'jest-styled-components'],

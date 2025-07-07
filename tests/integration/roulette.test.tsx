@@ -73,15 +73,37 @@ jest.mock('@/components/GambaPlayButton', () => ({
 
 const mockTableAddChipsSpy = jest.fn();
 
-jest.mock('../../src/games/Roulette/Table', () => ({
-  Table: () => <div data-testid="roulette-table" onClick={() => {
-    console.log('[TEST MOCK TABLE] onClick triggered');
-    // Table mock now uses actualSignals directly or via requireActual if it needs a fresh import
-    const currentSignals = jest.requireActual<typeof actualSignals>('../../src/games/Roulette/signals');
-    mockTableAddChipsSpy(currentSignals.selectedChip.value);
-    currentSignals.addChips('1', currentSignals.selectedChip.value); // Call actual addChips
-  }}>Mock Roulette Table</div>,
-}));
+jest.mock('../../src/games/Roulette/Table', () => {
+  let signals = jest.requireActual('../../src/games/Roulette/signals');
+
+  // If Babel/Jest wraps ESM exports in a .default property when required by CJS-like requireActual
+  if (signals.default && signals.addChips === undefined && signals.default.addChips !== undefined) {
+    signals = signals.default;
+  }
+
+  // Defensive check to ensure signals and its properties are loaded correctly
+  if (!signals || typeof signals.addChips !== 'function' || signals.selectedChip === undefined) {
+    throw new Error(
+      `Failed to correctly load signals from ../../src/games/Roulette/signals. ` +
+      `Loaded signals object: ${JSON.stringify(signals)}. ` +
+      `addChips type: ${typeof signals?.addChips}, selectedChip type: ${typeof signals?.selectedChip?.value}`
+    );
+  }
+
+  return {
+    __esModule: true, // Indicate it's an ES module mock if Table component expects it
+    Table: () => (
+      <div
+        data-testid="roulette-table"
+        onClick={() => {
+          signals.addChips('1', signals.selectedChip.value);
+        }}
+      >
+        Mock Roulette Table
+      </div>
+    ),
+  };
+});
 
 jest.mock('../../src/games/Roulette/Chip', () => ({
   Chip: ({ value }: { value: number }) => <span data-testid="chip-value">{value}</span>,

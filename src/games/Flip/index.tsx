@@ -97,7 +97,7 @@ function Flip() {
           }}
         >
           <Suspense fallback={null}>
-            <ambientLight />
+            <AmbientLight />
             <BannerWithMessages messages={messages} />
 
             <Coin
@@ -129,14 +129,14 @@ function Flip() {
 
           {flipping && <Effect color="white" />}
           {win && <Effect color="#42ff78" />}
-          <ambientLight intensity={3} />
-          <directionalLight
+          <AmbientLight intensity={3} />
+          <DirectionalLight
             position-z={1}
             position-y={1}
             castShadow
             color="#CCCCCC"
           />
-          <hemisphereLight
+          <HemisphereLight
             intensity={0.5}
             position={[0, 1, 0]}
             scale={[1, 1, 1]}

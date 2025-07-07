@@ -38,9 +38,9 @@ describe('CreditConfigPanel', () => {
             },
           },
         }), { status: 200 }));
-      } else if (url.toString().startsWith('/api/v1/admin/credit-config') else if (url.toString().startsWith('/api/v1/admin/credit-config') else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') {else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') { init?.method === 'POST') {else if (url.toString().startsWith('/api/v1/admin/credit-config') else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') {else if (url === '/api/v1/admin/credit-config' && init?.method === 'POST') { init?.method === 'POST') { init?.method === 'POST') {
+      } else if (url.toString() === '/api/v1/admin/credit-config' && init?.method === 'PUT') { // Changed POST to PUT
         const body = JSON.parse(init.body as string);
-        // Simulate server-side validation for POST requests
+        // Simulate server-side validation for PUT requests
         if (body.rules.creditAmountUSDC <= 0 || !body.rules.treasuryWallet || body.rules.chains.length === 0 || !body.rules.kmsProvider) {
           return Promise.resolve(new Response(JSON.stringify({ success: false, error: 'Server-side validation failed.' }), { status: 400 }));
         }
@@ -128,7 +128,7 @@ describe('CreditConfigPanel', () => {
     expect(global.fetch).toHaveBeenCalledWith(
       '/api/v1/admin/credit-config',
       expect.objectContaining({
-        method: 'POST',
+        method: 'PUT', // Changed POST to PUT
         body: JSON.stringify({
           id: 'default-credit-config',
           name: 'Default Credit Configuration',
