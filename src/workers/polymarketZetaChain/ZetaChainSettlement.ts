@@ -26,6 +26,12 @@ export class ZetaChainSettlement {
     );
   }
 
+  // Expose provider for testing purposes
+  public getProvider(): JsonRpcProvider {
+    return this.provider;
+  }
+
+
   async settleMarket(
     marketId: string,
     outcome: string,
@@ -71,14 +77,17 @@ export class ZetaChainSettlement {
             if (i < retries - 1) {
               await delay(delayMs);
               delayMs *= 2; // Exponential backoff
-              continue;
+              continue; // Continue to the next retry attempt
             }
           }
         }
+        // If the error is not a retryable error, or if all retries have been exhausted, re-throw the error
         if (error instanceof Error) {
-          throw new Error(`Failed after ${retries} attempts: ${error.message}`);
+          throw new Error(`Failed after ${i + 1} attempts: ${error.message}`);
+        } else if (error && typeof error === 'object' && 'message' in error) {
+          throw new Error(`Failed after ${i + 1} attempts: ${(error as any).message}`);
         } else {
-          throw new Error(`Failed after ${retries} attempts: ${String(error)}`);
+          throw new Error(`Failed after ${i + 1} attempts: ${String(error)}`);
         }
       }
     }

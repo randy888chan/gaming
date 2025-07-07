@@ -1,16 +1,15 @@
 # Epic 3: Global Marketing Infrastructure
 
 ## Monetization Strategy
-**Revenue Model:** Hybrid approach leveraging:
-1. **Transaction Fees:** 0.5% platform fee on cross-chain swaps via ZetaChain integration
-2. **Premium Features:** Paywalled advanced analytics for creators ($29/mo)
-3. **Affiliate Marketing:** 10% revenue share from partner conversions via SEO content
+**Revenue Model:** Simplified approach:
+1. **Transaction Fees:** 0.5% platform fee on cross-chain swaps via ZetaChain integration + 1% betting fee
+2. **Affiliate Marketing:** 10% revenue share from partner conversions via SEO content
 
 ## Lean MVP Scope
 
 ### 1. Smart Localization
 **Core Features:**
-- Auto-translate UI using existing locale files (EN/ES/FR) + 7 languages via DeepL API
+- Auto-translate UI using existing locale files (EN/ES/FR) + 7 languages via Google AI Gemini API
 - Currency conversion through ZetaChain oracle feeds
 - Community-driven translation portal (deferred to Phase 2)
 
@@ -20,12 +19,10 @@
 
 ### 2. Social Automation
 **MVP Implementation:**
-- Twitter/X auto-posting via Cloudflare Scheduled Workers
+- Twitter/X and Facebook auto-posting via Cloudflare Scheduled Workers
 - Post-game share templates with referral codes
 - Basic analytics dashboard (impressions/clicks)
-
-**Deferred:**
-- Facebook/Instagram integration
+- Third-party API integration handling (user-registered credentials)
 - Paid social boosting
 
 ### 3. Programmatic SEO
@@ -42,23 +39,54 @@
 
 | Component               | Solution                  | Monthly Cost |
 |-------------------------|---------------------------|--------------|
-| Translations            | DeepL Pro (500k chars)    | $25          |
+| Translations            | LLM Provider API (User Configured) | Variable    |
 | Social Posting          | Cloudflare Workers        | $5           |
 | SEO Storage             | Cloudflare D1 (5GB)       | $5           |
 | Content Delivery        | Cloudflare CDN            | $0 (Free)    |
 | Transaction Processing  | ZetaChain Fee Credits     | $50          |
 
-**Total Estimated Cost:** $85/month
+**Total Estimated Cost:** $60/month + LLM API costs
 
 ## Technical Requirements
 
 1. **Localization Service**
 ```typescript
 // src/services/localization.ts
+// Configuration for LLM provider (set in .env)
+const LLM_CONFIG = {
+  provider: process.env.LLM_PROVIDER || 'openrouter',
+  apiKey: process.env.LLM_API_KEY,
+  endpoint: process.env.LLM_ENDPOINT,
+  model: process.env.LLM_MODEL || 'mistralai/mistral-7b-instruct',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${process.env.LLM_API_KEY}`,
+    ...JSON.parse(process.env.LLM_EXTRA_HEADERS || '{}')
+  },
+  bodyTemplate: JSON.stringify({
+    model: process.env.LLM_MODEL,
+    messages: [{
+      role: "user",
+      content: `Translate "${key}" to ${lang} keeping gaming terminology. Only respond with the translation.`
+    }],
+    temperature: 0.7
+  })
+};
+
 export const dynamicTranslate = (key: string, lang: string) => {
-  return fetch(`/api/v1/translate?text=${key}&to=${lang}`)
-    .then(res => res.json())
-    .catch(() => getFallbackTranslation(key, lang));
+  return fetch(LLM_CONFIG.endpoint, {
+    method: 'POST',
+    headers: LLM_CONFIG.headers,
+    body: LLM_CONFIG.bodyTemplate.replace('${key}', key).replace('${lang}', lang)
+  })
+  .then(async res => {
+    const data = await res.json();
+    // Handle different provider response formats
+    return data.choices?.[0]?.message?.content ||
+           data.candidates?.[0]?.content?.parts?.[0]?.text ||
+           data.outputs?.[0]?.text;
+  })
+  .catch(() => getFallbackTranslation(key, lang));
 };
 ```
 
@@ -82,3 +110,14 @@ graph TD
 - 30% increase in global traffic (KR/JP/RU markets)
 - 15% conversion rate from social shares
 - Top 3 Google ranking for 50+ target keywords
+
+## Provider Configuration Documentation
+
+```bash
+# .env.example
+LLM_PROVIDER="openrouter" # or "gemini", "mistral", "deepseek"
+LLM_ENDPOINT="https://openrouter.ai/api/v1/chat/completions"
+LLM_API_KEY="your_api_key_here"
+LLM_MODEL="mistralai/mistral-7b-instruct"
+LLM_EXTRA_HEADERS={"HTTP-Referer":"https://yourdomain.com"}
+```

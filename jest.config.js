@@ -4,6 +4,7 @@ module.exports = {
   testMatch: [
     '<rootDir>/tests/integration/**/*.test.[tj]s?(x)',
     '<rootDir>/tests/unit/**/*.test.[tj]s?(x)',
+    '<rootDir>/src/**/*.test.[tj]s?(x)',
   ],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   moduleNameMapper: {
