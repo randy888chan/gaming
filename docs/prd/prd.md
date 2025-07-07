@@ -1,41 +1,73 @@
-## Product Requirements Document: Quantum Nexus (v2.0)
+# Consolidated Project Blueprint: Quantum Nexus v1.0
 
-### 1. Vision & Strategy
+### **1. Vision & Core Pillars**
 
-*   **Vision:** To create a "flash and viral" decentralized application (dApp) that unifies Web3 gaming and prediction markets into a single, seamless user experience, deployed on a lean, cost-effective infrastructure.
-*   **Core Problem:** The Web3 landscape is fragmented. Users need to switch between platforms (and chains) for different activities. Onboarding is often complex for newcomers.
-*   **Strategic Foundation:** This project is an evolution of the open-source `Gamba-V2-Next.js` platform, enhancing it with unique omnichain and AI-driven capabilities.
+**Vision:** To build a unified, viral decentralized application (dApp) that seamlessly integrates Web3 gaming and prediction markets.
 
-### 2. Core Features & User Epics
+**The Four Pillars (Non-Negotiable):**
+1.  **Gamba v2:** The foundational gaming platform.
+2.  **Polymarket:** The exclusive provider for prediction markets.
+3.  **ZetaChain:** The exclusive omnichain layer for all cross-chain functionality (EVM, Solana, TON).
+4.  **Particle Network:** The exclusive service for user onboarding and social login.
 
-This outlines the primary capabilities of the platform.
+### **2. Core Technology Stack**
 
-#### **Epic 1: The Unified Gameplay Experience**
-*   **Gamba Game Suite:** Integrate the full suite of Gamba V2 games with a consistent UI.
-*   **Polymarket Prediction Markets:** Create a seamless interface within the dApp to browse, view, and place bets on Polymarket events. Users should not feel like they are leaving our platform.
-*   **Omnichain Abstraction (Powered by ZetaChain):** Users must be able to use assets from one chain (e.g., an EVM chain) to interact with protocols on another (e.g., Solana for Gamba games) without performing manual bridging. ZetaChain will handle this complex cross-chain logic in the background.
+This is the definitive technology stack. No other technologies shall be used for these core functions.
 
-#### **Epic 2: Frictionless Onboarding & Viral Growth**
-*   **Social Login (Powered by Particle Network):** New users must be able to sign up and get a self-custodial wallet using their social accounts (Google, X, etc.) to eliminate the friction of seed phrases.
-*   **First Play Free:** To incentivize trial, new users will receive a one-time, micro-value credit upon signup.
-*   **AI-Powered Viral Content Loop:**
-    *   **Programmatic SEO (pSEO):** An LLM-powered service will automatically generate SEO-optimized landing pages based on trending games or Polymarket events to capture organic search traffic.
-    *   **Social Media Automation:** A backend worker will automatically post links to the newly generated pSEO content and other platform events (e.g., big wins, new tournaments) to social media channels like X/Twitter.
+| Category               | Technology                                 | Justification                                                         |
+| ---------------------- | ------------------------------------------ | --------------------------------------------------------------------- |
+| **Frontend**           | Next.js                                    | High-performance React framework for server-rendered applications.    |
+| **UI Framework**       | Tailwind CSS                               | Utility-first CSS for rapid, custom UI development.                   |
+| **UI Components**      | shadcn-ui                                  | Accessible and customizable component library.                        |
+| **State Management**   | Zustand                                    | Lightweight state management for a performant application.            |
+| **Backend & Deployment** | Cloudflare (Pages, Workers, D1, R2)        | Unified, serverless, globally distributed infrastructure.             |
+| **Database**           | Cloudflare D1                              | Serverless SQL database integrated with Cloudflare Workers.           |
+| **Onboarding & Wallets** | Particle Network                           | Frictionless social login and self-custodial wallet infrastructure.   |
 
-#### **Epic 3: Enhanced User Engagement**
-*   **Tournament Engine:** A backend system to create, manage, and display single-elimination tournaments for supported games.
-*   **Smart Bet AI:** A user-facing feature that provides simple, AI-powered bet suggestions to increase engagement and user confidence.
+### **3. The Implementation Roadmap (Phased)**
 
-### 3. Non-Functional Requirements (Mandatory)
+This is the mandatory, sequential plan. No phase begins until the previous one is complete and validated.
 
-*   **Deployment & Infrastructure:** The entire application stack **must** be designed for and deployed on the **Cloudflare** ecosystem (Pages, Workers, D1, R2). This is a non-negotiable architectural constraint.
-*   **Localization:** The UI must be architected for localization and support at least 10 languages (`en`, `es`, `fr`, `de`, `it`, `pt`, `ru`, `zh`, `ja`, `ko`). An LLM can be used to generate the initial translations.
-*   **Cost-Effectiveness:** The infrastructure must be designed to operate within free or near-zero cost tiers initially, scaling predictably as usage grows.
+---
 
-### 4. Current Status & Next Steps
+#### **Phase 1: Foundation & Remediation (Immediate Focus)**
+*Objective: Fix the broken foundation. All work must address these critical issues before any new features are built.*
 
-*   **Current Status:** **Refactoring & Realignment**. The project has completed an initial proof-of-concept phase. Due to fragmented documentation, development has been paused to realign on this core vision. Significant code and documentation assets exist but must be audited against this PRD.
-*   **Immediate Next Steps:**
-    1.  **Approve This PRD:** This document must be accepted as the new source of truth.
-    2.  **Architectural Realignment:** The System Architect (`@architect`) will produce a new, streamlined architecture document based on this PRD.
-    3.  **Backlog Grooming:** All existing stories and epics must be re-evaluated, and a new, clean backlog created based on the epics defined above.
+1.  **Fix Core Smart Contracts:**
+    *   **`PolymarketAdapter.sol`:**
+        *   Implement mandatory **TON** and **Solana** integration hooks.
+        *   Replace the placeholder/simulation logic in the `placeBet` function with production-ready code.
+        *   Optimize the `onZetaMessage` function to be more gas-efficient.
+    *   **`CrossChainSettlement.sol`:**
+        *   Refactor to ensure full compliance with the latest ZetaChain universal contract standards.
+
+2.  **Finalize Database Schema:**
+    *   **`infra/d1/schema.sql`:**
+        *   Add required tables for Polymarket market data and ZetaChain transaction logging.
+        *   Refactor the `user_preferences` table to use a universal user ID from Particle Network instead of a single `walletAddress`.
+
+3.  **Implement Backend Services:**
+    *   **`polymarketService.ts`:**
+        *   Implement production-ready functions for fetching market data and submitting bets via the `PolymarketAdapter`.
+    *   **`zetaChainService.ts`:**
+        *   Remove all hardcoded testnet configurations.
+        *   Implement production-ready functions for interacting with the `CrossChainSettlement` contract on all supported chains.
+
+---
+
+#### **Phase 2: Core Feature Implementation**
+*Objective: Build the primary user-facing features on the now-stable foundation.*
+
+1.  **User Onboarding:** Implement the full Particle Network social login flow.
+2.  **"First Play Free":** Implement the backend logic and API for the new user credit system.
+3.  **Polymarket UI:** Build the frontend components to display and interact with Polymarket markets.
+4.  **Tournament Engine:** Build the backend APIs and frontend UI for creating and managing tournaments.
+
+---
+
+#### **Phase 3: AI Growth Engine**
+*Objective: Activate the automated marketing and user engagement features.*
+
+1.  **pSEO Worker:** Implement and deploy the Cloudflare Worker for generating SEO content.
+2.  **Social Poster Worker:** Implement and deploy the Cloudflare Worker for automated social media posting.
+3.  **Smart Bet AI:** Integrate the AI adapter to provide in-game bet suggestions.
