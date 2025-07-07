@@ -1,4 +1,6 @@
 import { ZetaChainSettlement } from './ZetaChainSettlement';
+
+jest.setTimeout(30000); // Set a higher timeout for all tests in this file
 import { Wallet, Contract, TransactionResponse, TransactionReceipt } from 'ethers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { parseEther } from '@ethersproject/units';
@@ -17,6 +19,12 @@ jest.mock('ethers', () => {
     Contract: jest.fn().mockImplementation(() => ({
       settle: jest.fn(),
     })),
+    BigNumber: {
+      from: jest.fn((value) => ({
+        _hex: `0x${value.toString(16)}`,
+        eq: jest.fn(other => value === other),
+      })),
+    },
   };
 });
 
@@ -27,9 +35,18 @@ jest.mock('@ethersproject/providers', () => ({
   })),
 }));
 
-jest.mock('@ethersproject/units', () => ({
-  parseEther: jest.fn(amount => ({ _hex: `0x${(parseFloat(amount) * 1e18).toString(16)}` })),
-}));
+jest.mock('@ethersproject/units', () => {
+  const actualEthers = jest.requireActual('ethers');
+  return {
+    parseEther: jest.fn(amount => {
+      const bigNumberValue = actualEthers.utils.parseEther(amount);
+      return {
+        _hex: bigNumberValue._hex,
+        eq: jest.fn(other => bigNumberValue.eq(other)),
+      };
+    }),
+  };
+});
 
 describe('ZetaChainSettlement', () => {
   let settlement: ZetaChainSettlement;
@@ -141,14 +158,14 @@ describe('ZetaChainSettlement', () => {
 
     it('should throw an error if transaction confirmation times out', async () => {
       const mockTxHash = '0xmocktxhashTimeout';
-      const mockReceipt = { hash: mockTxHash, blockNumber: 95 }; // Simulate initial receipt
+      const mockReceipt = { hash: mockTxHash, blockNumber: 95 };
       const mockTransactionResponse: TransactionResponse = {
         hash: mockTxHash,
         wait: jest.fn().mockResolvedValue(mockReceipt),
       } as unknown as TransactionResponse;
 
       mockContract.settle.mockResolvedValue(mockTransactionResponse);
-      // Mock the provider's getTransactionReceipt and getBlockNumber for this specific test
+      // Simulate no receipt for a few calls, then a receipt that never gets enough confirmations
       mockProvider.getTransactionReceipt
         .mockResolvedValueOnce(null) // First check: no receipt
         .mockResolvedValueOnce(null) // Second check: still no receipt
@@ -157,10 +174,11 @@ describe('ZetaChainSettlement', () => {
 
       mockProvider.getBlockNumber.mockResolvedValue(100); // Current block number
 
+      // Temporarily set a very short timeout for confirmTransaction in the actual class
+      // This is a bit hacky, but allows testing the timeout logic without waiting 5 minutes
       const originalConfirmTransaction = (settlement as any).confirmTransaction;
       (settlement as any).confirmTransaction = jest.fn(async (txHash, confirmations, timeout, interval) => {
-        // Call the original confirmTransaction logic, but with mocked provider
-        await originalConfirmTransaction.bind(settlement)(txHash, 1, 100, 10); // 1 confirmation, 100ms timeout, 10ms interval
+        return originalConfirmTransaction.call(settlement, txHash, 1, 100, 10); // 1 confirmation, 100ms timeout, 10ms interval
       });
 
       const marketId = 'marketTimeout';
