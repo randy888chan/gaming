@@ -1,0 +1,64 @@
+# Story 1.2: Implement Platform Revenue & Gamba Liquidity Provision
+
+## Status: Draft
+
+## Story
+
+-   **As the platform operator,** I want to automatically collect a small fee from every game played to ensure the platform is profitable.
+-   **And as a user,** I want to be able to deposit my tokens into the Gamba liquidity pool to become a "part of the house" and earn yield.
+
+## Acceptance Criteria
+
+1.  The `GambaProvider` component in `src/pages/_app.tsx` is configured with the platform's official `creator` address and a `creatorFee` of 0.5%.
+2.  A new page is created at the route `/liquidity`.
+3.  The `/liquidity` page displays the current total liquidity of the main Gamba pool for the selected token.
+4.  The `/liquidity` page has an interface allowing authenticated users to deposit supported tokens into the pool.
+5.  The `/liquidity` page has an interface allowing authenticated users to withdraw their funds (burn their LP tokens) from the pool.
+
+## Tasks / Subtasks
+
+-   [ ] **Task 1 (AC: #1):** Modify the `<GambaProvider>` props in `src/pages/_app.tsx` to include the `creator` public key and set the `creatorFee` to `0.005`.
+-   [ ] **Task 2 (AC: #2):** Create a new file `src/pages/liquidity.tsx` to establish the new page route.
+-   [ ] **Task 3 (AC: #3, #4, #5):** Create a new React component, `src/components/liquidity/LiquidityPanel.tsx`.
+    -   [ ] **Subtask 3.1:** This component should use the `useGambaPool()` hook from `gamba-react-ui-v2` to fetch and display the pool's total liquidity.
+    -   [ ] **Subtask 3.2:** Implement an input field (`<Input>`) and a button (`<Button>`) for depositing funds. This should call the `gamba.deposit()` function from the `gamba-react-v2` SDK.
+    -   [ ] **Subtask 3.3:** Implement a separate button for withdrawing funds. This should call the `gamba.withdraw()` function from the `gamba-react-v2` SDK.
+    -   [ ] **Subtask 3.4:** Use `shadcn-ui` components like `<Card>`, `<CardHeader>`, `<CardContent>`, `<Input>`, and `<Button>` to build the UI for a consistent look and feel.
+-   [ ] **Task 4:** Add the new `LiquidityPanel` component to the `liquidity.tsx` page.
+
+## Dev Notes
+
+### Technical Guidance from `docs/architecture.md`
+
+*   **Core Logic:** All interactions with the liquidity pool (deposit, withdraw, fetching stats) are handled by the `gamba-react-v2` and `gamba-react-ui-v2` hooks. The primary hook for this task is `useGambaPool()`, which provides pool state and the `gamba.deposit()` and `gamba.withdraw()` methods. There is no need to write custom Solana transaction logic.
+*   **UI Components:** To maintain visual consistency with the rest of the application, all new UI elements MUST be built using the pre-configured `shadcn-ui` components.
+*   **Platform Fees:** Correctly setting the `creator` and `creatorFee` in the `GambaProvider` is a critical business requirement for platform sustainability.
+
+### Testing
+
+*   **Unit Tests:** Not required for this component.
+*   **Integration Tests:**
+    *   Create a new test file in `tests/integration/` for `LiquidityPanel.tsx`.
+    *   The test should mock the `useGambaPool` hook to provide dummy data.
+    *   Simulate a user entering an amount and clicking the "Deposit" button.
+    *   Assert that the mocked `gamba.deposit()` function was called with the correct amount.
+*   **Manual Test Steps:**
+    1.  Navigate to the new `/liquidity` page.
+    2.  Verify that the current pool liquidity is displayed correctly.
+    3.  Enter a small amount in the deposit input field and click "Deposit".
+    4.  Approve the transaction in your wallet and verify that your token balance decreases and the pool liquidity increases.
+    5.  Click the "Withdraw" button.
+    6.  Approve the transaction and verify that your token balance increases and the pool liquidity decreases.
+
+## Dev Agent Record
+
+### Agent Model Used:
+
+### Debug Log References
+
+### Completion Notes List
+
+### Change Log
+
+| Date | Version | Description | Author |
+| :--- | :------ | :---------- | :----- |
