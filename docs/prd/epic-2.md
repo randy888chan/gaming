@@ -1,36 +1,19 @@
-# Epic 2: Payment Gateway Integration
+### **Epic 2: The Unified dApp Experience**
+*Goal: To integrate the core Polymarket and Tournament features, creating a single, powerful application on our stable foundation.*
 
-## Objective
-Implement secure cryptocurrency payment processing supporting multiple chains and tokens.
+*   **Story 2.1: Polymarket Market Integration & Betting Flow**
+    *   **As a user,** I want to browse active Polymarket prediction markets and place bets directly within the Quantum Nexus UI.
+    *   **So that** I can seamlessly switch between playing games and betting on real-world events.
+    *   **Acceptance Criteria:**
+        *   A `/polymarket` page displays markets fetched from the Polymarket CLOB API via our backend service.
+        *   The UI shows outcomes and real-time prices.
+        *   A "Place Bet" button on the UI initiates a call to our backend API.
+        *   The backend triggers a cross-chain transaction via the `zetaChainService`, targeting the `PolymarketAdapter.sol` contract on the appropriate EVM chain. The user signs this single transaction from their Particle Smart Wallet.
 
-## Key Features
-- Multi-chain deposit/withdrawal support (EVM, Solana, TON)
-- Real-time exchange rate tracking via Chainlink
-- Fraud detection system with 3D Secure equivalent
-- Tax calculation and reporting module
-- Multi-sig wallet integration for cold storage
-
-## Acceptance Criteria
-1. Support 5+ major cryptocurrencies (BTC, ETH, SOL, TON, USDC)
-2. <100ms response time for balance queries
-3. <1% transaction failure rate under load
-4. Automated tax form generation for users
-5. PCI-DSS compliant encryption for all transactions
-
-## Technical Guidance
-```mermaid
-sequenceDiagram
-    User->>Frontend: Initiate Deposit
-    Frontend->>API: /api/payment/deposit
-    API->>Blockchain: Generate deposit address
-    Blockchain-->>API: New address
-    API-->>Frontend: Display deposit QR
-    User->>Blockchain: Send funds
-    Blockchain-->>Listener: Detect transaction
-    Listener->>DB: Update balance
-```
-
-**MCP Verification Requirements:**
-1. Semgrep scan for security vulnerabilities
-2. Brave-search for latest crypto regulations
-3. GitHub code search for payment pattern validation
+*   **Story 2.2: Tournament Engine MVP**
+    *   **As an administrator,** I want a simple interface to create and manage single-elimination tournaments for our supported Gamba games.
+    *   **And as a user,** I want to view a real-time tournament bracket.
+    *   **Acceptance Criteria:**
+        *   Backend includes CRUD APIs at `/api/v1/tournaments`.
+        *   An admin UI (can be basic) allows for tournament creation.
+        *   A public-facing UI at `/tournaments/{id}` renders the `TournamentBracket.tsx` component with real-time data from the API.
