@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { D1Database } from '@cloudflare/workers-types';
 import { LiquidityEngine, GambaLiquidityPool, ParticleLiquidityPool } from '@services/LiquidityEngine';
 import { PolymarketAdapter } from '@workers/polymarketZetaChain/PolymarketAdapter';
-import { ZetaChainService, Chain } from '@services/ZetaChainService';
+import { ZetaChainService, Chain } from '@services/zetaChainService'; // Corrected casing
 
 // Using native BigInt for large number operations with ethers v6
 // import { BigNumber } from 'ethers'; // No longer needed for ethers v6

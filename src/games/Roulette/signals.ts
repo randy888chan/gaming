@@ -12,7 +12,7 @@ export const distributedChips = computed(() => {
   for (const [id, amount] of placements) {
     const square = tableLayout[id];
     const divided = Number(
-      BigInt(amount * 100) / BigInt(square.numbers.length),
+      BigInt(amount * 10000) / BigInt(square.numbers.length), // Changed 100 to 10000
     );
     for (const number of square.numbers) {
       distributed[number - 1] += divided;

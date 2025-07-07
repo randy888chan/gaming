@@ -4,6 +4,17 @@ import { apiResolver } from 'next/dist/server/api-utils/node';
 import creditConfigHandler from '../../src/pages/api/v1/admin/credit-config';
 import * as jwt from 'jsonwebtoken';
 import type { D1Database } from '@cloudflare/workers-types';
+import { creditConfigService } from '../../src/services/CreditConfigService'; // Import for mocking
+
+// Mock CreditConfigService
+jest.mock('../../src/services/CreditConfigService', () => ({
+  creditConfigService: {
+    getConfig: jest.fn(),
+    createConfig: jest.fn(),
+    updateConfig: jest.fn(),
+    deleteConfig: jest.fn(),
+  },
+}));
 
 // Mock D1Database implementation
 jest.mock('@cloudflare/workers-types', () => ({
@@ -24,11 +35,30 @@ jest.mock('@cloudflare/workers-types', () => ({
 }));
 
 // Mock jwt verification
-jest.mock('jsonwebtoken', () => ({
-  verify: jest.fn().mockImplementation((token: string) => ({
-    account: token === 'valid_token' ? 'admin_user' : null
-  }))
-}));
+jest.mock('jsonwebtoken', () => {
+  const actualJwt = jest.requireActual('jsonwebtoken');
+  return {
+    ...actualJwt, // Spread all actual exports, including 'sign'
+    verify: jest.fn().mockImplementation((token: string, secretOrPublicKey: any, options?: any, callback?: any) => {
+      // Default mock for verify; can be overridden in beforeEach
+      if (token === 'valid_token_for_default_mock') { // Example specific token for this general mock
+        const payload = { account: 'admin_user_default_mock' };
+        if (callback) {
+          callback(null, payload);
+          return;
+        }
+        return payload;
+      }
+      // Fallback for other tokens or if more specific mock is needed per test
+      const err = new Error('Default mock: Invalid token');
+      if (callback) {
+        callback(err, null);
+        return;
+      }
+      throw err;
+    }),
+  };
+});
 
 const mockJwtSecret = 'mock-jwt-secret';
 process.env.PARTICLE_NETWORK_JWT_SECRET = mockJwtSecret;
@@ -42,9 +72,10 @@ describe('Credit Configuration API Integration Tests', () => {
   let server: request.SuperTest<request.Test>;
   let mockAdminToken: string;
   let mockNonAdminToken: string;
+  // let originalServer: request.SuperTest<request.Test>; // No longer needed
 
   beforeAll(() => {
-    server = testServer(creditConfigHandler);
+    server = testServer(creditConfigHandler); // Initialize server with the default wrapped handler
     // Generate mock JWT tokens
     mockAdminToken = jwt.sign({ userId: 'adminUser', role: 'admin' }, mockJwtSecret, { expiresIn: '1h' });
     mockNonAdminToken = jwt.sign({ userId: 'regularUser', role: 'user' }, mockJwtSecret, { expiresIn: '1h' });
@@ -52,7 +83,42 @@ describe('Credit Configuration API Integration Tests', () => {
 
   beforeEach(() => {
     // Reset mocks before each test
-    jest.clearAllMocks();
+    jest.clearAllMocks(); // Or consider jest.resetAllMocks() if deeper reset is needed
+
+    // Default mock implementations for creditConfigService
+    (creditConfigService.getConfig as jest.Mock).mockImplementation(async (id: string) => {
+      if (id === 'test-config-1' || id === 'default-credit-config' || id === 'some-id' || id === 'any-id') {
+        // Return a basic valid config object
+        return {
+          id: id,
+          name: `Mock Config ${id}`,
+          rules: { mockRule: true },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      }
+      return null; // Default to null if no specific ID matched
+    });
+    (creditConfigService.createConfig as jest.Mock).mockImplementation(async (data) => {
+      return {
+        id: 'newly-created-id',
+        ...data,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+    });
+    (creditConfigService.updateConfig as jest.Mock).mockImplementation(async (id, data) => {
+      return {
+        id,
+        name: data.name || 'Updated Mock Config',
+        rules: data.rules || { mockRule: true },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+    });
+    (creditConfigService.deleteConfig as jest.Mock).mockResolvedValue(true);
+
+    // JWT verify mock
     (jwt.verify as jest.Mock).mockImplementation((token, secret) => {
       if (token === mockAdminToken && secret === mockJwtSecret) {
         return { userId: 'adminUser', role: 'admin' };
@@ -77,6 +143,7 @@ describe('Credit Configuration API Integration Tests', () => {
     test('should allow an authenticated admin to GET credit configuration', async () => {
       (creditConfigService.getConfig as jest.Mock).mockResolvedValue(mockConfig);
 
+      // Use the default server which uses the wrapped handler
       const res = await server.get('/api/v1/admin/credit-config?id=test-config-1')
         .set('Authorization', `Bearer ${mockAdminToken}`);
 
