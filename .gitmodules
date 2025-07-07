@@ -1,0 +1,27 @@
+[submodule "lib/chainlink-brownie-contracts"]
+	path = lib/chainlink-brownie-contracts
+	url = https://github.com/smartcontractkit/chainlink-brownie-contracts
+[submodule "lib/forge-std"]
+	path = lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "lib/toolkit"]
+	path = lib/toolkit
+	url = https://github.com/zeta-chain/toolkit
+[submodule "lib/protocol-contracts"]
+	path = lib/protocol-contracts
+	url = https://github.com/zeta-chain/protocol-contracts
+[submodule "lib/v2-periphery"]
+	path = lib/v2-periphery
+	url = https://github.com/uniswap/v2-periphery
+[submodule "lib/openzeppelin-contracts-upgradeable"]
+	path = lib/openzeppelin-contracts-upgradeable
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable
+[submodule "lib/uniswap-v2-core"]
+	path = lib/uniswap-v2-core
+	url = https://github.com/Uniswap/uniswap-v2-core
+[submodule "lib/zetachain/protocol-contracts"]
+	path = lib/zetachain/protocol-contracts
+	url = https://github.com/zeta-chain/protocol-contracts
