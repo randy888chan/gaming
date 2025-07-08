@@ -1,9 +1,0 @@
-{
-  "enabled": false,
-  "rules": {
-    "amount": 1
-  },
-  "chains": ["solana"],
-  "treasuryWallet": "",
-  "kmsProvider": "mock"
-}
