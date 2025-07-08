@@ -1,19 +1,17 @@
-### **Epic 4: Advanced Functionality & Internationalization**
-*Goal: To cater to power users, expand revenue models, and prepare for a global audience.*
+### **Epic 4: Internationalization & Advanced Features**
+*Goal: To prepare for a global launch and add features for power users and growth.*
 
-*   **Story 4.1: Polymarket Market Making Interface**
-    *   **As an advanced user,** I want an interface to place `BUY` and `SELL` limit orders on Polymarket markets.
-    *   **So that** I can act as a market maker and earn revenue from the bid-ask spread.
-    *   **Acceptance Criteria:**
-        *   A new "Pro Trading" page is created.
-        *   This UI displays the order book for a selected market.
-        *   Users can submit, view, and cancel their open limit orders.
+*   **Story 4.1: Platform Internationalization (i18n)**
+    *   **As a non-English speaking user,** I want to use the entire platform in my native language.
+    *   **ACs:**
+        1.  The `next-i18next` framework is fully configured.
+        2.  JSON translation files are created in `public/locales/` for the 10 target languages: **English, Mandarin, Spanish, Portuguese, Russian, Turkish, Korean, Japanese, Vietnamese, and Indonesian.**
+        3.  All static UI text is sourced from the JSON translation files.
+        4.  A language switcher component is present and functional in the UI header.
 
-*   **Story 4.2: Platform Internationalization (i18n)**
-    *   **As a non-English speaking user,** I want to be able to use the entire platform in my native language.
-    *   **So that** I can have a comfortable and intuitive user experience.
-    *   **Acceptance Criteria:**
-        *   The platform is fully translated into the 10 target languages: `en, es, fr, de, it, pt, ru, zh, ja, ko`.
-        *   The `next-i18next` framework is correctly configured.
-        *   All static UI text is sourced from the JSON translation files in `public/locales/`.
-        *   A language switcher is present in the UI.
+*   **Story 4.2: Build On-Chain Referral System**
+    *   **As a user,** I want to earn real, on-chain rewards for referring new users.
+    *   **ACs:**
+        1.  A unique referral link is generated for each user.
+        2.  The backend logic is implemented to attribute new users to their referrer.
+        3.  When a referred user plays, a percentage of the platform fee is sent to the referrer's wallet via a transparent ZetaChain transaction, which is logged in the `zetachain_cctx_log` table.
