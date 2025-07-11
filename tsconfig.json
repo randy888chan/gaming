@@ -9,6 +9,7 @@
     "strict": true,
     "skipLibCheck": true,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "baseUrl": "./src", // Base URL for module resolution
     "paths": {
       "@services/*": ["services/*"],

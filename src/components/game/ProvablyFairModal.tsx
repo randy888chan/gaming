@@ -16,7 +16,7 @@ export function ProvablyFairModal(props: { onClose: () => void }) {
 
   const initialize = async () => {
     sendTransaction(
-      program.methods.playerInitialize().accounts({}).instruction(),
+      program.methods.playerInitialize().accounts({}).instruction()
     );
   };
 

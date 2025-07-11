@@ -19,13 +19,13 @@ export interface Match {
   score2: number | null;
   winnerId: string | null;
   nextMatchId: string | null;
-  nextMatchTeamSlot: 'team1' | 'team2' | null;
+  nextMatchTeamSlot: "team1" | "team2" | null;
 }
 
 export interface Tournament {
   id: string;
   name: string;
-  format: 'single-elimination' | 'double-elimination' | 'round-robin';
+  format: "single-elimination" | "double-elimination" | "round-robin";
   matches: Match[];
   teams: Team[];
 }

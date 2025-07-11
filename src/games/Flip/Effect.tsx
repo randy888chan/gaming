@@ -23,7 +23,7 @@ export const Effect = ({ color }: { color: string }) => {
       const ssss = 0.5 + (1 + Math.cos(i)) * 2;
       tmp.rotation.z = i + Date.now() * 0.001;
       tmp.scale.setScalar(
-        ssss * animation.current * 1 * (1 - animation.current),
+        ssss * animation.current * 1 * (1 - animation.current)
       );
       const len = 1 + 2 * animation.current;
       tmp.position.set(Math.cos(angle) * len, Math.sin(angle) * len, 0);

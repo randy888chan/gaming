@@ -1,5 +1,5 @@
-import { BigNumber, TransactionReceipt } from 'ethers';
-import { ZetaChainService, Chain } from '../services/ZetaChainService'; // Corrected casing
+import { BigNumber, TransactionReceipt } from "ethers";
+import { ZetaChainService, Chain } from "../services/ZetaChainService"; // Corrected casing
 
 export interface RevenueDistributionConfig {
   platformWallet: string;
@@ -11,10 +11,13 @@ export class RevenueDistributor {
   private zetaChainService: ZetaChainService;
   private config: RevenueDistributionConfig;
 
-  constructor(config: RevenueDistributionConfig, zetaChainService: ZetaChainService) {
+  constructor(
+    config: RevenueDistributionConfig,
+    zetaChainService: ZetaChainService
+  ) {
     this.config = config;
     this.zetaChainService = zetaChainService;
-    console.log('RevenueDistributor initialized with config:', config);
+    console.log("RevenueDistributor initialized with config:", config);
   }
 
   async distributeRevenue(
@@ -23,11 +26,15 @@ export class RevenueDistributor {
     sourceChain: Chain,
     polymarketEscrowId?: string // Optional, if revenue is from Polymarket settlement
   ): Promise<TransactionReceipt[]> {
-    console.log(`Distributing ${amount.toString()} ${currency} from ${sourceChain}`);
+    console.log(
+      `Distributing ${amount.toString()} ${currency} from ${sourceChain}`
+    );
     const transactions: TransactionReceipt[] = [];
 
     // 1. Distribute to Platform Wallet
-    const platformAmount = amount.mul(BigNumber.from(100 - (this.config.polymarketShare * 100))).div(BigNumber.from(100));
+    const platformAmount = amount
+      .mul(BigNumber.from(100 - this.config.polymarketShare * 100))
+      .div(BigNumber.from(100));
     console.log(`Platform share: ${platformAmount.toString()} ${currency}`);
     // Assuming platform wallet is on ZetaChain or a connected EVM chain
     const platformTx = await this.zetaChainService.crossChainTransfer(
@@ -40,8 +47,12 @@ export class RevenueDistributor {
 
     // 2. Distribute Polymarket Share (if applicable)
     if (polymarketEscrowId && this.config.polymarketShare > 0) {
-      const polymarketAmount = amount.mul(BigNumber.from(this.config.polymarketShare * 100)).div(BigNumber.from(100));
-      console.log(`Polymarket share: ${polymarketAmount.toString()} ${currency}`);
+      const polymarketAmount = amount
+        .mul(BigNumber.from(this.config.polymarketShare * 100))
+        .div(BigNumber.from(100));
+      console.log(
+        `Polymarket share: ${polymarketAmount.toString()} ${currency}`
+      );
       // This would involve interacting with Polymarket's escrow contract to release funds
       // For now, we'll simulate a cross-chain transfer to a Polymarket-designated address
       const polymarketTx = await this.zetaChainService.crossChainTransfer(
@@ -65,9 +76,16 @@ export class RevenueDistributor {
     currency: string,
     sourceChain: Chain
   ): Promise<TransactionReceipt[]> {
-    console.log(`Processing Polymarket settlement for escrow ${polymarketEscrowId} with amount ${settledAmount.toString()} ${currency}`);
+    console.log(
+      `Processing Polymarket settlement for escrow ${polymarketEscrowId} with amount ${settledAmount.toString()} ${currency}`
+    );
     // Here, you would typically verify the settlement with Polymarket's API/contracts
     // and then trigger the revenue distribution.
-    return this.distributeRevenue(settledAmount, currency, sourceChain, polymarketEscrowId);
+    return this.distributeRevenue(
+      settledAmount,
+      currency,
+      sourceChain,
+      polymarketEscrowId
+    );
   }
 }

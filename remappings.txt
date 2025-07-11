@@ -1,0 +1,8 @@
+@zetachain/toolkit/=node_modules/@zetachain/toolkit/contracts/
+@zetachain/protocol-contracts/=node_modules/@zetachain/protocol-contracts/contracts/
+@openzeppelin/contracts-upgradeable/=node_modules/@openzeppelin/contracts-upgradeable/contracts/
+@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/
+@uniswap/v2-periphery/=node_modules/@uniswap/v2-periphery/contracts/
+forge-std/=lib/forge-std/src/
+@uniswap/v2-core/=node_modules/@uniswap/v2-core/contracts/
+@chainlink/contracts/=node_modules/@chainlink/contracts/

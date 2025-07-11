@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label'; // Assuming a Label component exists
+import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label"; // Assuming a Label component exists
 
 interface CreditConfigRules {
   enabled: boolean;
@@ -27,33 +27,37 @@ interface CreditConfigErrors {
 
 const CreditConfigPanel: React.FC = () => {
   const [config, setConfig] = useState<CreditConfig>({
-    id: 'default-credit-config', // Assuming a default ID for the single config
-    name: 'Default Credit Configuration', // Assuming a default name
+    id: "default-credit-config", // Assuming a default ID for the single config
+    name: "Default Credit Configuration", // Assuming a default name
     rules: {
       enabled: false,
       creditAmountUSDC: 0,
       chains: [],
-      treasuryWallet: '',
-      kmsProvider: '',
+      treasuryWallet: "",
+      kmsProvider: "",
     },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<CreditConfigErrors>({});
+  const [validationErrors, setValidationErrors] = useState<CreditConfigErrors>(
+    {}
+  );
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const response = await fetch(`/api/v1/admin/credit-config?id=${config.id}`);
+        const response = await fetch(
+          `/api/v1/admin/credit-config?id=${config.id}`
+        );
         const data = await response.json();
         if (response.ok && data.success) {
           setConfig(data.config);
         } else {
-          setError(data.error || 'Failed to fetch configuration.');
+          setError(data.error || "Failed to fetch configuration.");
         }
       } catch (err: any) {
-        setError(err.message || 'Network error while fetching configuration.');
+        setError(err.message || "Network error while fetching configuration.");
       } finally {
         setLoading(false);
       }
@@ -67,19 +71,20 @@ const CreditConfigPanel: React.FC = () => {
     const newErrors: CreditConfigErrors = {};
 
     if (config.rules.creditAmountUSDC <= 0) {
-      newErrors.creditAmountUSDC = 'Credit Amount (USDC) must be a positive number.';
+      newErrors.creditAmountUSDC =
+        "Credit Amount (USDC) must be a positive number.";
       hasErrors = true;
     }
     if (!config.rules.treasuryWallet) {
-      newErrors.treasuryWallet = 'Treasury Wallet cannot be empty.';
+      newErrors.treasuryWallet = "Treasury Wallet cannot be empty.";
       hasErrors = true;
     }
     if (config.rules.chains.length === 0) {
-      newErrors.chains = 'At least one chain must be specified.';
+      newErrors.chains = "At least one chain must be specified.";
       hasErrors = true;
     }
     if (!config.rules.kmsProvider) {
-      newErrors.kmsProvider = 'KMS Provider cannot be empty.';
+      newErrors.kmsProvider = "KMS Provider cannot be empty.";
       hasErrors = true;
     }
 
@@ -92,11 +97,11 @@ const CreditConfigPanel: React.FC = () => {
     setMessage(null);
     setError(null);
     try {
-      const method = config.id ? 'PUT' : 'POST'; // Use PUT for update, POST for create
-      const response = await fetch('/api/v1/admin/credit-config', {
+      const method = config.id ? "PUT" : "POST"; // Use PUT for update, POST for create
+      const response = await fetch("/api/v1/admin/credit-config", {
         method: method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           id: config.id, // Always send ID, backend will handle create/update based on existence
@@ -106,19 +111,21 @@ const CreditConfigPanel: React.FC = () => {
       });
       const data = await response.json();
       if (response.ok && data.success) {
-        setMessage('Configuration saved successfully!');
+        setMessage("Configuration saved successfully!");
         setConfig(data.config);
       } else {
-        setError(data.error || 'Failed to save configuration.');
+        setError(data.error || "Failed to save configuration.");
       }
     } catch (err: any) {
-      setError(err.message || 'Network error while saving configuration.');
+      setError(err.message || "Network error while saving configuration.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
 
     setValidationErrors((prevErrors: CreditConfigErrors) => {
@@ -129,11 +136,14 @@ const CreditConfigPanel: React.FC = () => {
 
     setConfig((prevConfig: CreditConfig) => {
       const newRules = { ...prevConfig.rules };
-      if (type === 'checkbox') {
+      if (type === "checkbox") {
         (newRules as any)[name] = checked;
-      } else if (name === 'chains') {
-        newRules.chains = value.split(',').map(chain => chain.trim()).filter(chain => chain !== '');
-      } else if (type === 'number') {
+      } else if (name === "chains") {
+        newRules.chains = value
+          .split(",")
+          .map((chain) => chain.trim())
+          .filter((chain) => chain !== "");
+      } else if (type === "number") {
         const numericValue = Number(value);
         (newRules as any)[name] = isNaN(numericValue) ? 0 : numericValue;
       } else {
@@ -181,7 +191,9 @@ const CreditConfigPanel: React.FC = () => {
           onChange={handleChange}
         />
         {validationErrors.creditAmountUSDC && (
-          <p className="text-red-500 text-sm">{validationErrors.creditAmountUSDC}</p>
+          <p className="text-red-500 text-sm">
+            {validationErrors.creditAmountUSDC}
+          </p>
         )}
       </div>
       <div className="space-y-2">
@@ -190,7 +202,7 @@ const CreditConfigPanel: React.FC = () => {
           id="chains"
           name="chains"
           type="text"
-          value={config.rules.chains.join(', ')}
+          value={config.rules.chains.join(", ")}
           onChange={handleChange}
         />
         {validationErrors.chains && (
@@ -207,7 +219,9 @@ const CreditConfigPanel: React.FC = () => {
           onChange={handleChange}
         />
         {validationErrors.treasuryWallet && (
-          <p className="text-red-500 text-sm">{validationErrors.treasuryWallet}</p>
+          <p className="text-red-500 text-sm">
+            {validationErrors.treasuryWallet}
+          </p>
         )}
       </div>
       <div className="space-y-2">

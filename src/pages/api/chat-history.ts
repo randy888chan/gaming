@@ -1,5 +1,5 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAuth } from '@clerk/nextjs/server'; // Assuming Clerk for authentication
+import type { NextApiRequest, NextApiResponse } from "next";
+import { getAuth } from "@clerk/nextjs/server"; // Assuming Clerk for authentication
 
 // In a real application, you would connect to a database
 // and retrieve/store chat messages.
@@ -21,17 +21,19 @@ export default async function handler(
   const { userId } = getAuth(req);
 
   if (!userId) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     // In a real app, filter by room/channel if applicable
     res.status(200).json(chatHistory);
-  } else if (req.method === 'POST') {
+  } else if (req.method === "POST") {
     const { text, username } = req.body;
 
     if (!text || !username) {
-      return res.status(400).json({ error: 'Message text and username are required' });
+      return res
+        .status(400)
+        .json({ error: "Message text and username are required" });
     }
 
     const newMessage: ChatMessage = {
@@ -47,7 +49,7 @@ export default async function handler(
 
     res.status(201).json(newMessage);
   } else {
-    res.setHeader('Allow', ['GET', 'POST']);
+    res.setHeader("Allow", ["GET", "POST"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

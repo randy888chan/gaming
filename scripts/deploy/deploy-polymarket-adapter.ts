@@ -1,7 +1,9 @@
 import { ethers, run } from "hardhat";
 
 async function main() {
-  const PolymarketAdapter = await ethers.getContractFactory("PolymarketAdapter");
+  const PolymarketAdapter = await ethers.getContractFactory(
+    "PolymarketAdapter"
+  );
 
   // TODO: Replace with actual addresses for ZetaChain testnet and mainnet
   const conditionalTokensAddress = "0x0000000000000000000000000000000000000000";

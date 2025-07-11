@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity 0.8.26;
 
 import { RevertContext } from "./Revert.sol";
 import "./IGatewayZEVM.sol";
@@ -70,11 +70,11 @@ abstract contract UniversalContract {
     }
 
     /// @notice Function to handle cross-chain calls with native ZETA transfers
-    function onCall(MessageContext calldata context, bytes calldata message) external payable virtual;
+    function onCall(ZetaInterfaces.ZetaMessage calldata context, bytes calldata message) external payable virtual;
 
     /// @notice Function to handle cross-chain calls with ZRC20 token transfers
     function onCall(
-        MessageContext calldata context,
+        ZetaInterfaces.ZetaMessage calldata context,
         address zrc20,
         uint256 amount,
         bytes calldata message

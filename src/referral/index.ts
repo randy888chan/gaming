@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 import { PublicKey } from "@solana/web3.js";
 
 const PLATFORM_CREATOR_ADDRESS = new PublicKey(
-  process.env.NEXT_PUBLIC_PLATFORM_CREATOR || PublicKey.default.toBase58(),
+  process.env.NEXT_PUBLIC_PLATFORM_CREATOR || PublicKey.default.toBase58()
 );
 
 interface ReferralData {
@@ -20,23 +20,32 @@ const D1_MOCK = {
   prepare: (query: string) => ({
     bind: (params: any[]) => ({
       run: async () => {
-        console.log(`Mock D1: Executing query: ${query} with params: ${params}`);
+        console.log(
+          `Mock D1: Executing query: ${query} with params: ${params}`
+        );
         return { success: true };
       },
     }),
   }),
 };
 
-export const rewardReferrer = async (referrerAddress: string, amount: number) => {
-  console.log(`Simulating rewarding referrer ${referrerAddress} with ${amount} credits.`);
+export const rewardReferrer = async (
+  referrerAddress: string,
+  amount: number
+) => {
+  console.log(
+    `Simulating rewarding referrer ${referrerAddress} with ${amount} credits.`
+  );
   // In a real system, this would involve updating the referrer's balance in D1.
   // For this mock, we'll simulate an update to user_preferences or a dedicated referral rewards table.
   await D1_MOCK.prepare(
-    'UPDATE user_preferences SET referralCredits = referralCredits + ? WHERE walletAddress = ?'
+    "UPDATE user_preferences SET referralCredits = referralCredits + ? WHERE walletAddress = ?"
   )
     .bind([amount, referrerAddress])
     .run();
-  console.log(`Simulated reward for referrer ${referrerAddress} with ${amount} credits.`);
+  console.log(
+    `Simulated reward for referrer ${referrerAddress} with ${amount} credits.`
+  );
 };
 
 export const extractReferralAddress = (): PublicKey | null => {
@@ -57,12 +66,12 @@ export const extractReferralAddress = (): PublicKey | null => {
 
 export const fetchAndStoreReferral = async (
   anchorProvider: any,
-  walletPublicKey: PublicKey | null,
+  walletPublicKey: PublicKey | null
 ) => {
   try {
     const pda = getRefererPda(
       PLATFORM_CREATOR_ADDRESS,
-      walletPublicKey ?? PublicKey.default,
+      walletPublicKey ?? PublicKey.default
     );
     const referer = await fetchReferral(anchorProvider, pda);
     if (referer) {
@@ -94,10 +103,10 @@ const cleanUrlParams = (urlParams: URLSearchParams) => {
 
 export const updateReferralData = (
   referralCode: string,
-  onChain: boolean = false,
+  onChain: boolean = false
 ) => {
   const referralData: ReferralData = JSON.parse(
-    Cookies.get("referralData") || '{"current":null,"history":[]}',
+    Cookies.get("referralData") || '{"current":null,"history":[]}'
   );
   referralData.current = referralCode;
   referralData.history = [
@@ -112,6 +121,6 @@ export const updateReferralData = (
 
 export const getReferralData = (): ReferralData => {
   return JSON.parse(
-    Cookies.get("referralData") || '{"current":null,"history":[]}',
+    Cookies.get("referralData") || '{"current":null,"history":[]}'
   );
 };

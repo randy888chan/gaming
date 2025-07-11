@@ -1,11 +1,23 @@
-import React from 'react';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import FlipGame from '../../src/games/Flip';
-import { GambaUi, useCurrentPool, useCurrentToken, useSound, useWagerInput } from 'gamba-react-ui-v2';
-import { useGamba } from 'gamba-react-v2';
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from "@testing-library/react";
+import FlipGame from "../../src/games/Flip";
+import {
+  GambaUi,
+  useCurrentPool,
+  useCurrentToken,
+  useSound,
+  useWagerInput,
+} from "gamba-react-ui-v2";
+import { useGamba } from "gamba-react-v2";
 
 // Mock R3F Canvas
-jest.mock('@react-three/fiber', () => ({
+jest.mock("@react-three/fiber", () => ({
   Canvas: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   // Mock other exports if needed by the tests, e.g., useFrame, useThree, etc.
   // For now, assuming only Canvas is directly used in the tests.
@@ -19,15 +31,30 @@ jest.mock('@react-three/fiber', () => ({
 
 // Mock Game components that use R3F hooks
 jest.mock("../../src/games/Flip/Coin", () => ({
-  Coin: ({ onClick, result, flipping, scale, position, rotation }: any) => ( // Added all props to avoid prop type errors
-    <div data-testid={result === 0 && !flipping && scale === 0.8 ? "coin-selector-heads" : result === 1 && !flipping && scale === 0.8 ? "coin-selector-tails" : "coin-flipping"} onClick={onClick}>
-      <span>MockCoin-{result}-{flipping ? 'flipping' : 'still'}</span>
+  Coin: (
+    { onClick, result, flipping, scale, position, rotation }: any // Added all props to avoid prop type errors
+  ) => (
+    <div
+      data-testid={
+        result === 0 && !flipping && scale === 0.8
+          ? "coin-selector-heads"
+          : result === 1 && !flipping && scale === 0.8
+          ? "coin-selector-tails"
+          : "coin-flipping"
+      }
+      onClick={onClick}
+    >
+      <span>
+        MockCoin-{result}-{flipping ? "flipping" : "still"}
+      </span>
     </div>
   ),
 }));
 
 jest.mock("../../src/games/Flip/Effect", () => ({
-  Effect: ({ color }: { color: string}) => <div data-testid={`mock-effect-${color}`} />,
+  Effect: ({ color }: { color: string }) => (
+    <div data-testid={`mock-effect-${color}`} />
+  ),
 }));
 
 jest.mock("../../src/games/Flip/FlipBanner", () => {
@@ -50,7 +77,7 @@ jest.mock("../../src/games/Flip/FlipBanner", () => {
 });
 
 // Mock Gamba hooks
-jest.mock('gamba-react-v2', () => ({
+jest.mock("gamba-react-v2", () => ({
   useGamba: jest.fn(() => ({
     isPlaying: false,
     play: jest.fn(),
@@ -58,30 +85,53 @@ jest.mock('gamba-react-v2', () => ({
   })),
 }));
 
-jest.mock('gamba-react-ui-v2', () => ({
+jest.mock("gamba-react-ui-v2", () => ({
   GambaUi: {
-    Portal: ({ children }: { children: React.ReactNode }) => <div data-testid="portal">{children}</div>,
-    WagerInput: ({ value, onChange }: { value: number, onChange: (value: number) => void }) => (
+    Portal: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="portal">{children}</div>
+    ),
+    WagerInput: ({
+      value,
+      onChange,
+    }: {
+      value: number;
+      onChange: (value: number) => void;
+    }) => (
       <input
         data-testid="wager-input"
         value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(Number(e.target.value))}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange(Number(e.target.value))
+        }
       />
     ),
-    Button: ({ children, onClick, disabled }: { children: React.ReactNode, onClick?: () => void, disabled?: boolean }) => (
-      <button onClick={onClick} disabled={disabled}>{children}</button>
+    Button: ({
+      children,
+      onClick,
+      disabled,
+    }: {
+      children: React.ReactNode;
+      onClick?: () => void;
+      disabled?: boolean;
+    }) => (
+      <button onClick={onClick} disabled={disabled}>
+        {children}
+      </button>
     ),
-    Responsive: ({ children }: { children: React.ReactNode }) => <div data-testid="gamba-ui-responsive">{children}</div>,
-    useGame: jest.fn(() => ({ // Correctly inside GambaUi
+    Responsive: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="gamba-ui-responsive">{children}</div>
+    ),
+    useGame: jest.fn(() => ({
+      // Correctly inside GambaUi
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0 })),
     })),
   },
   useCurrentPool: jest.fn(() => ({
-    token: 'SOL',
+    token: "SOL",
   })),
   useCurrentToken: jest.fn(() => ({
-    symbol: 'SOL',
+    symbol: "SOL",
   })),
   useSound: jest.fn(() => ({
     play: jest.fn(),
@@ -91,22 +141,48 @@ jest.mock('gamba-react-ui-v2', () => ({
   TokenValue: ({ amount }: { amount: number }) => <span>{amount}</span>,
 }));
 
-jest.mock('@react-three/drei', () => ({
-  ...jest.requireActual('@react-three/drei'),
-  Text: ({ children, onClick, 'data-testid': dataTestId }: { children: React.ReactNode, onClick?: () => void, 'data-testid'?: string }) => (
-    <div onClick={onClick} data-testid={dataTestId}>{children}</div>
+jest.mock("@react-three/drei", () => ({
+  ...jest.requireActual("@react-three/drei"),
+  Text: ({
+    children,
+    onClick,
+    "data-testid": dataTestId,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    "data-testid"?: string;
+  }) => (
+    <div onClick={onClick} data-testid={dataTestId}>
+      {children}
+    </div>
   ),
 }));
 
 // Mock GambaPlayButton as it's used in FlipGame
-jest.mock('@/components/GambaPlayButton', () => ({
+jest.mock("@/components/GambaPlayButton", () => ({
   __esModule: true,
-  default: ({ disabled, onClick, text }: { disabled?: boolean; onClick: () => void; text: string }) => (
-    <button data-testid={`gamba-play-button-${text.toLowerCase().replace(/\s+/g, '-')}`} disabled={disabled} onClick={onClick}>{text}</button>
+  default: ({
+    disabled,
+    onClick,
+    text,
+  }: {
+    disabled?: boolean;
+    onClick: () => void;
+    text: string;
+  }) => (
+    <button
+      data-testid={`gamba-play-button-${text
+        .toLowerCase()
+        .replace(/\s+/g, "-")}`}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {text}
+    </button>
   ),
 }));
 
-describe('Flip Game Component Integration Tests', () => {
+describe("Flip Game Component Integration Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -118,29 +194,31 @@ describe('Flip Game Component Integration Tests', () => {
   });
 
   afterEach(() => {
-    act(() => { jest.runOnlyPendingTimers(); });
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
     jest.useRealTimers();
   });
 
-  test('renders FlipGame component', async () => {
+  test("renders FlipGame component", async () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     render(<FlipGame />);
-    expect(screen.getByText('Flip')).toBeInTheDocument();
-    expect(screen.getByText('Heads')).toBeInTheDocument();
-    expect(screen.queryByText('Tails')).not.toBeInTheDocument();
+    expect(screen.getByText("Flip")).toBeInTheDocument();
+    expect(screen.getByText("Heads")).toBeInTheDocument();
+    expect(screen.queryByText("Tails")).not.toBeInTheDocument();
 
     // Click to toggle to Tails
-    fireEvent.click(screen.getByText('Heads'));
-    expect(await screen.findByText('Tails')).toBeInTheDocument();
-    expect(screen.queryByText('Heads')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("Heads"));
+    expect(await screen.findByText("Tails")).toBeInTheDocument();
+    expect(screen.queryByText("Heads")).not.toBeInTheDocument();
 
     // Click to toggle back to Heads
-    fireEvent.click(screen.getByText('Tails'));
-    expect(await screen.findByText('Heads')).toBeInTheDocument();
-    expect(screen.queryByText('Tails')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("Tails"));
+    expect(await screen.findByText("Heads")).toBeInTheDocument();
+    expect(screen.queryByText("Tails")).not.toBeInTheDocument();
   });
 
-  test('simulates placing a bet on Heads', async () => {
+  test("simulates placing a bet on Heads", async () => {
     const mockPlay = jest.fn();
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
@@ -151,17 +229,21 @@ describe('Flip Game Component Integration Tests', () => {
     render(<FlipGame />);
 
     // Ensure Heads is selected (default)
-    expect(screen.getByText('Heads')).toBeInTheDocument();
+    expect(screen.getByText("Heads")).toBeInTheDocument();
 
-    const playButton = screen.getByTestId('gamba-play-button-flip'); // Updated selector
+    const playButton = screen.getByTestId("gamba-play-button-flip"); // Updated selector
     await act(async () => {
       fireEvent.click(playButton);
     });
 
-    expect(mockPlay).toHaveBeenCalledWith({ wager: 1, bet: [2, 0], metadata: ["heads"] });
+    expect(mockPlay).toHaveBeenCalledWith({
+      wager: 1,
+      bet: [2, 0],
+      metadata: ["heads"],
+    });
   });
 
-  test('simulates placing a bet on Tails', async () => {
+  test("simulates placing a bet on Tails", async () => {
     const mockPlay = jest.fn();
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
@@ -172,21 +254,25 @@ describe('Flip Game Component Integration Tests', () => {
     render(<FlipGame />);
 
     // Click to change to Tails
-    const sideToggleButton = screen.getByText('Heads'); // Initially it's Heads
+    const sideToggleButton = screen.getByText("Heads"); // Initially it's Heads
     await act(async () => {
       fireEvent.click(sideToggleButton);
     });
-    expect(await screen.findByText('Tails')).toBeInTheDocument(); // Confirm it changed to Tails
+    expect(await screen.findByText("Tails")).toBeInTheDocument(); // Confirm it changed to Tails
 
-    const playButton = screen.getByTestId('gamba-play-button-flip'); // Updated selector
+    const playButton = screen.getByTestId("gamba-play-button-flip"); // Updated selector
     await act(async () => {
       fireEvent.click(playButton);
     });
 
-    expect(mockPlay).toHaveBeenCalledWith({ wager: 1, bet: [0, 2], metadata: ["tails"] });
+    expect(mockPlay).toHaveBeenCalledWith({
+      wager: 1,
+      bet: [0, 2],
+      metadata: ["tails"],
+    });
   });
 
-  test('simulates game win (Heads)', async () => {
+  test("simulates game win (Heads)", async () => {
     const mockGame = {
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 20 })), // Simulate win
@@ -202,9 +288,9 @@ describe('Flip Game Component Integration Tests', () => {
     render(<FlipGame />);
 
     // Ensure Heads is selected (default)
-    expect(screen.getByText('Heads')).toBeInTheDocument();
+    expect(screen.getByText("Heads")).toBeInTheDocument();
 
-    const playButton = screen.getByTestId('gamba-play-button-flip'); // Updated selector
+    const playButton = screen.getByTestId("gamba-play-button-flip"); // Updated selector
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -217,10 +303,12 @@ describe('Flip Game Component Integration Tests', () => {
     // For now, we'll check for a generic "win" text if it exists, or a change in balance display.
     // If no specific win text, we might need to inspect the component's internal state or styles.
     // For now, I'll assume a "You won!" text appears or similar.
-    expect(await screen.findByText(/You Win!/i, {}, { timeout: 3000 })).toBeInTheDocument(); // Adjusted regex to match actual message
+    expect(
+      await screen.findByText(/You Win!/i, {}, { timeout: 3000 })
+    ).toBeInTheDocument(); // Adjusted regex to match actual message
   });
 
-  test('simulates game lose (Heads)', async () => {
+  test("simulates game lose (Heads)", async () => {
     const mockGame = {
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0 })), // Simulate lose
@@ -236,9 +324,9 @@ describe('Flip Game Component Integration Tests', () => {
     render(<FlipGame />);
 
     // Ensure Heads is selected (default)
-    expect(screen.getByText('Heads')).toBeInTheDocument();
+    expect(screen.getByText("Heads")).toBeInTheDocument();
 
-    const playButton = screen.getByTestId('gamba-play-button-flip'); // Updated selector
+    const playButton = screen.getByTestId("gamba-play-button-flip"); // Updated selector
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -247,6 +335,8 @@ describe('Flip Game Component Integration Tests', () => {
     await act(async () => {});
 
     // Expect lose condition to be visually represented (e.g., lose message, decreased balance)
-    expect(await screen.findByText(/You Lose/i, {}, { timeout: 3000 })).toBeInTheDocument(); // Adjusted regex
+    expect(
+      await screen.findByText(/You Lose/i, {}, { timeout: 3000 })
+    ).toBeInTheDocument(); // Adjusted regex
   });
 });

@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp } from "firebase/firestore";
 
 export interface Team {
   id: string;
@@ -16,16 +16,16 @@ export interface Match {
   score1?: number;
   score2?: number;
   winnerId?: string; // ID of the winning team
-  status: 'upcoming' | 'ongoing' | 'completed';
+  status: "upcoming" | "ongoing" | "completed";
   nextMatchId?: string; // ID of the subsequent match
-  nextMatchTeamSlot?: 'team1' | 'team2'; // Which slot the winner fills in the next match
+  nextMatchTeamSlot?: "team1" | "team2"; // Which slot the winner fills in the next match
 }
 
 export interface Tournament {
   id: string;
   name: string;
   format: string; // e.g., 'single-elimination', 'double-elimination'
-  status: 'upcoming' | 'ongoing' | 'completed';
+  status: "upcoming" | "ongoing" | "completed";
   teams: Team[];
   matches: Match[];
   createdAt: Timestamp;

@@ -1,4 +1,4 @@
-import { D1Database } from '@cloudflare/workers-types';
+import { D1Database } from "@cloudflare/workers-types";
 
 // Define a basic structure for the D1 mock, aligning with what tests might provide.
 // This could be expanded or made more generic if needed.

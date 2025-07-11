@@ -45,7 +45,7 @@ export default function Limbo() {
   const startAnimation = (
     start: number,
     end: number,
-    winCondition: boolean,
+    winCondition: boolean
   ) => {
     let startTime: number | null = null;
     const duration = 2500;

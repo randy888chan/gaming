@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
-import TournamentBracket from '../../components/tournament/TournamentBracket';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Head from "next/head";
+import TournamentBracket from "../../components/tournament/TournamentBracket";
 
 interface Tournament {
   id: string;
@@ -53,7 +53,9 @@ const TournamentDetailPage: React.FC = () => {
         setTournament(tournamentData);
 
         // Fetch teams for the tournament
-        const teamsResponse = await fetch(`/api/v1/tournaments/teams?tournament_id=${id}`);
+        const teamsResponse = await fetch(
+          `/api/v1/tournaments/teams?tournament_id=${id}`
+        );
         if (!teamsResponse.ok) {
           throw new Error(`HTTP error! status: ${teamsResponse.status}`);
         }
@@ -61,13 +63,14 @@ const TournamentDetailPage: React.FC = () => {
         setTeams(teamsData);
 
         // Fetch matches for the tournament
-        const matchesResponse = await fetch(`/api/v1/tournaments/matches?tournament_id=${id}`);
+        const matchesResponse = await fetch(
+          `/api/v1/tournaments/matches?tournament_id=${id}`
+        );
         if (!matchesResponse.ok) {
           throw new Error(`HTTP error! status: ${matchesResponse.status}`);
         }
         const matchesData = await matchesResponse.json();
         setMatches(matchesData);
-
       } catch (err: any) {
         setError(err.message);
       } finally {

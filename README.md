@@ -2,7 +2,6 @@
 
 ![image](https://github.com/BankkRoll/Gamba-V2-Next.js/assets/106103625/286c4710-c817-4157-9f1d-c5719cb58558)
 
-
 > This is a mirrored repo from the [gamba monorepo](https://github.com/gamba-labs/gamba/tree/main/apps/demo).
 
 A demo frontend featuring multiple casino games built on Gamba.

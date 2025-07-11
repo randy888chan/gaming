@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
+import React, { useEffect, useState } from "react";
+import Head from "next/head";
+import Link from "next/link";
 
 interface Tournament {
   id: string;
@@ -21,7 +21,7 @@ const TournamentsPage: React.FC = () => {
   useEffect(() => {
     const fetchTournaments = async () => {
       try {
-        const response = await fetch('/api/v1/tournaments');
+        const response = await fetch("/api/v1/tournaments");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -64,13 +64,18 @@ const TournamentsPage: React.FC = () => {
                     <p>Format: {tournament.format}</p>
                     <p>Status: {tournament.status}</p>
                     {tournament.entryFee && tournament.entryCurrency && (
-                      <p>Entry Fee: {tournament.entryFee} {tournament.entryCurrency}</p>
+                      <p>
+                        Entry Fee: {tournament.entryFee}{" "}
+                        {tournament.entryCurrency}
+                      </p>
                     )}
                     {tournament.liquidityPoolName && (
                       <p>Liquidity Pool: {tournament.liquidityPoolName}</p>
                     )}
                     {tournament.polymarketEscrowId && (
-                      <p>Polymarket Escrow ID: {tournament.polymarketEscrowId}</p>
+                      <p>
+                        Polymarket Escrow ID: {tournament.polymarketEscrowId}
+                      </p>
                     )}
                   </a>
                 </Link>

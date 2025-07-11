@@ -6,7 +6,7 @@ import { REFERRAL_IDL } from "./idl";
 import { updateReferralData } from ".";
 
 export const PROGRAM_ID = new PublicKey(
-  "RefwFk2PPNd9bPehSyAkrkrehSHkvz6mTAHTNe8v9vH",
+  "RefwFk2PPNd9bPehSyAkrkrehSHkvz6mTAHTNe8v9vH"
 );
 
 export const referralAccountsCoder = new BorshAccountsCoder(REFERRAL_IDL);
@@ -22,7 +22,7 @@ export const getRefererPda = (creator: PublicKey, authority: PublicKey) =>
 export const createReferral = async (
   provider: AnchorProvider,
   creator: PublicKey,
-  referAccount: PublicKey,
+  referAccount: PublicKey
 ) => {
   const referralProgram = new Program(REFERRAL_IDL, PROGRAM_ID, provider);
   const instruction = await referralProgram.methods
@@ -41,7 +41,7 @@ export const createReferral = async (
 
 export const closeReferral = async (
   provider: AnchorProvider,
-  creator: PublicKey,
+  creator: PublicKey
 ) => {
   const referralProgram = new Program(REFERRAL_IDL, PROGRAM_ID, provider);
   return referralProgram.methods
@@ -55,7 +55,7 @@ export const closeReferral = async (
 
 export const fetchReferral = async (
   provider: AnchorProvider,
-  pda: PublicKey,
+  pda: PublicKey
 ) => {
   const referralProgram = new Program(REFERRAL_IDL, PROGRAM_ID, provider);
   referralProgram.account.referAccount.all().then((x) => console.log("ALL", x));

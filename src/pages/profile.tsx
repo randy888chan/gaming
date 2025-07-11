@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Copy, ExternalLink, RefreshCw, Wallet, X } from 'lucide-react';
+import { Check, Copy, ExternalLink, RefreshCw, Wallet, X } from "lucide-react";
 import {
   TokenValue,
   useCurrentToken,
@@ -127,7 +127,9 @@ const Profile: React.FC = () => {
     <section className="py-12 px-4 md:px-0">
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl md:text-3xl font-bold">Profile Dashboard</CardTitle>
+          <CardTitle className="text-2xl md:text-3xl font-bold">
+            Profile Dashboard
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -185,8 +187,16 @@ const Profile: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-2">Your Referral Link</h3>
             <div className="flex flex-col md:flex-row items-stretch md:items-center space-y-2 md:space-y-0 md:space-x-2">
-              <Input value={referralLink || ""} readOnly className="flex-grow" />
-              <Button onClick={handleCopyInvite} variant="outline" className="md:w-auto">
+              <Input
+                value={referralLink || ""}
+                readOnly
+                className="flex-grow"
+              />
+              <Button
+                onClick={handleCopyInvite}
+                variant="outline"
+                className="md:w-auto"
+              >
                 {copied ? (
                   <Check className="h-4 w-4 mr-2" />
                 ) : (
@@ -196,8 +206,8 @@ const Profile: React.FC = () => {
               </Button>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              Share your link to earn a {PLATFORM_REFERRAL_FEE * 100}% fee on each
-              play
+              Share your link to earn a {PLATFORM_REFERRAL_FEE * 100}% fee on
+              each play
             </p>
             <div className="mt-2">
               <Badge variant={isOnChain ? "default" : "secondary"}>
@@ -250,7 +260,11 @@ const Profile: React.FC = () => {
                     placeholder="Enter referrer's public key"
                     className="flex-grow"
                   />
-                  <Button onClick={handleAcceptInvite} disabled={!newReferrer} className="md:w-auto">
+                  <Button
+                    onClick={handleAcceptInvite}
+                    disabled={!newReferrer}
+                    className="md:w-auto"
+                  >
                     Accept Now
                   </Button>
                 </div>
@@ -271,11 +285,19 @@ const Profile: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-2">Advanced Options</h3>
             <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-              <Button onClick={handleClearCache} variant="outline" className="w-full md:w-auto">
+              <Button
+                onClick={handleClearCache}
+                variant="outline"
+                className="w-full md:w-auto"
+              >
                 Clear Local Cache
               </Button>
               {referralStatus === "local" && (
-                <Button onClick={handleAcceptInvite} variant="outline" className="w-full md:w-auto">
+                <Button
+                  onClick={handleAcceptInvite}
+                  variant="outline"
+                  className="w-full md:w-auto"
+                >
                   Confirm On-Chain
                 </Button>
               )}
@@ -287,7 +309,10 @@ const Profile: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-2">Game Preferences</h3>
             <div className="flex items-center justify-between">
-              <Label htmlFor="smart-bet-toggle" className="flex flex-col space-y-1">
+              <Label
+                htmlFor="smart-bet-toggle"
+                className="flex flex-col space-y-1"
+              >
                 <span>Smart Bet</span>
                 <span className="font-normal text-muted-foreground">
                   Automatically optimize bets based on game history
@@ -307,4 +332,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-

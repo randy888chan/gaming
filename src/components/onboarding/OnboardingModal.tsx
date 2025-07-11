@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
-import { Button } from '../ui/button';
-import { useParticleConnect } from '@particle-network/connect-react-ui';
-import { useUserStore } from '@/hooks/useUserStore';
-import { toast } from 'sonner';
-import { useMemo } from 'react';
-import { useRouter } from 'next/router';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { useParticleConnect } from "@particle-network/connect-react-ui";
+import { useUserStore } from "@/hooks/useUserStore";
+import { toast } from "sonner";
+import { useMemo } from "react";
+import { useRouter } from "next/router";
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -14,28 +20,36 @@ interface OnboardingModalProps {
 
 const steps = [
   {
-    title: 'Welcome to Quantum Nexus!',
-    description: 'Discover a new dimension of gaming. Let\'s get you started with a quick tour.',
+    title: "Welcome to Quantum Nexus!",
+    description:
+      "Discover a new dimension of gaming. Let's get you started with a quick tour.",
   },
   {
-    title: 'Your First Free Play',
-    description: 'We\'ve credited your account with a free play. Try out any game without risk!',
+    title: "Your First Free Play",
+    description:
+      "We've credited your account with a free play. Try out any game without risk!",
   },
   {
-    title: 'Smart Bets with AI',
-    description: 'Our AI-powered Smart Bet feature helps you make informed decisions. Get personalized suggestions based on your risk profile.',
+    title: "Smart Bets with AI",
+    description:
+      "Our AI-powered Smart Bet feature helps you make informed decisions. Get personalized suggestions based on your risk profile.",
   },
   {
-    title: 'Explore and Enjoy!',
-    description: 'You\'re all set! Dive into our exciting games and experience the future of gaming.',
+    title: "Explore and Enjoy!",
+    description:
+      "You're all set! Dive into our exciting games and experience the future of gaming.",
   },
 ];
 
-export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
+export const OnboardingModal: React.FC<OnboardingModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { connect } = useParticleConnect();
-  const { set, user, hasClaimedFirstPlay, smartBet, referredBy } = useUserStore();
+  const { set, user, hasClaimedFirstPlay, smartBet, referredBy } =
+    useUserStore();
   const router = useRouter();
   const { code: referralCodeFromUrl } = router.query;
 
@@ -68,54 +82,60 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
       if (userInfo) {
         // Check if first play free API has already been called for this session
         if (firstPlayApiCalled) {
-          console.log('First play free API already called, skipping.');
+          console.log("First play free API already called, skipping.");
           set((state) => ({
             ...state,
             user: userInfo,
-            referredBy: referralCodeFromUrl ? String(referralCodeFromUrl) : null,
+            referredBy: referralCodeFromUrl
+              ? String(referralCodeFromUrl)
+              : null,
           }));
           handleNext();
           return;
         }
 
         // Call the first-play-free API
-        const response = await fetch('/api/first-play-free', {
-          method: 'POST',
+        const response = await fetch("/api/first-play-free", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             userToken: (userInfo as any).publicAddress, // Assuming publicAddress is the correct field
             referralCode: referralCodeFromUrl,
           }),
         });
-        
+
         const data = await response.json();
         if (data.success) {
-          console.log('First play free credited:', data.creditAmount);
+          console.log("First play free credited:", data.creditAmount);
           set((state) => ({
             ...state,
             user: userInfo,
             hasClaimedFirstPlay: true,
-            referredBy: referralCodeFromUrl ? String(referralCodeFromUrl) : null,
+            referredBy: referralCodeFromUrl
+              ? String(referralCodeFromUrl)
+              : null,
           }));
           setFirstPlayApiCalled(true); // Mark API call as made
           handleNext(); // Advance to next step after successful login
           // Clear referral code from URL after successful processing
           router.replace(router.pathname, undefined, { shallow: true });
         } else {
-          const errorMsg = data.error || 'Failed to claim first play free.';
-          console.error('Failed to claim first play free:', errorMsg);
+          const errorMsg = data.error || "Failed to claim first play free.";
+          console.error("Failed to claim first play free:", errorMsg);
           setErrorMessage(errorMsg);
           toast.error(errorMsg);
         }
       } else {
-        const errorMsg = 'Social login failed: No user info received.';
+        const errorMsg = "Social login failed: No user info received.";
         setErrorMessage(errorMsg);
         toast.error(errorMsg);
       }
     } catch (error: any) {
-      const errorMsg = `Particle Network social login failed: ${error.message || 'Unknown error'}`;
+      const errorMsg = `Particle Network social login failed: ${
+        error.message || "Unknown error"
+      }`;
       console.error(errorMsg, error);
       setErrorMessage(errorMsg);
       toast.error(errorMsg);
@@ -124,10 +144,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
 
   // Skip "Your First Free Play" step if already claimed
   const filteredSteps = steps.filter((step, index) => {
-    if (step.title === 'Your First Free Play' && hasClaimedFirstPlay) {
+    if (step.title === "Your First Free Play" && hasClaimedFirstPlay) {
       return false;
     }
-    if (step.title === 'Smart Bets with AI' && !smartBet) {
+    if (step.title === "Smart Bets with AI" && !smartBet) {
       return false;
     }
     return true;
@@ -140,26 +160,41 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{currentStepContent.title}</DialogTitle>
-          <DialogDescription>{currentStepContent.description}</DialogDescription>
+          <DialogDescription>
+            {currentStepContent.description}
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 mt-4">
           {currentStep === 0 && (
             <>
               <Button onClick={handleSocialLogin}>Sign in with Social</Button>
               {errorMessage && (
-                <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+                <p className="text-red-500 text-sm text-center">
+                  {errorMessage}
+                </p>
               )}
-              <Button variant="outline" onClick={() => window.open('https://t.me/your_telegram_channel', '_blank')}>Join our Telegram</Button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  window.open("https://t.me/your_telegram_channel", "_blank")
+                }
+              >
+                Join our Telegram
+              </Button>
             </>
           )}
           <div className="flex justify-between">
             {currentStep < filteredSteps.length - 1 ? (
-              <Button variant="outline" onClick={handleSkip}>Skip Tour</Button>
+              <Button variant="outline" onClick={handleSkip}>
+                Skip Tour
+              </Button>
             ) : (
               <div />
             )}
             <Button onClick={handleNext}>
-              {currentStep < filteredSteps.length - 1 ? 'Next' : 'Start Playing!'}
+              {currentStep < filteredSteps.length - 1
+                ? "Next"
+                : "Start Playing!"}
             </Button>
           </div>
         </div>

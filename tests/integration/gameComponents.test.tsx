@@ -1,9 +1,9 @@
 // tests/integration/gameComponents.test.tsx
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { GameGrid } from '@/components/game/GameGrid';
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { GameGrid } from "@/components/game/GameGrid";
 // GameCard is used by GameGrid, so it's implicitly tested.
-import { GAMES } from '@/games'; // GAMES is used by GameGrid
+import { GAMES } from "@/games"; // GAMES is used by GameGrid
 
 // Define individual mock functions for the router controller parts
 const mockPush = jest.fn();
@@ -18,11 +18,11 @@ const mockBeforePopState = jest.fn(() => true);
 
 // This object aggregates the individual mock functions and static properties
 const mockRouterControllerDetails = {
-  basePath: '',
-  pathname: '/',
-  route: '/',
+  basePath: "",
+  pathname: "/",
+  route: "/",
   query: {},
-  asPath: '/',
+  asPath: "/",
   push: mockPush,
   replace: mockReplace,
   reload: mockReload,
@@ -40,20 +40,27 @@ const mockRouterControllerDetails = {
   beforePopState: mockBeforePopState,
 };
 
-jest.mock('next/router', () => {
-  const actualNextRouter = jest.requireActual('next/router');
+jest.mock("next/router", () => {
+  const actualNextRouter = jest.requireActual("next/router");
 
   // The factory uses the mock functions defined in the module scope,
   // which are hoisted along with jest.mock.
   const controllerForFactory = {
-    basePath: '', pathname: '/', route: '/', query: {}, asPath: '/',
+    basePath: "",
+    pathname: "/",
+    route: "/",
+    query: {},
+    asPath: "/",
     push: mockPush,
     replace: mockReplace,
     reload: mockReload,
     back: mockBack,
     prefetch: mockPrefetch,
     events: { on: mockEventOn, off: mockEventOff, emit: mockEventEmit },
-    isFallback: false, isLocaleDomain: false, isReady: true, isPreview: false,
+    isFallback: false,
+    isLocaleDomain: false,
+    isReady: true,
+    isPreview: false,
     beforePopState: mockBeforePopState,
   };
 
@@ -91,30 +98,30 @@ beforeEach(() => {
 });
 
 // Mock Gamba context for components that might use it
-jest.mock('gamba-react-ui-v2', () => ({
+jest.mock("gamba-react-ui-v2", () => ({
   GambaUi: {
     useGame: jest.fn().mockReturnValue({
-      game: 'crash',
+      game: "crash",
       setGame: jest.fn(),
     }),
   },
 }));
 
-describe('Game Components Integration Tests', () => {
-  test('GameGrid renders game cards', () => {
+describe("Game Components Integration Tests", () => {
+  test("GameGrid renders game cards", () => {
     render(<GameGrid />);
     // Check if a few games are present
-    expect(screen.getByText('Play Crash')).toBeInTheDocument();
-    expect(screen.getByText('Play Dice')).toBeInTheDocument();
+    expect(screen.getByText("Play Crash")).toBeInTheDocument();
+    expect(screen.getByText("Play Dice")).toBeInTheDocument();
   });
 
-  test('GameCard links to the correct game page', () => {
+  test("GameCard links to the correct game page", () => {
     render(<GameGrid />);
 
-    const linkElement = screen.getByTestId('game-card-slots');
+    const linkElement = screen.getByTestId("game-card-slots");
     fireEvent.click(linkElement);
 
     // Assert that the router's push function was called with the correct path
-    expect(mockPush).toHaveBeenCalledWith('/play/slots');
+    expect(mockPush).toHaveBeenCalledWith("/play/slots");
   });
 });

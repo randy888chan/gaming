@@ -1,7 +1,7 @@
-import { ClobClient, HttpClient } from '@polymarket/clob-client';
+import { ClobClient, HttpClient } from "@polymarket/clob-client";
 
 // The REST API base URL for Polymarket CLOB
-const CLOB_API_URL = 'https://clob.polymarket.com/';
+const CLOB_API_URL = "https://clob.polymarket.com/";
 
 // Initialize the HTTP client for the CLOB
 // No API key is needed for public GET endpoints like fetching markets.
@@ -23,7 +23,7 @@ export interface SimplifiedMarket {
   slug: string; // Assuming slug is available
   // Define other relevant fields based on the actual structure of SimplifiedMarket from Polymarket
   // For example:
-  tokens: Array<{ token_id: string; outcome: string; price: number; }>; // Example structure
+  tokens: Array<{ token_id: string; outcome: string; price: number }>; // Example structure
   category: string;
   active: boolean;
   closed: boolean;
@@ -47,10 +47,14 @@ export interface PaginatedSimplifiedMarkets {
  * @param cursor - The pagination cursor for fetching the next set of results.
  * @returns A promise that resolves to a paginated list of simplified markets.
  */
-export const getSimplifiedMarkets = async (cursor: string = ""): Promise<PaginatedSimplifiedMarkets> => {
+export const getSimplifiedMarkets = async (
+  cursor: string = ""
+): Promise<PaginatedSimplifiedMarkets> => {
   try {
     // The clob-client library's getSimplifiedMarkets method might take an object with a cursor
-    const response = await clobClient.getSimplifiedMarkets({ next_cursor: cursor });
+    const response = await clobClient.getSimplifiedMarkets({
+      next_cursor: cursor,
+    });
     // TODO: Adapt this part to the actual structure returned by clobClient.getSimplifiedMarkets
     // The current PaginatedSimplifiedMarkets and SimplifiedMarket interfaces are placeholders
     // and need to be updated based on the actual data structure from the client.
@@ -65,23 +69,28 @@ export const getSimplifiedMarkets = async (cursor: string = ""): Promise<Paginat
       next_cursor: response.next_cursor || null, // Adjust based on actual response field names
       data: response.data.map((market: any) => ({
         condition_id: market.condition_id,
-        question: market.question || market.title || 'N/A', // Try to find the question/title
+        question: market.question || market.title || "N/A", // Try to find the question/title
         slug: market.slug || market.condition_id, // Use slug or condition_id
-        tokens: market.tokens?.map((token: any) => ({ // Ensure tokens exist and map them
-          token_id: token.token_id,
-          outcome: token.outcome_value || token.name || 'Outcome', // Find outcome description
-          price: parseFloat(token.price) || 0, // Ensure price is a number
-        })) || [],
-        category: market.category || 'General',
+        tokens:
+          market.tokens?.map((token: any) => ({
+            // Ensure tokens exist and map them
+            token_id: token.token_id,
+            outcome: token.outcome_value || token.name || "Outcome", // Find outcome description
+            price: parseFloat(token.price) || 0, // Ensure price is a number
+          })) || [],
+        category: market.category || "General",
         active: market.active,
         closed: market.closed,
-        endDate: market.end_date_iso || market.resolve_date_iso || new Date().toISOString(), // Find a suitable date
+        endDate:
+          market.end_date_iso ||
+          market.resolve_date_iso ||
+          new Date().toISOString(), // Find a suitable date
         volume: parseFloat(market.volume_usd) || 0, // Example field
         liquidity: parseFloat(market.liquidity_usd) || 0, // Example field
       })),
     } as PaginatedSimplifiedMarkets;
   } catch (error) {
-    console.error('Error fetching simplified markets from Polymarket:', error);
+    console.error("Error fetching simplified markets from Polymarket:", error);
     // Return an empty or error structure
     return {
       limit: 0,

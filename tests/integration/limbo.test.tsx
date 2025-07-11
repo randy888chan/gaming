@@ -1,11 +1,23 @@
-import React from 'react';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import LimboGame from '../../src/games/Limbo';
-import { GambaUi, useCurrentPool, useCurrentToken, useSound, useWagerInput } from 'gamba-react-ui-v2';
-import { useGamba } from 'gamba-react-v2';
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from "@testing-library/react";
+import LimboGame from "../../src/games/Limbo";
+import {
+  GambaUi,
+  useCurrentPool,
+  useCurrentToken,
+  useSound,
+  useWagerInput,
+} from "gamba-react-ui-v2";
+import { useGamba } from "gamba-react-v2";
 
 // Mock Gamba hooks
-jest.mock('gamba-react-v2', () => ({
+jest.mock("gamba-react-v2", () => ({
   useGamba: jest.fn(() => ({
     isPlaying: false,
     play: jest.fn(),
@@ -13,30 +25,52 @@ jest.mock('gamba-react-v2', () => ({
   })),
 }));
 
-jest.mock('gamba-react-ui-v2', () => ({
+jest.mock("gamba-react-ui-v2", () => ({
   GambaUi: {
-    Portal: ({ children }: { children: React.ReactNode }) => <div data-testid="portal">{children}</div>,
-    WagerInput: ({ value, onChange }: { value: number, onChange: (value: number) => void }) => (
+    Portal: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="portal">{children}</div>
+    ),
+    WagerInput: ({
+      value,
+      onChange,
+    }: {
+      value: number;
+      onChange: (value: number) => void;
+    }) => (
       <input
         data-testid="wager-input"
         value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(Number(e.target.value))}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange(Number(e.target.value))
+        }
       />
     ),
-    Button: ({ children, onClick, disabled }: { children: React.ReactNode, onClick?: () => void, disabled?: boolean }) => (
-      <button onClick={onClick} disabled={disabled}>{children}</button>
+    Button: ({
+      children,
+      onClick,
+      disabled,
+    }: {
+      children: React.ReactNode;
+      onClick?: () => void;
+      disabled?: boolean;
+    }) => (
+      <button onClick={onClick} disabled={disabled}>
+        {children}
+      </button>
     ),
     useGame: jest.fn(() => ({
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0, multiplier: 0 })),
     })),
-    Responsive: ({ children }: { children: React.ReactNode }) => <div data-testid="responsive-wrapper">{children}</div>,
+    Responsive: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="responsive-wrapper">{children}</div>
+    ),
   },
   useCurrentPool: jest.fn(() => ({
-    token: 'SOL',
+    token: "SOL",
   })),
   useCurrentToken: jest.fn(() => ({
-    symbol: 'SOL',
+    symbol: "SOL",
   })),
   useSound: jest.fn(() => ({
     play: jest.fn(),
@@ -47,17 +81,39 @@ jest.mock('gamba-react-ui-v2', () => ({
 }));
 
 // Mock GambaPlayButton as it's used in LimboGame
-jest.mock('@/components/GambaPlayButton', () => ({
+jest.mock("@/components/GambaPlayButton", () => ({
   __esModule: true,
-  default: ({ disabled, onClick, text }: { disabled?: boolean; onClick: () => void; text: string }) => (
-    <button data-testid="gamba-play-button" disabled={disabled} onClick={onClick}>{text}</button>
+  default: ({
+    disabled,
+    onClick,
+    text,
+  }: {
+    disabled?: boolean;
+    onClick: () => void;
+    text: string;
+  }) => (
+    <button
+      data-testid="gamba-play-button"
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {text}
+    </button>
   ),
 }));
 
 // Mock Slider component
-jest.mock('../../src/games/Limbo/slide', () => ({
+jest.mock("../../src/games/Limbo/slide", () => ({
   __esModule: true,
-  default: ({ value, onChange, disabled }: { value: number, onChange: (value: number) => void, disabled?: boolean }) => (
+  default: ({
+    value,
+    onChange,
+    disabled,
+  }: {
+    value: number;
+    onChange: (value: number) => void;
+    disabled?: boolean;
+  }) => (
     <input
       type="range"
       data-testid="limbo-slider"
@@ -68,7 +124,7 @@ jest.mock('../../src/games/Limbo/slide', () => ({
   ),
 }));
 
-describe('Limbo Game Component Integration Tests', () => {
+describe("Limbo Game Component Integration Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -80,28 +136,30 @@ describe('Limbo Game Component Integration Tests', () => {
   });
 
   afterEach(() => {
-    act(() => { jest.runOnlyPendingTimers(); });
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
     jest.useRealTimers();
   });
 
-  test('renders LimboGame component', () => {
+  test("renders LimboGame component", () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     render(<LimboGame />);
-    expect(screen.getByText('Play')).toBeInTheDocument();
-    expect(screen.getByTestId('limbo-slider')).toBeInTheDocument();
-    expect(screen.getByTestId('multiplier-display')).toBeInTheDocument();
+    expect(screen.getByText("Play")).toBeInTheDocument();
+    expect(screen.getByTestId("limbo-slider")).toBeInTheDocument();
+    expect(screen.getByTestId("multiplier-display")).toBeInTheDocument();
   });
 
-  test('simulates changing target multiplier', async () => {
+  test("simulates changing target multiplier", async () => {
     render(<LimboGame />);
-    const slider = screen.getByTestId('limbo-slider');
+    const slider = screen.getByTestId("limbo-slider");
     await act(async () => {
-      fireEvent.change(slider, { target: { value: '50' } });
+      fireEvent.change(slider, { target: { value: "50" } });
     });
-    expect(screen.getByText('50x')).toBeInTheDocument();
+    expect(screen.getByText("50x")).toBeInTheDocument();
   });
 
-  test('simulates placing a bet and winning', async () => {
+  test("simulates placing a bet and winning", async () => {
     const mockPlay = jest.fn();
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
@@ -111,12 +169,12 @@ describe('Limbo Game Component Integration Tests', () => {
 
     render(<LimboGame />);
 
-    const slider = screen.getByTestId('limbo-slider');
+    const slider = screen.getByTestId("limbo-slider");
     await act(async () => {
-      fireEvent.change(slider, { target: { value: '20' } });
+      fireEvent.change(slider, { target: { value: "20" } });
     });
 
-    const playButton = screen.getByTestId('gamba-play-button');
+    const playButton = screen.getByTestId("gamba-play-button");
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -132,11 +190,13 @@ describe('Limbo Game Component Integration Tests', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId('multiplier-display')).toHaveStyle('color: #10B981');
+      expect(screen.getByTestId("multiplier-display")).toHaveStyle(
+        "color: #10B981"
+      );
     });
   });
 
-  test('simulates placing a bet and losing', async () => {
+  test("simulates placing a bet and losing", async () => {
     const mockPlay = jest.fn();
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
@@ -146,12 +206,12 @@ describe('Limbo Game Component Integration Tests', () => {
 
     render(<LimboGame />);
 
-    const slider = screen.getByTestId('limbo-slider');
+    const slider = screen.getByTestId("limbo-slider");
     await act(async () => {
-      fireEvent.change(slider, { target: { value: '20' } });
+      fireEvent.change(slider, { target: { value: "20" } });
     });
 
-    const playButton = screen.getByTestId('gamba-play-button');
+    const playButton = screen.getByTestId("gamba-play-button");
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -167,7 +227,9 @@ describe('Limbo Game Component Integration Tests', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId('multiplier-display')).toHaveStyle('color: #EF4444');
+      expect(screen.getByTestId("multiplier-display")).toHaveStyle(
+        "color: #EF4444"
+      );
     });
   });
 });

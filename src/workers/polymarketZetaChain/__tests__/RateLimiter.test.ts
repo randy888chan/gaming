@@ -1,21 +1,23 @@
-import { RateLimiter } from '../RateLimiter';
+import { RateLimiter } from "../RateLimiter";
 
 // Mock Date.now() to control time in tests
 const MOCK_DATE_NOW = 1678886400000; // A fixed timestamp for consistent testing
 
-describe('RateLimiter', () => {
+describe("RateLimiter", () => {
   let rateLimiter: RateLimiter;
   let setTimeoutSpy: jest.SpyInstance;
   let dateNowSpy: jest.SpyInstance;
 
   beforeEach(() => {
     // Mock Date.now() to control time
-    dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(MOCK_DATE_NOW);
+    dateNowSpy = jest.spyOn(Date, "now").mockReturnValue(MOCK_DATE_NOW);
     // Mock setTimeout to avoid actual delays in tests
-    setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation((cb: Function) => {
-      cb(); // Immediately call the callback
-      return {} as NodeJS.Timeout; // Return a mock Timeout object
-    });
+    setTimeoutSpy = jest
+      .spyOn(global, "setTimeout")
+      .mockImplementation((cb: Function) => {
+        cb(); // Immediately call the callback
+        return {} as NodeJS.Timeout; // Return a mock Timeout object
+      });
   });
 
   afterEach(() => {
@@ -23,49 +25,49 @@ describe('RateLimiter', () => {
     setTimeoutSpy.mockRestore();
   });
 
-  it('should initialize with correct capacity and tokens', () => {
+  it("should initialize with correct capacity and tokens", () => {
     rateLimiter = new RateLimiter(5, 1);
-    expect(rateLimiter['capacity']).toBe(5);
-    expect(rateLimiter['refillRate']).toBe(1);
-    expect(rateLimiter['tokens']).toBe(5);
-    expect(rateLimiter['lastRefill']).toBe(MOCK_DATE_NOW);
+    expect(rateLimiter["capacity"]).toBe(5);
+    expect(rateLimiter["refillRate"]).toBe(1);
+    expect(rateLimiter["tokens"]).toBe(5);
+    expect(rateLimiter["lastRefill"]).toBe(MOCK_DATE_NOW);
   });
 
-  describe('refillTokens', () => {
-    it('should refill tokens based on elapsed time', () => {
+  describe("refillTokens", () => {
+    it("should refill tokens based on elapsed time", () => {
       rateLimiter = new RateLimiter(5, 1);
-      rateLimiter['tokens'] = 0; // Deplete tokens
+      rateLimiter["tokens"] = 0; // Deplete tokens
       dateNowSpy.mockReturnValue(MOCK_DATE_NOW + 3000); // Advance time by 3 seconds
-      rateLimiter['refillTokens']();
+      rateLimiter["refillTokens"]();
       // 3 seconds * 1 token/sec = 3 tokens refilled
-      expect(rateLimiter['tokens']).toBe(3);
-      expect(rateLimiter['lastRefill']).toBe(MOCK_DATE_NOW + 3000);
+      expect(rateLimiter["tokens"]).toBe(3);
+      expect(rateLimiter["lastRefill"]).toBe(MOCK_DATE_NOW + 3000);
     });
 
-    it('should not exceed capacity when refilling tokens', () => {
+    it("should not exceed capacity when refilling tokens", () => {
       rateLimiter = new RateLimiter(5, 1);
-      rateLimiter['tokens'] = 4; // Almost full
+      rateLimiter["tokens"] = 4; // Almost full
       dateNowSpy.mockReturnValue(MOCK_DATE_NOW + 3000); // Advance time by 3 seconds
-      rateLimiter['refillTokens']();
+      rateLimiter["refillTokens"]();
       // Should refill 3 tokens, but max capacity is 5, so it should cap at 5
-      expect(rateLimiter['tokens']).toBe(5);
+      expect(rateLimiter["tokens"]).toBe(5);
     });
   });
 
-  describe('acquire', () => {
-    it('should acquire a token immediately if available', async () => {
+  describe("acquire", () => {
+    it("should acquire a token immediately if available", async () => {
       rateLimiter = new RateLimiter(1, 1); // Capacity 1, refill 1 token/sec
-      rateLimiter['tokens'] = 1; // Make a token available
-      const initialTokens = rateLimiter['tokens'];
+      rateLimiter["tokens"] = 1; // Make a token available
+      const initialTokens = rateLimiter["tokens"];
       await rateLimiter.acquire();
-      expect(rateLimiter['tokens']).toBe(initialTokens - 1);
+      expect(rateLimiter["tokens"]).toBe(initialTokens - 1);
       expect(setTimeoutSpy).not.toHaveBeenCalled();
     });
 
-    it('should wait and then acquire a token if no tokens are immediately available', async () => {
+    it("should wait and then acquire a token if no tokens are immediately available", async () => {
       rateLimiter = new RateLimiter(1, 1); // Capacity 1, refill 1 token/sec
-      rateLimiter['tokens'] = 0; // No tokens available
-      const initialLastRefill = rateLimiter['lastRefill'];
+      rateLimiter["tokens"] = 0; // No tokens available
+      const initialLastRefill = rateLimiter["lastRefill"];
 
       // Simulate time passing during the wait
       setTimeoutSpy.mockImplementationOnce((cb: Function, delay: number) => {
@@ -79,13 +81,13 @@ describe('RateLimiter', () => {
       // Expect setTimeout to have been called with a delay
       expect(setTimeoutSpy).toHaveBeenCalled();
       // After waiting and refilling, a token should be acquired
-      expect(rateLimiter['tokens']).toBe(0); // It acquires one, so it goes from 1 to 0 after refill
+      expect(rateLimiter["tokens"]).toBe(0); // It acquires one, so it goes from 1 to 0 after refill
     });
 
-    it('should handle refill and acquire correctly after waiting for fractional tokens', async () => {
+    it("should handle refill and acquire correctly after waiting for fractional tokens", async () => {
       rateLimiter = new RateLimiter(1, 0.5); // Capacity 1, refill 0.5 token/sec
-      rateLimiter['tokens'] = 0.2; // Fractional tokens
-      const initialLastRefill = rateLimiter['lastRefill'];
+      rateLimiter["tokens"] = 0.2; // Fractional tokens
+      const initialLastRefill = rateLimiter["lastRefill"];
 
       // Simulate time passing during the wait
       setTimeoutSpy.mockImplementationOnce((cb: Function, delay: number) => {
@@ -136,7 +138,7 @@ describe('RateLimiter', () => {
       // This highlights a potential bug in the RateLimiter's logic for fractional tokens.
 
       expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1600); // 1.6 seconds * 1000 ms/s
-      expect(rateLimiter['tokens']).toBeCloseTo(0); // After waiting and acquiring, tokens should be 0
+      expect(rateLimiter["tokens"]).toBeCloseTo(0); // After waiting and acquiring, tokens should be 0
     });
   });
 });

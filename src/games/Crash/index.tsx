@@ -1,12 +1,14 @@
-import React from 'react';
+import React from "react";
 
 export const doTheIntervalThing = (
   initialMultiplier: number,
   targetMultiplier: number,
   win: boolean,
   setCurrentMultiplier: React.Dispatch<React.SetStateAction<number>>,
-  setRocketState: React.Dispatch<React.SetStateAction<"idle" | "win" | "crash">>,
-  sound: any, // Adjust type as needed
+  setRocketState: React.Dispatch<
+    React.SetStateAction<"idle" | "win" | "crash">
+  >,
+  sound: any // Adjust type as needed
 ) => {
   let currentMultiplier = initialMultiplier;
   let animationFrameId: number;
@@ -86,7 +88,7 @@ const CrashGame = () => {
   const [multiplierTarget, setMultiplierTarget] = useState(2);
   const [currentMultiplier, setCurrentMultiplier] = useState(0);
   const [rocketState, setRocketState] = useState<"idle" | "win" | "crash">(
-    "idle",
+    "idle"
   );
   const gamba = useGamba();
   const pool = useCurrentPool();
@@ -166,7 +168,14 @@ const CrashGame = () => {
 
       sound.play("music");
 
-      doTheIntervalThing(0, multiplierResult, win, setCurrentMultiplier, setRocketState, sound);
+      doTheIntervalThing(
+        0,
+        multiplierResult,
+        win,
+        setCurrentMultiplier,
+        setRocketState,
+        sound
+      );
     } catch (err: any) {
       toast.error(`An error occurred: ${err.message}`);
       setRocketState("idle");
@@ -198,7 +207,10 @@ const CrashGame = () => {
           <StarsLayer10 style={{ opacity: currentMultiplier > 0.5 ? 0 : 1 }} />
           <LineLayer10 style={{ opacity: currentMultiplier > 0.5 ? 1 : 0 }} />
 
-          <MultiplierText data-testid="current-multiplier" color={multiplierColor}>
+          <MultiplierText
+            data-testid="current-multiplier"
+            color={multiplierColor}
+          >
             {currentMultiplier.toFixed(2)}x
           </MultiplierText>
           <div
@@ -225,7 +237,7 @@ const CrashGame = () => {
                   }}
                 >
                   {`${(multiplierTarget > 1 ? 1 / multiplierTarget : 0).toFixed(
-                    3,
+                    3
                   )}%`}
                 </div>
                 <div

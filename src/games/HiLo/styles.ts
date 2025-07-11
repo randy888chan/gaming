@@ -27,9 +27,7 @@ export const Option = styled.button<{ selected?: boolean }>`
   border: none;
   margin: 0;
   padding: 0;
-  transition:
-    opacity 0.2s,
-    background 0.2s ease;
+  transition: opacity 0.2s, background 0.2s ease;
   display: flex;
   align-items: center;
   border-radius: 10px;
@@ -93,8 +91,7 @@ export const CardsContainer = styled.div`
 export const CardContainer = styled.div`
   position: absolute;
   bottom: 0;
-  transition:
-    transform 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28),
+  transition: transform 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28),
     opacity 0.25s ease;
   filter: drop-shadow(-10px 10px 0px #00000011);
   transform-origin: bottom;

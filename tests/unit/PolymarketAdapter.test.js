@@ -1,7 +1,8 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat"); // Import ethers from Hardhat
 
-describe.skip("PolymarketAdapter", function () { // Temporarily skip this suite
+describe.skip("PolymarketAdapter", function () {
+  // Temporarily skip this suite
   let PolymarketAdapter;
   let polymarketAdapter;
   let conditionalTokens;
@@ -27,7 +28,9 @@ describe.skip("PolymarketAdapter", function () { // Temporarily skip this suite
     INDEX_SETS = [ethers.toBigInt(1)]; // Example index set for redeeming
 
     // Mock IConditionalTokens contract
-    const ConditionalTokensFactory = await ethers.getContractFactory("MockConditionalTokens");
+    const ConditionalTokensFactory = await ethers.getContractFactory(
+      "MockConditionalTokens"
+    );
     conditionalTokens = await ConditionalTokensFactory.deploy();
     // await conditionalTokens.deployed(); // .deployed() is deprecated in ethers v6, constructor promise is enough
 
@@ -37,7 +40,9 @@ describe.skip("PolymarketAdapter", function () { // Temporarily skip this suite
     // await collateral.deployed();
 
     // Mock ZetaConnector contract
-    const ZetaConnectorFactory = await ethers.getContractFactory("MockZetaConnector");
+    const ZetaConnectorFactory = await ethers.getContractFactory(
+      "MockZetaConnector"
+    );
     zetaConnector = await ZetaConnectorFactory.deploy();
     // await zetaConnector.deployed();
 
@@ -50,16 +55,23 @@ describe.skip("PolymarketAdapter", function () { // Temporarily skip this suite
     // await polymarketAdapter.deployed();
 
     // Mint some collateral to the adapter for testing merge/redeem
-    await collateral.mint(await polymarketAdapter.getAddress(), AMOUNT * ethers.toBigInt(2));
+    await collateral.mint(
+      await polymarketAdapter.getAddress(),
+      AMOUNT * ethers.toBigInt(2)
+    );
   });
 
   describe("Deployment", function () {
     it("Should set the correct conditionalTokens address", async function () {
-      expect(await polymarketAdapter.conditionalTokens()).to.equal(await conditionalTokens.getAddress());
+      expect(await polymarketAdapter.conditionalTokens()).to.equal(
+        await conditionalTokens.getAddress()
+      );
     });
 
     it("Should set the correct collateral address", async function () {
-      expect(await polymarketAdapter.collateral()).to.equal(await collateral.getAddress());
+      expect(await polymarketAdapter.collateral()).to.equal(
+        await collateral.getAddress()
+      );
     });
   });
 
@@ -70,16 +82,28 @@ describe.skip("PolymarketAdapter", function () { // Temporarily skip this suite
         [0, CONDITION_ID, PARTITION]
       );
 
-      await expect(zetaConnector.callOnZetaMessage(
-        await polymarketAdapter.getAddress(),
-        ethers.ZeroAddress, // zrc20 address (not used in this test)
-        AMOUNT,
-        message
-      ))
+      await expect(
+        zetaConnector.callOnZetaMessage(
+          await polymarketAdapter.getAddress(),
+          ethers.ZeroAddress, // zrc20 address (not used in this test)
+          AMOUNT,
+          message
+        )
+      )
         .to.emit(collateral, "Approval")
-        .withArgs(await polymarketAdapter.getAddress(), await conditionalTokens.getAddress(), AMOUNT)
+        .withArgs(
+          await polymarketAdapter.getAddress(),
+          await conditionalTokens.getAddress(),
+          AMOUNT
+        )
         .and.to.emit(conditionalTokens, "SplitPositionCalled")
-        .withArgs(await collateral.getAddress(), ethers.ZeroHash, CONDITION_ID, PARTITION, AMOUNT);
+        .withArgs(
+          await collateral.getAddress(),
+          ethers.ZeroHash,
+          CONDITION_ID,
+          PARTITION,
+          AMOUNT
+        );
     });
 
     it("Should revert if invalid action type", async function () {
@@ -89,12 +113,14 @@ describe.skip("PolymarketAdapter", function () { // Temporarily skip this suite
         [invalidActionType, CONDITION_ID, PARTITION]
       );
 
-      await expect(zetaConnector.callOnZetaMessage(
-        await polymarketAdapter.getAddress(),
-        ethers.ZeroAddress,
-        AMOUNT,
-        message
-      )).to.be.revertedWith("PolymarketAdapter: Invalid action type");
+      await expect(
+        zetaConnector.callOnZetaMessage(
+          await polymarketAdapter.getAddress(),
+          ethers.ZeroAddress,
+          AMOUNT,
+          message
+        )
+      ).to.be.revertedWith("PolymarketAdapter: Invalid action type");
     });
   });
 
@@ -105,14 +131,22 @@ describe.skip("PolymarketAdapter", function () { // Temporarily skip this suite
         [1, CONDITION_ID, PARTITION]
       );
 
-      await expect(zetaConnector.callOnZetaMessage(
-        await polymarketAdapter.getAddress(),
-        ethers.ZeroAddress,
-        AMOUNT,
-        message
-      ))
+      await expect(
+        zetaConnector.callOnZetaMessage(
+          await polymarketAdapter.getAddress(),
+          ethers.ZeroAddress,
+          AMOUNT,
+          message
+        )
+      )
         .to.emit(conditionalTokens, "MergePositionsCalled")
-        .withArgs(await collateral.getAddress(), ethers.ZeroHash, CONDITION_ID, PARTITION, AMOUNT);
+        .withArgs(
+          await collateral.getAddress(),
+          ethers.ZeroHash,
+          CONDITION_ID,
+          PARTITION,
+          AMOUNT
+        );
     });
   });
 
@@ -123,14 +157,21 @@ describe.skip("PolymarketAdapter", function () { // Temporarily skip this suite
         [2, CONDITION_ID, INDEX_SETS]
       );
 
-      await expect(zetaConnector.callOnZetaMessage(
-        await polymarketAdapter.getAddress(),
-        ethers.ZeroAddress,
-        AMOUNT, // Amount is not directly used in redeemPositions, but passed by ZetaChain
-        message
-      ))
+      await expect(
+        zetaConnector.callOnZetaMessage(
+          await polymarketAdapter.getAddress(),
+          ethers.ZeroAddress,
+          AMOUNT, // Amount is not directly used in redeemPositions, but passed by ZetaChain
+          message
+        )
+      )
         .to.emit(conditionalTokens, "RedeemPositionsCalled")
-        .withArgs(await collateral.getAddress(), ethers.ZeroHash, CONDITION_ID, INDEX_SETS);
+        .withArgs(
+          await collateral.getAddress(),
+          ethers.ZeroHash,
+          CONDITION_ID,
+          INDEX_SETS
+        );
     });
   });
 
@@ -142,12 +183,14 @@ describe.skip("PolymarketAdapter", function () { // Temporarily skip this suite
       );
 
       // Simulate a revert by calling onZetaRevert directly from the mock connector
-      await expect(zetaConnector.callOnZetaRevert(
-        await polymarketAdapter.getAddress(),
-        ethers.ZeroAddress, // zrc20 address
-        AMOUNT,
-        message
-      )).to.not.be.reverted; // Expect no revert, indicating the function handled it
+      await expect(
+        zetaConnector.callOnZetaRevert(
+          await polymarketAdapter.getAddress(),
+          ethers.ZeroAddress, // zrc20 address
+          AMOUNT,
+          message
+        )
+      ).to.not.be.reverted; // Expect no revert, indicating the function handled it
     });
   });
 });

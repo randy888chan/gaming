@@ -78,12 +78,12 @@ export default function Plinko() {
         if (contact.bucket && contact.plinko) {
           bucketAnimations.current[contact.bucket.plugin.bucketIndex] = 1;
           sounds.play(
-            contact.bucket.plugin.bucketMultiplier >= 1 ? "win" : "fall",
+            contact.bucket.plugin.bucketMultiplier >= 1 ? "win" : "fall"
           );
         }
       },
     },
-    [rows, multipliers],
+    [rows, multipliers]
   );
 
   const play = async () => {
@@ -120,7 +120,7 @@ export default function Plinko() {
             ctx.save();
             ctx.translate(
               size.width / 2 - (plinko.width / 2) * s,
-              size.height / 2 - (plinko.height / 2) * s,
+              size.height / 2 - (plinko.height / 2) * s
             );
             ctx.scale(s, s);
             if (debug) {
@@ -238,7 +238,7 @@ export default function Plinko() {
                     -barrierWidth / 2,
                     -barrierHeight / 2,
                     barrierWidth,
-                    barrierHeight,
+                    barrierHeight
                   );
 
                   ctx.restore();

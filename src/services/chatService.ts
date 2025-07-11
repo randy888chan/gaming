@@ -1,4 +1,4 @@
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 
 interface ChatMessage {
   id: string;
@@ -16,27 +16,30 @@ export const connectChat = (token: string) => {
     socket.disconnect();
   }
 
-  socket = io(process.env.NEXT_PUBLIC_CHAT_SERVER_URL || 'http://localhost:3001', {
-    auth: {
-      token: token,
-    },
+  socket = io(
+    process.env.NEXT_PUBLIC_CHAT_SERVER_URL || "http://localhost:3001",
+    {
+      auth: {
+        token: token,
+      },
+    }
+  );
+
+  socket.on("connect", () => {
+    console.log("Connected to chat server");
   });
 
-  socket.on('connect', () => {
-    console.log('Connected to chat server');
+  socket.on("disconnect", () => {
+    console.log("Disconnected from chat server");
   });
 
-  socket.on('disconnect', () => {
-    console.log('Disconnected from chat server');
+  socket.on("chatMessage", (message: ChatMessage) => {
+    console.log("Received message:", message);
+    messageListeners.forEach((listener) => listener(message));
   });
 
-  socket.on('chatMessage', (message: ChatMessage) => {
-    console.log('Received message:', message);
-    messageListeners.forEach(listener => listener(message));
-  });
-
-  socket.on('connect_error', (err) => {
-    console.error('Chat connection error:', err.message);
+  socket.on("connect_error", (err) => {
+    console.error("Chat connection error:", err.message);
   });
 };
 
@@ -47,18 +50,20 @@ export const disconnectChat = () => {
   }
 };
 
-export const sendChatMessage = (message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
+export const sendChatMessage = (
+  message: Omit<ChatMessage, "id" | "timestamp">
+) => {
   if (socket && socket.connected) {
-    socket.emit('chatMessage', message);
+    socket.emit("chatMessage", message);
   } else {
-    console.warn('Socket not connected. Message not sent:', message);
+    console.warn("Socket not connected. Message not sent:", message);
   }
 };
 
 export const onChatMessage = (listener: (message: ChatMessage) => void) => {
   messageListeners.push(listener);
   return () => {
-    messageListeners = messageListeners.filter(l => l !== listener);
+    messageListeners = messageListeners.filter((l) => l !== listener);
   };
 };
 

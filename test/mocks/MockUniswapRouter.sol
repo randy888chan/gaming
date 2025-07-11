@@ -39,14 +39,7 @@ contract MockUniswapRouter is IUniswapV2Router02 {
         uint256 amountBMin,
         address to,
         uint256 deadline
-    )
-        external
-        returns (
-            uint256 amountA,
-            uint256 amountB,
-            uint256 liquidity
-        )
-    {}
+    ) external returns (uint256 amountA, uint256 amountB, uint256 liquidity) {}
 
     function addLiquidityETH(
         address token,
@@ -55,15 +48,7 @@ contract MockUniswapRouter is IUniswapV2Router02 {
         uint256 amountETHMin,
         address to,
         uint256 deadline
-    )
-        external
-        payable
-        returns (
-            uint256 amountToken,
-            uint256 amountETH,
-            uint256 liquidity
-        )
-    {}
+    ) external payable returns (uint256 amountToken, uint256 amountETH, uint256 liquidity) {}
 
     function removeLiquidity(
         address tokenA,
@@ -111,12 +96,11 @@ contract MockUniswapRouter is IUniswapV2Router02 {
         bytes32 s
     ) external returns (uint256 amountToken, uint256 amountETH) {}
 
-    function swapExactETHForTokens(
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external payable returns (uint256[] memory amounts) {}
+    function swapExactETHForTokens(uint256 amountOutMin, address[] calldata path, address to, uint256 deadline)
+        external
+        payable
+        returns (uint256[] memory amounts)
+    {}
 
     function swapTokensForExactETH(
         uint256 amountOut,
@@ -134,30 +118,25 @@ contract MockUniswapRouter is IUniswapV2Router02 {
         uint256 deadline
     ) external returns (uint256[] memory amounts) {}
 
-    function swapETHForExactTokens(
-        uint256 amountOut,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external payable returns (uint256[] memory amounts) {}
+    function swapETHForExactTokens(uint256 amountOut, address[] calldata path, address to, uint256 deadline)
+        external
+        payable
+        returns (uint256[] memory amounts)
+    {}
 
-    function quote(
-        uint256 amountA,
-        uint256 reserveA,
-        uint256 reserveB
-    ) external pure returns (uint256 amountB) {}
+    function quote(uint256 amountA, uint256 reserveA, uint256 reserveB) external pure returns (uint256 amountB) {}
 
-    function getAmountOut(
-        uint256 amountIn,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) external pure returns (uint256 amountOut) {}
+    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut)
+        external
+        pure
+        returns (uint256 amountOut)
+    {}
 
-    function getAmountIn(
-        uint256 amountOut,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) external pure returns (uint256 amountIn) {}
+    function getAmountIn(uint256 amountOut, uint256 reserveIn, uint256 reserveOut)
+        external
+        pure
+        returns (uint256 amountIn)
+    {}
 
     function getAmountsOut(uint256 amountIn, address[] calldata path)
         external

@@ -9,8 +9,8 @@ import "dotenv/config";
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
+      { version: "0.8.26" }, // Prioritize 0.8.26
       { version: "0.8.20" },
-      { version: "0.8.26" },
       { version: "0.8.22" },
       { version: "0.8.7" },
       { version: "0.7.6" },
@@ -30,8 +30,10 @@ const config: HardhatUserConfig = {
       // This is a more robust solution than remappings for Hardhat.
       paths: {
         "@zetachain/toolkit": "node_modules/@zetachain/toolkit/contracts",
-        "@zetachain/protocol-contracts": "node_modules/@zetachain/protocol-contracts/contracts",
-        "@openzeppelin/contracts-upgradeable": "node_modules/@openzeppelin/contracts-upgradeable/contracts",
+        "@zetachain/protocol-contracts":
+          "node_modules/@zetachain/protocol-contracts/contracts",
+        "@openzeppelin/contracts-upgradeable":
+          "node_modules/@openzeppelin/contracts-upgradeable/contracts",
         "@openzeppelin/contracts": "node_modules/@openzeppelin/contracts",
         "@uniswap/v2-periphery": "node_modules/@uniswap/v2-periphery/contracts",
       },
@@ -43,7 +45,6 @@ const config: HardhatUserConfig = {
     cache: "./cache",
     artifacts: "./artifacts",
   },
-  
 };
 
 export default config;

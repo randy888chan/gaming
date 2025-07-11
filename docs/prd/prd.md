@@ -7,10 +7,11 @@
 **Vision:** To build the definitive, viral dApp that seamlessly integrates Web3 gaming and prediction markets, made accessible to a mainstream audience of existing crypto holders through a radically simple, "flash and viral" user experience delivered via PWA and Telegram Mini App.
 
 **Core Principles:**
-*   **User-Centric Simplicity:** Abstract all non-essential blockchain complexity. The user journey must feel as simple as a modern web app.
-*   **Maximum Abstraction:** Fully leverage our dependencies (ZetaChain, Particle Network) to minimize bespoke code and security surface.
-*   **Singular Logic:** Core cross-chain logic resides in a **single smart contract on the ZetaChain zEVM** for security and upgradeability.
-*   **Lean Infrastructure:** The entire platform runs on the **Cloudflare serverless ecosystem** for scalability and cost-efficiency.
+
+- **User-Centric Simplicity:** Abstract all non-essential blockchain complexity. The user journey must feel as simple as a modern web app.
+- **Maximum Abstraction:** Fully leverage our dependencies (ZetaChain, Particle Network) to minimize bespoke code and security surface.
+- **Singular Logic:** Core cross-chain logic resides in a **single smart contract on the ZetaChain zEVM** for security and upgradeability.
+- **Lean Infrastructure:** The entire platform runs on the **Cloudflare serverless ecosystem** for scalability and cost-efficiency.
 
 ## 2. The Four Pillars (Non-Negotiable Dependencies)
 

@@ -1,16 +1,16 @@
-require('dotenv').config();
-import '@testing-library/jest-dom';
-import React from 'react';
-import { signal } from '@preact/signals-react';
-import { TextEncoder, TextDecoder } from 'util';
+require("dotenv").config();
+import "@testing-library/jest-dom";
+import React from "react";
+import { signal } from "@preact/signals-react";
+import { TextEncoder, TextDecoder } from "util";
 
 global.React = React; // Explicitly make React global
 
 // Polyfill TextEncoder and TextDecoder for environments where they're not globally available (e.g., some Jest setups)
-if (typeof global.TextEncoder === 'undefined') {
+if (typeof global.TextEncoder === "undefined") {
   global.TextEncoder = TextEncoder;
 }
-if (typeof global.TextDecoder === 'undefined') {
+if (typeof global.TextDecoder === "undefined") {
   global.TextDecoder = TextDecoder;
 }
 
@@ -56,24 +56,24 @@ HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   roundRect: jest.fn(),
   ellipse: jest.fn(),
   arcTo: jest.fn(),
-  direction: 'ltr',
-  font: '',
-  textAlign: 'start',
-  textBaseline: 'alphabetic',
+  direction: "ltr",
+  font: "",
+  textAlign: "start",
+  textBaseline: "alphabetic",
   shadowBlur: 0,
-  shadowColor: 'rgba(0, 0, 0, 0)',
+  shadowColor: "rgba(0, 0, 0, 0)",
   shadowOffsetX: 0,
   shadowOffsetY: 0,
-  filter: 'none',
+  filter: "none",
   imageSmoothingEnabled: true,
-  imageSmoothingQuality: 'low',
+  imageSmoothingQuality: "low",
   globalAlpha: 1,
-  globalCompositeOperation: 'source-over',
-  strokeStyle: '#000',
-  fillStyle: '#000',
+  globalCompositeOperation: "source-over",
+  strokeStyle: "#000",
+  fillStyle: "#000",
   lineWidth: 1,
-  lineCap: 'butt',
-  lineJoin: 'miter',
+  lineCap: "butt",
+  lineJoin: "miter",
 }));
 
 // Mock OffscreenCanvas
@@ -119,24 +119,24 @@ global.OffscreenCanvas = class OffscreenCanvas {
       roundRect: jest.fn(),
       ellipse: jest.fn(),
       arcTo: jest.fn(),
-      direction: 'ltr',
-  font: '',
-      textAlign: 'start',
-      textBaseline: 'alphabetic',
+      direction: "ltr",
+      font: "",
+      textAlign: "start",
+      textBaseline: "alphabetic",
       shadowBlur: 0,
-      shadowColor: 'rgba(0, 0, 0, 0)',
+      shadowColor: "rgba(0, 0, 0, 0)",
       shadowOffsetX: 0,
       shadowOffsetY: 0,
-      filter: 'none',
+      filter: "none",
       imageSmoothingEnabled: true,
-      imageSmoothingQuality: 'low',
+      imageSmoothingQuality: "low",
       globalAlpha: 1,
-      globalCompositeOperation: 'source-over',
-      strokeStyle: '#000',
-      fillStyle: '#000',
+      globalCompositeOperation: "source-over",
+      strokeStyle: "#000",
+      fillStyle: "#000",
       lineWidth: 1,
-      lineCap: 'butt',
-      lineJoin: 'miter',
+      lineCap: "butt",
+      lineJoin: "miter",
     }));
   }
 };
@@ -155,16 +155,18 @@ global.cancelAnimationFrame = (id) => {
   clearTimeout(id);
 };
 
-jest.mock('gamba-react-ui-v2', () => ({
-  ...jest.requireActual('gamba-react-ui-v2'),
+jest.mock("gamba-react-ui-v2", () => ({
+  ...jest.requireActual("gamba-react-ui-v2"),
   GambaUi: {
-    ...jest.requireActual('gamba-react-ui-v2').GambaUi,
-    Responsive: ({ children }) => <div data-testid="gamba-ui-responsive">{children}</div>,
+    ...jest.requireActual("gamba-react-ui-v2").GambaUi,
+    Responsive: ({ children }) => (
+      <div data-testid="gamba-ui-responsive">{children}</div>
+    ),
     Canvas: ({ render }) => {
-      const ActualReact = jest.requireActual('react');
+      const ActualReact = jest.requireActual("react");
       const canvasRef = ActualReact.useRef(null);
       ActualReact.useEffect(() => {
-        const ctx = canvasRef.current?.getContext('2d');
+        const ctx = canvasRef.current?.getContext("2d");
         if (ctx) {
           // Mock the render function if needed, or just ensure it's present
         }
@@ -174,12 +176,12 @@ jest.mock('gamba-react-ui-v2', () => ({
   },
 }));
 
-jest.mock('next/router', () => ({
+jest.mock("next/router", () => ({
   useRouter: () => ({
-    route: '/',
-    pathname: '',
+    route: "/",
+    pathname: "",
     query: {},
-    asPath: '',
+    asPath: "",
     push: jest.fn(),
     replace: jest.fn(),
     reload: jest.fn(),
@@ -197,19 +199,20 @@ jest.mock('next/router', () => ({
   }),
 }));
 
-jest.mock('@react-three/drei', () => {
-  const ActualReact = jest.requireActual('react');
+jest.mock("@react-three/drei", () => {
+  const ActualReact = jest.requireActual("react");
   return {
-    ...jest.requireActual('@react-three/drei'),
-    Text: ({ children, ...props }) => ActualReact.createElement('div', props, children),
+    ...jest.requireActual("@react-three/drei"),
+    Text: ({ children, ...props }) =>
+      ActualReact.createElement("div", props, children),
     // Add other drei components if they cause issues
   };
 });
 
 // Mock R3F intrinsic elements that are causing ReferenceErrors
-jest.mock('@react-three/fiber', () => {
-  const ActualReact = jest.requireActual('react');
-  const actualR3F = jest.requireActual('@react-three/fiber');
+jest.mock("@react-three/fiber", () => {
+  const ActualReact = jest.requireActual("react");
+  const actualR3F = jest.requireActual("@react-three/fiber");
   return {
     ...actualR3F,
     // Provide simple mock implementations for intrinsic-like components if they are not resolved
@@ -243,9 +246,18 @@ jest.mock('@react-three/fiber', () => {
 
 // Let's provide global mocks for these as simple functional components.
 // This is a common workaround.
-const AmbientLight = (props) => React.createElement('div', { 'data-testid': 'mock-ambientlight', ...props });
-const DirectionalLight = (props) => React.createElement('div', { 'data-testid': 'mock-directionallight', ...props });
-const HemisphereLight = (props) => React.createElement('div', { 'data-testid': 'mock-hemispherelight', ...props });
+const AmbientLight = (props) =>
+  React.createElement("div", { "data-testid": "mock-ambientlight", ...props });
+const DirectionalLight = (props) =>
+  React.createElement("div", {
+    "data-testid": "mock-directionallight",
+    ...props,
+  });
+const HemisphereLight = (props) =>
+  React.createElement("div", {
+    "data-testid": "mock-hemispherelight",
+    ...props,
+  });
 
 // To make these globally available to Jest tests when they encounter these tags:
 // This requires a bit more advanced jest configuration or specific module mocking.
@@ -276,6 +288,15 @@ const HemisphereLight = (props) => React.createElement('div', { 'data-testid': '
 // The issue is that the JSX like <AmbientLight /> is treated as React.createElement(AmbientLight).
 // We need to ensure AmbientLight is defined.
 // Simplest way for testing when 3D rendering is not essential:
-global.AmbientLight = (props) => React.createElement('div', { 'data-testid': 'mock-ambientlight', ...props });
-global.DirectionalLight = (props) => React.createElement('div', { 'data-testid': 'mock-directionallight', ...props });
-global.HemisphereLight = (props) => React.createElement('div', { 'data-testid': 'mock-hemispherelight', ...props });
+global.AmbientLight = (props) =>
+  React.createElement("div", { "data-testid": "mock-ambientlight", ...props });
+global.DirectionalLight = (props) =>
+  React.createElement("div", {
+    "data-testid": "mock-directionallight",
+    ...props,
+  });
+global.HemisphereLight = (props) =>
+  React.createElement("div", {
+    "data-testid": "mock-hemispherelight",
+    ...props,
+  });

@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import { PublicKey } from "@solana/web3.js";
 
 const PLATFORM_CREATOR_ADDRESS = new PublicKey(
-  process.env.NEXT_PUBLIC_PLATFORM_CREATOR as string,
+  process.env.NEXT_PUBLIC_PLATFORM_CREATOR as string
 );
 
 export function useRecentPlays(platformOnly = false) {
@@ -18,7 +18,7 @@ export function useRecentPlays(platformOnly = false) {
   const previousEvents = useGambaEvents("GameSettled", eventFilter);
 
   const [newEvents, setNewEvents] = useState<GambaTransaction<"GameSettled">[]>(
-    [],
+    []
   );
 
   useGambaEventListener(
@@ -32,21 +32,21 @@ export function useRecentPlays(platformOnly = false) {
       }
 
       const eventExists = newEvents.some(
-        (e) => e.signature === event.signature,
+        (e) => e.signature === event.signature
       );
 
       if (!eventExists) {
         setNewEvents((prevEvents) => [event, ...prevEvents]);
       }
     },
-    [router.pathname, platformOnly],
+    [router.pathname, platformOnly]
   );
 
   const combinedEvents = useMemo(() => {
     const allEvents = [...newEvents, ...previousEvents];
     const uniqueEvents = allEvents.filter(
       (event, index, self) =>
-        index === self.findIndex((e) => e.signature === event.signature),
+        index === self.findIndex((e) => e.signature === event.signature)
     );
     return uniqueEvents.sort((a, b) => b.time - a.time);
   }, [newEvents, previousEvents]);

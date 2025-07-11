@@ -54,7 +54,7 @@ export default function Slots() {
   const [revealedSlots, setRevealedSlots] = useState(NUM_SLOTS);
   const [wager, setWager] = useWagerInput();
   const [combination, setCombination] = useState(
-    Array.from({ length: NUM_SLOTS }).map(() => SLOT_ITEMS[0]),
+    Array.from({ length: NUM_SLOTS }).map(() => SLOT_ITEMS[0])
   );
 
   const sounds = useSound({
@@ -68,7 +68,7 @@ export default function Slots() {
 
   const bet = useMemo(
     () => generateBetArray(pool.maxPayout, wager),
-    [pool.maxPayout, wager, gamba.nonce],
+    [pool.maxPayout, wager, gamba.nonce]
   );
 
   const valid = bet.some((x) => x > 1);

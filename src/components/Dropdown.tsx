@@ -9,7 +9,7 @@ interface DropdownProps extends PropsWithChildren {
 export function Dropdown({ children, visible, anchor }: DropdownProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [dynamicAnchor, setDynamicAnchor] = useState<"top" | "bottom">(
-    "bottom",
+    "bottom"
   );
 
   useEffect(() => {
@@ -32,8 +32,8 @@ export function Dropdown({ children, visible, anchor }: DropdownProps) {
         transform: visible
           ? "translateY(0)"
           : dynamicAnchor === "top"
-            ? "translateY(-10px)"
-            : "translateY(10px)",
+          ? "translateY(-10px)"
+          : "translateY(10px)",
       }}
     >
       <div className="grid bg-[#15151f] rounded-lg overflow-hidden p-1 gap-1">

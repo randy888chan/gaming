@@ -1,11 +1,14 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { validate } from 'jsonschema';
-import documentSchema from '../../docs/architecture/document-schema.json';
-import yaml from 'js-yaml';
+import fs from "fs/promises";
+import path from "path";
+import { validate } from "jsonschema";
+import yaml from "js-yaml";
 
 // Declare use_mcp_tool as a global function to satisfy TypeScript
-declare const use_mcp_tool: (serverName: string, toolName: string, args: any) => Promise<any>;
+declare const use_mcp_tool: (
+  serverName: string,
+  toolName: string,
+  args: any
+) => Promise<any>;
 
 interface DocumentMetadata {
   title: string;
@@ -31,13 +34,15 @@ async function scanProjectDocs(directory: string): Promise<string[]> {
   const files = await fs.readdir(directory);
   // Resolve each file path against the base directory to prevent path traversal
   return files
-    .filter(file => file.endsWith('.md'))
-    .map(file => path.resolve(directory, file));
+    .filter((file) => file.endsWith(".md"))
+    .map((file) => path.resolve(directory, file));
 }
 
-async function extractMetadataAndContent(filePath: string): Promise<DocumentMetadata> {
-  const content = await fs.readFile(filePath, 'utf-8');
-  
+async function extractMetadataAndContent(
+  filePath: string
+): Promise<DocumentMetadata> {
+  const content = await fs.readFile(filePath, "utf-8");
+
   let metadata: any = {};
   let markdownContent = content;
 
@@ -53,25 +58,29 @@ async function extractMetadataAndContent(filePath: string): Promise<DocumentMeta
   }
 
   const titleMatch = markdownContent.match(/^#\s*(.*)/m);
-  const title = metadata.title || (titleMatch ? titleMatch[1].trim() : path.basename(filePath, '.md'));
+  const title =
+    metadata.title ||
+    (titleMatch ? titleMatch[1].trim() : path.basename(filePath, ".md"));
 
   const sections = [{ title: "Main Content", body: markdownContent }];
 
-  const creationDate = metadata.creationDate || new Date().toISOString().split('T')[0];
+  const creationDate =
+    metadata.creationDate || new Date().toISOString().split("T")[0];
   const author = metadata.author || "System";
   const version = metadata.version || "1.0.0";
   const owner = metadata.owner || "bmad-master";
   const dependencies = metadata.dependencies || [];
 
-  let documentType: DocumentMetadata['documentType'] = metadata.documentType || 'API';
-  if (filePath.includes('prd.md')) {
-    documentType = 'PRD';
-  } else if (filePath.includes('architecture')) {
-    documentType = 'Architecture';
-  } else if (filePath.includes('story')) {
-    documentType = 'UserStory';
-  } else if (filePath.includes('test-plan')) {
-    documentType = 'TestPlan';
+  let documentType: DocumentMetadata["documentType"] =
+    metadata.documentType || "API";
+  if (filePath.includes("prd.md")) {
+    documentType = "PRD";
+  } else if (filePath.includes("architecture")) {
+    documentType = "Architecture";
+  } else if (filePath.includes("story")) {
+    documentType = "UserStory";
+  } else if (filePath.includes("test-plan")) {
+    documentType = "TestPlan";
   }
 
   return {
@@ -83,12 +92,17 @@ async function extractMetadataAndContent(filePath: string): Promise<DocumentMeta
     owner,
     content: { sections },
     dependencies,
-    compliance: { corePrinciples: true, securityStandards: false } // securityStandards will be updated by securityCheck
+    compliance: { corePrinciples: true, securityStandards: false }, // securityStandards will be updated by securityCheck
   };
 }
 
 async function securityCheck(document: DocumentMetadata): Promise<boolean> {
-  const codeFiles = [{ filename: document.title + '.md', content: document.content.sections[0].body }];
+  const codeFiles = [
+    {
+      filename: document.title + ".md",
+      content: document.content.sections[0].body,
+    },
+  ];
 
   // Semgrep rule for detecting 'eval()' usage (example for OWASP A03: Injection)
   const evalRule = `
@@ -144,22 +158,38 @@ rules:
   `;
 
   try {
-    const evalScanResult = await use_mcp_tool('semgrep', 'semgrep_scan_with_custom_rule', {
-      code_files: codeFiles,
-      rule: evalRule,
-    });
+    const evalScanResult = await use_mcp_tool(
+      "semgrep",
+      "semgrep_scan_with_custom_rule",
+      {
+        code_files: codeFiles,
+        rule: evalRule,
+      }
+    );
 
-    const secretScanResult = await use_mcp_tool('semgrep', 'semgrep_scan_with_custom_rule', {
-      code_files: codeFiles,
-      rule: hardcodedSecretRule,
-    });
+    const secretScanResult = await use_mcp_tool(
+      "semgrep",
+      "semgrep_scan_with_custom_rule",
+      {
+        code_files: codeFiles,
+        rule: hardcodedSecretRule,
+      }
+    );
 
-    const combinedScanResult = await use_mcp_tool('semgrep', 'semgrep_scan_with_custom_rule', {
-      code_files: codeFiles,
-      rule: combinedRules,
-    });
+    const combinedScanResult = await use_mcp_tool(
+      "semgrep",
+      "semgrep_scan_with_custom_rule",
+      {
+        code_files: codeFiles,
+        rule: combinedRules,
+      }
+    );
 
-    const findings = [...evalScanResult.findings, ...secretScanResult.findings, ...combinedScanResult.findings];
+    const findings = [
+      ...evalScanResult.findings,
+      ...secretScanResult.findings,
+      ...combinedScanResult.findings,
+    ];
 
     if (findings.length > 0) {
       console.warn(`Security findings for ${document.title}:`, findings);
@@ -172,7 +202,11 @@ rules:
   }
 }
 
-function validateDocument(document: DocumentMetadata): boolean {
+async function validateDocument(document: DocumentMetadata): Promise<boolean> {
+  const schemaPath = path.join(process.cwd(), "docs", "architecture", "document-schema.json");
+  const schemaContent = await fs.readFile(schemaPath, "utf-8");
+  const documentSchema = JSON.parse(schemaContent);
+
   const result = validate(document, documentSchema);
   if (!result.valid) {
     console.error("Document validation errors:", result.errors);
@@ -180,14 +214,19 @@ function validateDocument(document: DocumentMetadata): boolean {
   return result.valid;
 }
 
-async function resolveDependencies(document: DocumentMetadata, allDocuments: Map<string, DocumentMetadata>): Promise<boolean> {
+async function resolveDependencies(
+  document: DocumentMetadata,
+  allDocuments: Map<string, DocumentMetadata>
+): Promise<boolean> {
   if (!document.dependencies || document.dependencies.length === 0) {
     return true;
   }
 
+  console.log(`DEBUG: Document ${document.title} dependencies:`, document.dependencies);
   for (const dep of document.dependencies) {
+    console.log(`DEBUG: Checking dependency: ${dep} for document: ${document.title}`);
     if (!allDocuments.has(dep)) {
-      console.error(`Unresolved dependency for ${document.title}: ${dep}`);
+      console.error(`DEBUG: Unresolved dependency for ${document.title}: ${dep}`);
       return false;
     }
   }
@@ -199,20 +238,26 @@ async function createSearchIndex(document: DocumentMetadata): Promise<void> {
   console.log(`Simulating indexing document: ${document.title}`);
   // In a real scenario, this would send the document to an Elasticsearch cluster
   // For now, we'll just log the action.
-  await new Promise(resolve => setTimeout(resolve, 100)); // Simulate async operation
+  await new Promise((resolve) => setTimeout(resolve, 100)); // Simulate async operation
 }
 
-async function updateSystemState(state: string, documentTitle?: string): Promise<void> {
+async function updateSystemState(
+  state: string,
+  documentTitle?: string
+): Promise<void> {
   // Simulate state management service update
-  const message = documentTitle ? `Updating system state to: ${state} for document: ${documentTitle}` : `Updating system state to: ${state}`;
+  const message = documentTitle
+    ? `Updating system state to: ${state} for document: ${documentTitle}`
+    : `Updating system state to: ${state}`;
   console.log(message);
   // In a real scenario, this would interact with a state management service
-  await new Promise(resolve => setTimeout(resolve, 50)); // Simulate async operation
+  await new Promise((resolve) => setTimeout(resolve, 50)); // Simulate async operation
 }
 
 export async function ingestDocuments(): Promise<void> {
-  const projectDocsDir = path.join(process.cwd(), 'project_docs');
+  const projectDocsDir = path.join(process.cwd(), "project_docs");
   const markdownFiles = await scanProjectDocs(projectDocsDir);
+  console.log("DEBUG: Markdown files found:", markdownFiles);
   const allDocuments = new Map<string, DocumentMetadata>();
 
   // First pass: extract metadata and content for all documents
@@ -220,22 +265,25 @@ export async function ingestDocuments(): Promise<void> {
     try {
       const document = await extractMetadataAndContent(filePath);
       allDocuments.set(document.title, document);
+      console.log(`DEBUG: Extracted document: ${document.title}`);
     } catch (error) {
-      console.error(`Error extracting metadata from file: ${filePath}`, error);
-      await updateSystemState('INGESTION_FAILED', path.basename(filePath));
+      console.error(`DEBUG: Error extracting metadata from file: ${filePath}`, error);
+      await updateSystemState("INGESTION_FAILED", path.basename(filePath));
     }
   }
 
+  console.log("DEBUG: All documents after first pass:", Array.from(allDocuments.keys()));
+
   // Second pass: validate, perform security checks, resolve dependencies, and index
   for (const [title, document] of allDocuments.entries()) {
-    console.log(`Processing document: ${title}`);
+    console.log(`DEBUG: Processing document: ${title}`);
     try {
-      await updateSystemState('PROCESSING', title);
+      await updateSystemState("PROCESSING", title);
 
       // 1. Schema Validation
-      if (!validateDocument(document)) {
+      if (!(await validateDocument(document))) {
         console.error(`Failed schema validation for document: ${title}`);
-        await updateSystemState('VALIDATION_FAILED', title);
+        await updateSystemState("VALIDATION_FAILED", title);
         continue;
       }
 
@@ -244,27 +292,26 @@ export async function ingestDocuments(): Promise<void> {
       document.compliance!.securityStandards = isSecure;
       if (!isSecure) {
         console.error(`Failed security compliance for document: ${title}`);
-        await updateSystemState('SECURITY_FAILED', title);
+        await updateSystemState("SECURITY_FAILED", title);
         continue;
       }
 
       // 3. Document Dependency Resolution
-      if (!await resolveDependencies(document, allDocuments)) {
+      if (!(await resolveDependencies(document, allDocuments))) {
         console.error(`Failed dependency resolution for document: ${title}`);
-        await updateSystemState('DEPENDENCY_FAILED', title);
+        await updateSystemState("DEPENDENCY_FAILED", title);
         continue;
       }
 
       // 4. Search Indexing
       await createSearchIndex(document);
       console.log(`Successfully ingested and indexed: ${title}`);
-      await updateSystemState('INGESTED_AND_INDEXED', title);
-
+      await updateSystemState("INGESTED_AND_INDEXED", title);
     } catch (error) {
       console.error(`Error processing document: ${title}`, error);
-      await updateSystemState('INGESTION_FAILED', title);
+      await updateSystemState("INGESTION_FAILED", title);
     }
   }
-  await updateSystemState('INGESTION_COMPLETE');
-  console.log('Document ingestion workflow completed.');
+  await updateSystemState("INGESTION_COMPLETE");
+  console.log("Document ingestion workflow completed.");
 }

@@ -22,7 +22,9 @@ export function GameCard({ game }: GameCardProps) {
 
   return (
     <Link href={`/play/${game.id}`} passHref>
-      <div className="relative"> {/* Wrapper div */}
+      <div className="relative">
+        {" "}
+        {/* Wrapper div */}
         <div
           className="cursor-pointer game-card w-full bg-cover bg-center rounded-lg text-white font-bold text-2xl"
           style={backgroundStyle}
@@ -41,8 +43,18 @@ export function GameCard({ game }: GameCardProps) {
           </div>
         </div>
         <div className="absolute bottom-2 left-2 flex gap-2 z-10">
-          <InsightShard title="Popularity" value="90%" icon={<Flame size={16} />} className="!p-2 !text-xs" />
-          <InsightShard title="RTP" value="95%" icon={<TrendingUp size={16} />} className="!p-2 !text-xs" />
+          <InsightShard
+            title="Popularity"
+            value="90%"
+            icon={<Flame size={16} />}
+            className="!p-2 !text-xs"
+          />
+          <InsightShard
+            title="RTP"
+            value="95%"
+            icon={<TrendingUp size={16} />}
+            className="!p-2 !text-xs"
+          />
         </div>
       </div>
     </Link>

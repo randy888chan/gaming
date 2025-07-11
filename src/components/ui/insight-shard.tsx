@@ -18,7 +18,7 @@ export const InsightShard: React.FC<InsightShardProps> = ({
     <div
       className={cn(
         "bg-card border border-border rounded-lg p-4 flex flex-col items-center justify-center text-center shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105",
-        className,
+        className
       )}
       {...props}
     >

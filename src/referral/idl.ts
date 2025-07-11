@@ -9,7 +9,7 @@ export type ReferralIdl = {
         { name: "authority"; isMut: true; isSigner: true },
         { name: "referAccount"; isMut: true; isSigner: false },
         { name: "creator"; isMut: false; isSigner: false },
-        { name: "systemProgram"; isMut: false; isSigner: false },
+        { name: "systemProgram"; isMut: false; isSigner: false }
       ];
       args: [{ name: "referrer"; type: "publicKey" }];
     },
@@ -19,10 +19,10 @@ export type ReferralIdl = {
         { name: "authority"; isMut: true; isSigner: true },
         { name: "referAccount"; isMut: true; isSigner: false },
         { name: "creator"; isMut: false; isSigner: false },
-        { name: "systemProgram"; isMut: false; isSigner: false },
+        { name: "systemProgram"; isMut: false; isSigner: false }
       ];
       args: [];
-    },
+    }
   ];
   accounts: [
     {
@@ -31,7 +31,7 @@ export type ReferralIdl = {
         kind: "struct";
         fields: [{ name: "referrer"; type: "publicKey" }];
       };
-    },
+    }
   ];
 };
 

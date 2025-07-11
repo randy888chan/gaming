@@ -1,7 +1,7 @@
-import React from 'react';
-import MarketList from '@/components/polymarket/MarketList';
-import { NextPage } from 'next';
-import { NextSeo } from 'next-seo';
+import React from "react";
+import MarketList from "@/components/polymarket/MarketList";
+import { NextPage } from "next";
+import { NextSeo } from "next-seo";
 
 const PolymarketPage: NextPage = () => {
   return (

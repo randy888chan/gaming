@@ -64,7 +64,7 @@ export function ShareModal({
         });
         await canvasToClipboard(canvas);
         toast.success(
-          "📋 Copied image to clipboard. You can paste it in Twitter or Telegram etc.",
+          "📋 Copied image to clipboard. You can paste it in Twitter or Telegram etc."
         );
       } finally {
         setShutterActive(false);
@@ -73,12 +73,12 @@ export function ShareModal({
     }
   };
 
-  const handleShareToSocial = async (platform: 'twitter' | 'facebook') => {
+  const handleShareToSocial = async (platform: "twitter" | "facebook") => {
     try {
-      const response = await fetch('/api/social-post', {
-        method: 'POST',
+      const response = await fetch("/api/social-post", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           contentId: event.signature, // Using transaction signature as contentId for now
@@ -91,11 +91,15 @@ export function ShareModal({
       if (data.success) {
         toast.success(`Successfully shared on ${platform}!`);
       } else {
-        toast.error(`Failed to share on ${platform}: ${data.error || 'Unknown error'}`);
+        toast.error(
+          `Failed to share on ${platform}: ${data.error || "Unknown error"}`
+        );
       }
     } catch (error: any) {
       console.error(`Error sharing on ${platform}:`, error);
-      toast.error(`Error sharing on ${platform}: ${error.message || 'Unknown error'}`);
+      toast.error(
+        `Error sharing on ${platform}: ${error.message || "Unknown error"}`
+      );
     }
   };
 
@@ -220,7 +224,7 @@ export function ShareModal({
             onClick={() =>
               window.open(
                 `https://explorer.gamba.so/tx/${event.signature}`,
-                "_blank",
+                "_blank"
               )
             }
             text="Verify"

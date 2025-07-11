@@ -9,7 +9,7 @@ const itemsByMultiplier = Object.entries(
       ...prev,
       [item.multiplier]: [...previousItems, item],
     };
-  }, {}),
+  }, {})
 )
   .map(([multiplier, items]) => ({ multiplier: Number(multiplier), items }))
   .sort((a, b) => a.multiplier - b.multiplier);

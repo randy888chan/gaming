@@ -24,12 +24,14 @@ export function UserButton() {
     if (!wallet.publicKey) {
       return walletModal.setVisible(true);
     }
-    const referralLink = `${location.host}?code=${referralCode ?? wallet.publicKey.toString()}`;
+    const referralLink = `${location.host}?code=${
+      referralCode ?? wallet.publicKey.toString()
+    }`;
     navigator.clipboard.writeText(referralLink);
     toast.success(
       `Copied! Share your link to earn a ${
         PLATFORM_REFERRAL_FEE * 100
-      }% fee when players use this platform`,
+      }% fee when players use this platform`
     );
   };
 

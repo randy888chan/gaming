@@ -1,4 +1,4 @@
-import { AIServiceAdapter } from '../services/aiAdapter';
+import { AIServiceAdapter } from "../services/aiAdapter";
 
 // This would typically be a Cloudflare Worker entry point
 // For demonstration, we'll define a function that simulates the worker's logic.
@@ -24,37 +24,37 @@ export async function generateAndPostSEOContent() {
   const eventTitle = "Exciting New Game Launch"; // Example dynamic event title
   const textPrompt = `Generate SEO content for ${eventTitle} gambling opportunity, focusing on keywords like "online casino", "big wins", "new game".`;
   const textResponse = await aiAdapter.generate({
-    provider: 'mistral',
-    type: 'text',
+    provider: "mistral",
+    type: "text",
     prompt: textPrompt,
   });
 
   if (!textResponse.success || !textResponse.content) {
-    console.error('Failed to generate text content:', textResponse.error);
+    console.error("Failed to generate text content:", textResponse.error);
     return;
   }
   const generatedText = textResponse.content;
-  console.log('Generated Text:', generatedText);
+  console.log("Generated Text:", generatedText);
 
   // 2. Generate image using Gemini AI
   const imagePrompt = `Photorealistic image of a lucky player winning big at an online casino for ${eventTitle}.`;
   const imageResponse = await aiAdapter.generate({
-    provider: 'gemini',
-    type: 'image',
+    provider: "gemini",
+    type: "image",
     prompt: imagePrompt,
   });
 
   if (!imageResponse.success || !imageResponse.imageUrl) {
-    console.error('Failed to generate image:', imageResponse.error);
+    console.error("Failed to generate image:", imageResponse.error);
     return;
   }
   const generatedImageUrl = imageResponse.imageUrl;
-  console.log('Generated Image URL:', generatedImageUrl);
+  console.log("Generated Image URL:", generatedImageUrl);
 
   // 3. Simulate storing metadata in D1
   const newContentMetadata: ContentMetadata = {
     id: `content-${Date.now()}`,
-    urlPath: `/seo/${eventTitle.toLowerCase().replace(/\s/g, '-')}`,
+    urlPath: `/seo/${eventTitle.toLowerCase().replace(/\s/g, "-")}`,
     title: `SEO Title for ${eventTitle}`,
     metaDescription: generatedText.substring(0, 160),
     keywords: "online casino, big wins, new game",
@@ -64,14 +64,17 @@ export async function generateAndPostSEOContent() {
     impressions: 0,
     clicks: 0,
   };
-  console.log('Simulating D1 storage for content_metadata:', newContentMetadata);
+  console.log(
+    "Simulating D1 storage for content_metadata:",
+    newContentMetadata
+  );
   // In a real Cloudflare Worker, you would interact with D1 here:
   // await env.DB.prepare("INSERT INTO content_metadata (...) VALUES (...)").bind(...).run();
 
   // 4. Queue social posts
   const socialPostPayload = {
     contentId: newContentMetadata.id,
-    platforms: ['twitter', 'facebook'],
+    platforms: ["twitter", "facebook"],
     scheduleAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // Schedule 1 hour from now
   };
 
@@ -79,7 +82,10 @@ export async function generateAndPostSEOContent() {
     // In a real Cloudflare Worker, this would be a fetch to your own API endpoint
     // For local testing/simulation, we can directly call the handler or mock it.
     // For now, we'll just log the payload.
-    console.log('Simulating calling social-post API with payload:', socialPostPayload);
+    console.log(
+      "Simulating calling social-post API with payload:",
+      socialPostPayload
+    );
     // Example of how you might call it in a real worker:
     // await fetch('https://your-domain.com/api/social-post', {
     //   method: 'POST',
@@ -87,7 +93,7 @@ export async function generateAndPostSEOContent() {
     //   body: JSON.stringify(socialPostPayload),
     // });
   } catch (error) {
-    console.error('Failed to queue social post:', error);
+    console.error("Failed to queue social post:", error);
   }
 }
 

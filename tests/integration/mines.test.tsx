@@ -1,11 +1,24 @@
-import React from 'react';
-import { render, screen, fireEvent, act, waitFor, within } from '@testing-library/react';
-import MinesGame from '../../src/games/Mines';
-import { GambaUi, useCurrentPool, useCurrentToken, useSound, useWagerInput } from 'gamba-react-ui-v2';
-import { useGamba } from 'gamba-react-v2';
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import MinesGame from "../../src/games/Mines";
+import {
+  GambaUi,
+  useCurrentPool,
+  useCurrentToken,
+  useSound,
+  useWagerInput,
+} from "gamba-react-ui-v2";
+import { useGamba } from "gamba-react-v2";
 
 // Mock Gamba hooks
-jest.mock('gamba-react-v2', () => ({
+jest.mock("gamba-react-v2", () => ({
   useGamba: jest.fn(() => ({
     isPlaying: false,
     play: jest.fn(),
@@ -13,37 +26,76 @@ jest.mock('gamba-react-v2', () => ({
   })),
 }));
 
-jest.mock('gamba-react-ui-v2', () => ({
+jest.mock("gamba-react-ui-v2", () => ({
   GambaUi: {
-    Portal: ({ children }: { children: React.ReactNode }) => <div data-testid="portal">{children}</div>,
-    WagerInput: ({ value, onChange }: { value: number, onChange: (value: number) => void }) => (
+    Portal: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="portal">{children}</div>
+    ),
+    WagerInput: ({
+      value,
+      onChange,
+    }: {
+      value: number;
+      onChange: (value: number) => void;
+    }) => (
       <input
         data-testid="wager-input"
         value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(Number(e.target.value))}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange(Number(e.target.value))
+        }
       />
     ),
-    Button: ({ children, onClick, disabled }: { children: React.ReactNode, onClick?: () => void, disabled?: boolean }) => (
-      <button onClick={onClick} disabled={disabled}>{children}</button>
+    Button: ({
+      children,
+      onClick,
+      disabled,
+    }: {
+      children: React.ReactNode;
+      onClick?: () => void;
+      disabled?: boolean;
+    }) => (
+      <button onClick={onClick} disabled={disabled}>
+        {children}
+      </button>
     ),
-    Select: ({ options, value, onChange, label }: { options: any[], value: any, onChange: (value: any) => void, label: (value: any) => React.ReactNode }) => (
-      <select data-testid="mines-select" value={value} onChange={(e) => onChange(Number(e.target.value))}>
+    Select: ({
+      options,
+      value,
+      onChange,
+      label,
+    }: {
+      options: any[];
+      value: any;
+      onChange: (value: any) => void;
+      label: (value: any) => React.ReactNode;
+    }) => (
+      <select
+        data-testid="mines-select"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      >
         {options.map((opt) => (
-          <option key={opt} value={opt}>{label(opt)}</option>
+          <option key={opt} value={opt}>
+            {label(opt)}
+          </option>
         ))}
       </select>
     ),
-    Responsive: ({ children }: { children: React.ReactNode }) => <div data-testid="gamba-ui-responsive">{children}</div>,
-    useGame: jest.fn(() => ({ // Correctly placed inside GambaUi
+    Responsive: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="gamba-ui-responsive">{children}</div>
+    ),
+    useGame: jest.fn(() => ({
+      // Correctly placed inside GambaUi
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0, multiplier: 0 })),
     })),
   },
   useCurrentPool: jest.fn(() => ({
-    token: 'SOL',
+    token: "SOL",
   })),
   useCurrentToken: jest.fn(() => ({
-    symbol: 'SOL',
+    symbol: "SOL",
   })),
   useSound: jest.fn(() => ({
     play: jest.fn(),
@@ -60,14 +112,28 @@ jest.mock('gamba-react-ui-v2', () => ({
 }));
 
 // Mock GambaPlayButton as it's used in MinesGame
-jest.mock('@/components/GambaPlayButton', () => ({
+jest.mock("@/components/GambaPlayButton", () => ({
   __esModule: true,
-  default: ({ disabled, onClick, text }: { disabled?: boolean; onClick: () => void; text: string }) => (
-    <button data-testid="gamba-play-button" disabled={disabled} onClick={onClick}>{text}</button>
+  default: ({
+    disabled,
+    onClick,
+    text,
+  }: {
+    disabled?: boolean;
+    onClick: () => void;
+    text: string;
+  }) => (
+    <button
+      data-testid="gamba-play-button"
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {text}
+    </button>
   ),
 }));
 
-describe('Mines Game Component Integration Tests', () => {
+describe("Mines Game Component Integration Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -85,24 +151,30 @@ describe('Mines Game Component Integration Tests', () => {
   });
 
   afterEach(() => {
-    act(() => { jest.runOnlyPendingTimers(); });
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
     jest.useRealTimers();
   });
 
-  test('renders MinesGame component', () => {
+  test("renders MinesGame component", () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     render(<MinesGame />);
-    expect(screen.getByText('Play')).toBeInTheDocument();
+    expect(screen.getByText("Play")).toBeInTheDocument();
     expect(screen.getByText(/Mines:\s*\d+/)).toBeInTheDocument();
   });
 
-  test('simulates starting a game and revealing a gold cell', async () => {
+  test("simulates starting a game and revealing a gold cell", async () => {
     const mockPlay = jest.fn();
-    const mockGambaResult = jest.fn(() => Promise.resolve({ payout: 10, profit: 9, multiplier: 10 }));
+    const mockGambaResult = jest.fn(() =>
+      Promise.resolve({ payout: 10, profit: 9, multiplier: 10 })
+    );
 
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
-      result: jest.fn(() => Promise.resolve({ payout: 10, profit: 9, multiplier: 10 })),
+      result: jest.fn(() =>
+        Promise.resolve({ payout: 10, profit: 9, multiplier: 10 })
+      ),
     });
     (useGamba as jest.Mock).mockReturnValue({
       isPlaying: false,
@@ -112,20 +184,25 @@ describe('Mines Game Component Integration Tests', () => {
 
     render(<MinesGame />);
 
-    const playButton = screen.getByText('Play');
+    const playButton = screen.getByText("Play");
     await act(async () => {
       fireEvent.click(playButton);
     });
 
     // Click on a cell to reveal it
-    const cells = screen.getAllByRole('button');
-    const gameCells = cells.filter(button => button.textContent !== 'Play' && button.textContent !== 'Reset');
+    const cells = screen.getAllByRole("button");
+    const gameCells = cells.filter(
+      (button) =>
+        button.textContent !== "Play" && button.textContent !== "Reset"
+    );
 
     await act(async () => {
       fireEvent.click(gameCells[0]);
     });
 
-    await act(async () => { jest.runAllTimers(); }); // Advance timers
+    await act(async () => {
+      jest.runAllTimers();
+    }); // Advance timers
 
     expect(mockPlay).toHaveBeenCalled();
     expect(mockGambaResult).toHaveBeenCalled();
@@ -135,23 +212,25 @@ describe('Mines Game Component Integration Tests', () => {
     expect(cellWithProfit.textContent).toContain("+");
   });
 
-  test('simulates starting a game and hitting a mine', async () => {
+  test("simulates starting a game and hitting a mine", async () => {
     const mockPlay = jest.fn();
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
-      result: jest.fn(() => Promise.resolve({ payout: 0, profit: 0, multiplier: 0 })), // Simulate lose
+      result: jest.fn(() =>
+        Promise.resolve({ payout: 0, profit: 0, multiplier: 0 })
+      ), // Simulate lose
     });
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
 
     render(<MinesGame />);
 
-    const playButton = screen.getByText('Play');
+    const playButton = screen.getByText("Play");
     await act(async () => {
       fireEvent.click(playButton);
     });
 
     // Click on a cell to reveal it
-    const cell = screen.getAllByRole('button')[0]; // Assuming the first button is a cell
+    const cell = screen.getAllByRole("button")[0]; // Assuming the first button is a cell
     await act(async () => {
       fireEvent.click(cell);
     });
@@ -160,17 +239,17 @@ describe('Mines Game Component Integration Tests', () => {
     // Expect the game to reset or show a "lose" state.
     // This will depend on how MinesGame visually indicates a loss.
     // For now, we'll check if the "Play" button reappears or if a "Reset" button is visible.
-    expect(screen.getByText('Reset')).toBeInTheDocument();
+    expect(screen.getByText("Reset")).toBeInTheDocument();
   });
 
-  test('simulates changing the number of mines', async () => {
+  test("simulates changing the number of mines", async () => {
     render(<MinesGame />);
 
-    const mineSelect = screen.getByTestId('mines-select');
+    const mineSelect = screen.getByTestId("mines-select");
     await act(async () => {
-      fireEvent.change(mineSelect, { target: { value: '5' } }); // Change to 5 mines
+      fireEvent.change(mineSelect, { target: { value: "5" } }); // Change to 5 mines
     });
 
-    expect(screen.getByText('5 Mines')).toBeInTheDocument();
+    expect(screen.getByText("5 Mines")).toBeInTheDocument();
   });
 });

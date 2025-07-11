@@ -141,7 +141,7 @@ export default function CustomRenderer() {
       <FaStar
         key={`filled-${index}`}
         className={`text-yellow-500 ${getSizeClass(index)} ${getShadowClass(
-          index,
+          index
         )}`}
       />
     ));
@@ -152,7 +152,7 @@ export default function CustomRenderer() {
           key={`empty-${index}`}
           className={`text-gray-300 ${getSizeClass(index)} shadow-sm`}
         />
-      ),
+      )
     );
 
     return (

@@ -1,15 +1,15 @@
-import { TransactionReceipt } from 'ethers';
+import { TransactionReceipt } from "ethers";
 
 // Using native BigInt for large number operations with ethers v6
 // import { BigNumber } from 'ethers'; // No longer needed for ethers v6
 // Assuming ZetaChain SDK or similar library is available
-// import { ZetaChainClient, Chain, TxStatus } from '@zetachain/toolkit'; 
+// import { ZetaChainClient, Chain, TxStatus } from '@zetachain/toolkit';
 
 export enum Chain {
-  ETHEREUM = 'ethereum',
-  BSC = 'bsc',
-  POLYGON = 'polygon',
-  ZETACHAIN = 'zetachain',
+  ETHEREUM = "ethereum",
+  BSC = "bsc",
+  POLYGON = "polygon",
+  ZETACHAIN = "zetachain",
   // Add other supported chains
 }
 
@@ -24,9 +24,9 @@ export interface CrossChainTx {
 }
 
 export enum TxStatus {
-  PENDING = 'pending',
-  SUCCESS = 'success',
-  FAILED = 'failed',
+  PENDING = "pending",
+  SUCCESS = "success",
+  FAILED = "failed",
   // Add other relevant statuses
 }
 
@@ -36,7 +36,7 @@ export class ZetaChainService {
   constructor(/* config: any */) {
     // Initialize ZetaChain SDK here
     // this.zetaClient = new ZetaChainClient(config);
-    console.log('ZetaChainService initialized');
+    console.log("ZetaChainService initialized");
   }
 
   async crossChainTransfer(
@@ -45,11 +45,13 @@ export class ZetaChainService {
     asset: string,
     amount: bigint
   ): Promise<CrossChainTx> {
-    console.log(`Initiating cross-chain transfer from ${sourceChain} to ${targetChain} for ${amount.toString()} ${asset}`);
+    console.log(
+      `Initiating cross-chain transfer from ${sourceChain} to ${targetChain} for ${amount.toString()} ${asset}`
+    );
     // Implement actual ZetaChain cross-chain transfer logic here
     // Example: const cctx = await this.zetaClient.deposit({ chain: sourceChain, amount, asset, recipient: targetAddress });
     return {
-      cctxId: 'mock-cctx-id-' + Date.now(),
+      cctxId: "mock-cctx-id-" + Date.now(),
       status: TxStatus.PENDING,
       sourceChain,
       targetChain,
@@ -70,7 +72,9 @@ export class ZetaChainService {
     amount: bigint,
     recipient: string
   ): Promise<TransactionReceipt> {
-    console.log(`Depositing ${amount.toString()} ${asset} to ZetaChain for recipient ${recipient}`);
+    console.log(
+      `Depositing ${amount.toString()} ${asset} to ZetaChain for recipient ${recipient}`
+    );
     // Implement actual deposit to ZetaChain (e.g., via ZetaConnector)
     return {} as TransactionReceipt; // Placeholder
   }
@@ -81,7 +85,9 @@ export class ZetaChainService {
     targetChain: Chain,
     recipient: string
   ): Promise<TransactionReceipt> {
-    console.log(`Withdrawing ${amount.toString()} ${zrc20Asset} from ZetaChain to ${targetChain} for recipient ${recipient}`);
+    console.log(
+      `Withdrawing ${amount.toString()} ${zrc20Asset} from ZetaChain to ${targetChain} for recipient ${recipient}`
+    );
     // Implement actual withdrawal from ZetaChain (e.g., via ZetaConnector)
     return {} as TransactionReceipt; // Placeholder
   }

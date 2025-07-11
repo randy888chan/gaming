@@ -9,7 +9,7 @@ const pickRandom = <T>(arr: T[]) =>
 export const generateBetArray = (
   maxPayout: number,
   wager: number,
-  maxLength = 50,
+  maxLength = 50
 ) => {
   const maxMultiplier = Math.min(maxLength, maxPayout / wager);
   const arr = Array.from({ length: maxLength }).fill(0) as number[];
@@ -21,7 +21,7 @@ export const generateBetArray = (
   while (total < maxLength) {
     const left = maxLength - total;
     const pickableItems = SLOT_ITEMS.filter(
-      (x) => x.multiplier <= Math.min(left, maxMultiplier),
+      (x) => x.multiplier <= Math.min(left, maxMultiplier)
     );
     const item = pickRandom(pickableItems);
     if (item) {
@@ -41,7 +41,7 @@ export const generateBetArray = (
 export const getSlotCombination = (
   count: number,
   multiplier: number,
-  bet: number[],
+  bet: number[]
 ) => {
   // When we win, all slots are the same
   if (multiplier > 0) {
@@ -54,7 +54,7 @@ export const getSlotCombination = (
 
   // Simulate a random roll
   const availableSlotItems = SLOT_ITEMS.filter((x) =>
-    bet.includes(x.multiplier),
+    bet.includes(x.multiplier)
   );
 
   const { items } = Array.from({ length: count }).reduce<{
@@ -79,7 +79,7 @@ export const getSlotCombination = (
 
       return { previous: item, items: [...items, item] };
     },
-    { previous: pickRandom(availableSlotItems)!, items: [] },
+    { previous: pickRandom(availableSlotItems)!, items: [] }
   );
 
   return items;

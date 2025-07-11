@@ -7,7 +7,7 @@ contract MockPriceFeed is AggregatorV3Interface {
     int256 public latestAnswer;
 
     constructor() {
-        latestAnswer = 2000 * 10**8; // Default price of $2000
+        latestAnswer = 2000 * 10 ** 8; // Default price of $2000
     }
 
     function decimals() external pure returns (uint8) {
@@ -22,31 +22,11 @@ contract MockPriceFeed is AggregatorV3Interface {
         return 1;
     }
 
-    function getRoundData(uint80)
-        external
-        view
-        returns (
-            uint80,
-            int256,
-            uint256,
-            uint256,
-            uint80
-        )
-    {
+    function getRoundData(uint80) external view returns (uint80, int256, uint256, uint256, uint80) {
         return (1, latestAnswer, block.timestamp, block.timestamp, 1);
     }
 
-    function latestRoundData()
-        external
-        view
-        returns (
-            uint80,
-            int256,
-            uint256,
-            uint256,
-            uint80
-        )
-    {
+    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80) {
         return (1, latestAnswer, block.timestamp, block.timestamp, 1);
     }
 

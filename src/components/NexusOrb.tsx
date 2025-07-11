@@ -25,14 +25,12 @@ export const NexusOrb: React.FC<NexusOrbProps> = ({
           "bg-gradient-to-br from-primary to-secondary text-primary-foreground",
           "hover:scale-110 hover:shadow-2xl",
           isActive ? "scale-110 shadow-2xl ring-4 ring-accent" : "",
-          className,
+          className
         )}
         {...props}
       >
         <div className="text-3xl mb-1">{icon}</div>
-        <span className="text-xs font-semibold whitespace-nowrap">
-          {label}
-        </span>
+        <span className="text-xs font-semibold whitespace-nowrap">{label}</span>
         {isActive && (
           <div className="absolute inset-0 rounded-full ring-4 ring-accent animate-pulse-orb"></div>
         )}
