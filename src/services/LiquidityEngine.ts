@@ -1,4 +1,4 @@
-import { Contract, Provider, TransactionReceipt } from 'ethers';
+import { Contract, Provider, TransactionReceipt } from "ethers";
 
 export interface LiquidityPool {
   deposit(amount: bigint, currency: string): Promise<TransactionReceipt>;
@@ -14,7 +14,9 @@ export class GambaLiquidityPool implements LiquidityPool {
     // Initialize Gamba contract or SDK
     // this.contract = new Contract(contractAddress, GAMBA_ABI, provider);
     this.contract = {} as Contract; // Initialize with a placeholder
-    console.log(`GambaLiquidityPool initialized with contract: ${contractAddress}`);
+    console.log(
+      `GambaLiquidityPool initialized with contract: ${contractAddress}`
+    );
   }
 
   async deposit(amount: bigint, currency: string): Promise<TransactionReceipt> {
@@ -24,7 +26,10 @@ export class GambaLiquidityPool implements LiquidityPool {
     return {} as TransactionReceipt; // Placeholder
   }
 
-  async withdraw(amount: bigint, currency: string): Promise<TransactionReceipt> {
+  async withdraw(
+    amount: bigint,
+    currency: string
+  ): Promise<TransactionReceipt> {
     console.log(`Withdrawing ${amount.toString()} ${currency} from Gamba pool`);
     // Implement actual Gamba withdrawal logic here
     return {} as TransactionReceipt; // Placeholder
@@ -40,7 +45,7 @@ export class GambaLiquidityPool implements LiquidityPool {
 export class ParticleLiquidityPool implements LiquidityPool {
   // Placeholder for Particle-specific SDK interaction
   constructor() {
-    console.log('ParticleLiquidityPool initialized');
+    console.log("ParticleLiquidityPool initialized");
   }
 
   async deposit(amount: bigint, currency: string): Promise<TransactionReceipt> {
@@ -49,8 +54,13 @@ export class ParticleLiquidityPool implements LiquidityPool {
     return {} as TransactionReceipt; // Placeholder
   }
 
-  async withdraw(amount: bigint, currency: string): Promise<TransactionReceipt> {
-    console.log(`Withdrawing ${amount.toString()} ${currency} from Particle pool`);
+  async withdraw(
+    amount: bigint,
+    currency: string
+  ): Promise<TransactionReceipt> {
+    console.log(
+      `Withdrawing ${amount.toString()} ${currency} from Particle pool`
+    );
     // Implement actual Particle withdrawal logic here
     return {} as TransactionReceipt; // Placeholder
   }
@@ -73,7 +83,11 @@ export class LiquidityEngine {
     return this.pools.get(name);
   }
 
-  async deposit(poolName: string, amount: bigint, currency: string): Promise<TransactionReceipt> {
+  async deposit(
+    poolName: string,
+    amount: bigint,
+    currency: string
+  ): Promise<TransactionReceipt> {
     const pool = this.getPool(poolName);
     if (!pool) {
       throw new Error(`Liquidity pool ${poolName} not found.`);
@@ -81,7 +95,11 @@ export class LiquidityEngine {
     return pool.deposit(amount, currency);
   }
 
-  async withdraw(poolName: string, amount: bigint, currency: string): Promise<TransactionReceipt> {
+  async withdraw(
+    poolName: string,
+    amount: bigint,
+    currency: string
+  ): Promise<TransactionReceipt> {
     const pool = this.getPool(poolName);
     if (!pool) {
       throw new Error(`Liquidity pool ${poolName} not found.`);
@@ -89,7 +107,11 @@ export class LiquidityEngine {
     return pool.withdraw(amount, currency);
   }
 
-  async getBalance(poolName: string, user: string, currency: string): Promise<bigint> {
+  async getBalance(
+    poolName: string,
+    user: string,
+    currency: string
+  ): Promise<bigint> {
     const pool = this.getPool(poolName);
     if (!pool) {
       throw new Error(`Liquidity pool ${poolName} not found.`);

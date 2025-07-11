@@ -1,8 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from "next";
 
 interface TrackSharePayload {
   contentId: string;
-  eventType: 'impression' | 'click';
+  eventType: "impression" | "click";
   userId?: string; // Optional, if a logged-in user is sharing
 }
 
@@ -10,14 +10,18 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     const { contentId, eventType, userId }: TrackSharePayload = req.body;
 
     if (!contentId || !eventType) {
-      return res.status(400).json({ success: false, error: 'Missing required fields.' });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing required fields." });
     }
 
-    console.log(`Received track share request for contentId: ${contentId}, eventType: ${eventType}`);
+    console.log(
+      `Received track share request for contentId: ${contentId}, eventType: ${eventType}`
+    );
     if (userId) {
       console.log(`User ID: ${userId}`);
     }
@@ -31,11 +35,18 @@ export default async function handler(
     // 4. If userId is present and this is a referral/incentive-driven share,
     //    trigger logic in the referral system (e.g., src/referral/index.ts)
 
-    console.log(`Simulating database update for content_metadata (contentId: ${contentId}, eventType: ${eventType})`);
+    console.log(
+      `Simulating database update for content_metadata (contentId: ${contentId}, eventType: ${eventType})`
+    );
 
-    return res.status(200).json({ success: true, message: `Tracked ${eventType} for ${contentId}` });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: `Tracked ${eventType} for ${contentId}`,
+      });
   } else {
-    res.setHeader('Allow', ['POST']);
+    res.setHeader("Allow", ["POST"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

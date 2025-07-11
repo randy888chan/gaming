@@ -1,11 +1,23 @@
-import React from 'react';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import KenoGame from '../../src/games/Keno';
-import { GambaUi, useCurrentPool, useCurrentToken, useSound, useWagerInput } from 'gamba-react-ui-v2';
-import { useGamba } from 'gamba-react-v2';
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+  waitFor,
+} from "@testing-library/react";
+import KenoGame from "../../src/games/Keno";
+import {
+  GambaUi,
+  useCurrentPool,
+  useCurrentToken,
+  useSound,
+  useWagerInput,
+} from "gamba-react-ui-v2";
+import { useGamba } from "gamba-react-v2";
 
 // Mock Gamba hooks
-jest.mock('gamba-react-v2', () => ({
+jest.mock("gamba-react-v2", () => ({
   useGamba: jest.fn(() => ({
     isPlaying: false,
     play: jest.fn(),
@@ -13,30 +25,53 @@ jest.mock('gamba-react-v2', () => ({
   })),
 }));
 
-jest.mock('gamba-react-ui-v2', () => ({
+jest.mock("gamba-react-ui-v2", () => ({
   GambaUi: {
-    Portal: ({ children }: { children: React.ReactNode }) => <div data-testid="portal">{children}</div>,
-    WagerInput: ({ value, onChange }: { value: number, onChange: (value: number) => void }) => (
+    Portal: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="portal">{children}</div>
+    ),
+    WagerInput: ({
+      value,
+      onChange,
+    }: {
+      value: number;
+      onChange: (value: number) => void;
+    }) => (
       <input
         data-testid="wager-input"
         value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(Number(e.target.value))}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange(Number(e.target.value))
+        }
       />
     ),
-    Button: ({ children, onClick, disabled }: { children: React.ReactNode, onClick?: () => void, disabled?: boolean }) => (
-      <button onClick={onClick} disabled={disabled}>{children}</button>
+    Button: ({
+      children,
+      onClick,
+      disabled,
+    }: {
+      children: React.ReactNode;
+      onClick?: () => void;
+      disabled?: boolean;
+    }) => (
+      <button onClick={onClick} disabled={disabled}>
+        {children}
+      </button>
     ),
-    Responsive: ({ children }: { children: React.ReactNode }) => <div data-testid="gamba-ui-responsive">{children}</div>,
-    useGame: jest.fn(() => ({ // Moved useGame back inside GambaUi
+    Responsive: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="gamba-ui-responsive">{children}</div>
+    ),
+    useGame: jest.fn(() => ({
+      // Moved useGame back inside GambaUi
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0 })),
     })),
   },
   useCurrentPool: jest.fn(() => ({
-    token: 'SOL',
+    token: "SOL",
   })),
   useCurrentToken: jest.fn(() => ({
-    symbol: 'SOL',
+    symbol: "SOL",
   })),
   useSound: jest.fn(() => ({
     play: jest.fn(),
@@ -47,14 +82,28 @@ jest.mock('gamba-react-ui-v2', () => ({
 }));
 
 // Mock GambaPlayButton as it's used in KenoGame
-jest.mock('@/components/GambaPlayButton', () => ({
+jest.mock("@/components/GambaPlayButton", () => ({
   __esModule: true,
-  default: ({ disabled, onClick, text }: { disabled?: boolean; onClick: () => void; text: string }) => (
-    <button data-testid="gamba-play-button" disabled={disabled} onClick={onClick}>{text}</button>
+  default: ({
+    disabled,
+    onClick,
+    text,
+  }: {
+    disabled?: boolean;
+    onClick: () => void;
+    text: string;
+  }) => (
+    <button
+      data-testid="gamba-play-button"
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {text}
+    </button>
   ),
 }));
 
-describe('Keno Game Component Integration Tests', () => {
+describe("Keno Game Component Integration Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -66,11 +115,13 @@ describe('Keno Game Component Integration Tests', () => {
   });
 
   afterEach(() => {
-    act(() => { jest.runOnlyPendingTimers(); });
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
     jest.useRealTimers();
   });
 
-  test('renders KenoGame component', () => {
+  test("renders KenoGame component", () => {
     (useGamba as jest.Mock).mockReturnValue({ isPlaying: false });
     render(<KenoGame />);
     // expect(screen.getByText('Keno')).toBeInTheDocument(); // Removed this line
@@ -79,7 +130,7 @@ describe('Keno Game Component Integration Tests', () => {
     }
   });
 
-  test('simulates selecting numbers and placing a bet', async () => {
+  test("simulates selecting numbers and placing a bet", async () => {
     const mockPlay = jest.fn();
     (GambaUi.useGame as jest.Mock).mockReturnValue({
       play: mockPlay,
@@ -91,20 +142,23 @@ describe('Keno Game Component Integration Tests', () => {
 
     // Select a few numbers
     await act(async () => {
-      fireEvent.click(screen.getByText('1'));
-      fireEvent.click(screen.getByText('5'));
-      fireEvent.click(screen.getByText('10'));
+      fireEvent.click(screen.getByText("1"));
+      fireEvent.click(screen.getByText("5"));
+      fireEvent.click(screen.getByText("10"));
     });
 
-    const playButton = screen.getByRole('button', { name: /play/i });
+    const playButton = screen.getByRole("button", { name: /play/i });
     await act(async () => {
       fireEvent.click(playButton);
     });
 
-    expect(mockPlay).toHaveBeenCalledWith({ wager: 10, bet: expect.any(Array) });
+    expect(mockPlay).toHaveBeenCalledWith({
+      wager: 10,
+      bet: expect.any(Array),
+    });
   });
 
-  test('simulates game win', async () => {
+  test("simulates game win", async () => {
     const mockGame = {
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 20, resultIndex: 0 })), // Simulate win
@@ -115,12 +169,12 @@ describe('Keno Game Component Integration Tests', () => {
     render(<KenoGame />);
 
     await act(async () => {
-      fireEvent.click(screen.getByText('1'));
-      fireEvent.click(screen.getByText('5'));
-      fireEvent.click(screen.getByText('10'));
+      fireEvent.click(screen.getByText("1"));
+      fireEvent.click(screen.getByText("5"));
+      fireEvent.click(screen.getByText("10"));
     });
 
-    const playButton = screen.getByRole('button', { name: /play/i });
+    const playButton = screen.getByRole("button", { name: /play/i });
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -128,10 +182,12 @@ describe('Keno Game Component Integration Tests', () => {
     act(() => jest.runAllTimers());
 
     // Expect win condition to be visually represented
-    expect(screen.getByText(/Clear the board to play again./i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Clear the board to play again./i)
+    ).toBeInTheDocument();
   });
 
-  test('simulates game lose', async () => {
+  test("simulates game lose", async () => {
     const mockGame = {
       play: jest.fn(),
       result: jest.fn(() => Promise.resolve({ payout: 0, resultIndex: 0 })), // Simulate lose
@@ -142,12 +198,12 @@ describe('Keno Game Component Integration Tests', () => {
     render(<KenoGame />);
 
     await act(async () => {
-      fireEvent.click(screen.getByText('1'));
-      fireEvent.click(screen.getByText('5'));
-      fireEvent.click(screen.getByText('10'));
+      fireEvent.click(screen.getByText("1"));
+      fireEvent.click(screen.getByText("5"));
+      fireEvent.click(screen.getByText("10"));
     });
 
-    const playButton = screen.getByRole('button', { name: /play/i });
+    const playButton = screen.getByRole("button", { name: /play/i });
     await act(async () => {
       fireEvent.click(playButton);
     });
@@ -155,21 +211,23 @@ describe('Keno Game Component Integration Tests', () => {
     act(() => jest.runAllTimers());
 
     // Expect lose condition to be visually represented
-    expect(screen.getByText(/Clear the board to play again./i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Clear the board to play again./i)
+    ).toBeInTheDocument();
   });
 
-  test('simulates clearing selected numbers', async () => {
+  test("simulates clearing selected numbers", async () => {
     render(<KenoGame />);
 
     await act(async () => {
-      fireEvent.click(screen.getByText('1'));
-      fireEvent.click(screen.getByText('5'));
+      fireEvent.click(screen.getByText("1"));
+      fireEvent.click(screen.getByText("5"));
     });
 
     // expect(screen.getByText('1')).toHaveAttribute('selected'); // This assertion might need adjustment based on actual styling
     // expect(screen.getByText('5')).toHaveAttribute('selected'); // This assertion might need adjustment based on actual styling
 
-    const clearButton = screen.getByRole('button', { name: /clear/i });
+    const clearButton = screen.getByRole("button", { name: /clear/i });
     await act(async () => {
       fireEvent.click(clearButton);
     });
@@ -177,6 +235,6 @@ describe('Keno Game Component Integration Tests', () => {
     // After clearing, numbers should not be selected
     // This assertion might need adjustment based on actual styling
     // For now, we'll check if the "Play" button is disabled again, indicating no numbers are selected.
-    expect(screen.getByRole('button', { name: /play/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /play/i })).toBeDisabled();
   });
 });

@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Document Metadata Schema",
+  "description": "Schema for validating document metadata and content structure.",
+  "type": "object",
+  "required": [
+    "title",
+    "creationDate",
+    "author",
+    "documentType",
+    "version",
+    "owner",
+    "content"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "The title of the document."
+    },
+    "creationDate": {
+      "type": "string",
+      "format": "date",
+      "description": "The date the document was created (YYYY-MM-DD)."
+    },
+    "author": {
+      "type": "string",
+      "description": "The author of the document."
+    },
+    "documentType": {
+      "type": "string",
+      "enum": [
+        "API",
+        "PRD",
+        "Architecture",
+        "UserStory",
+        "TestPlan",
+        "Other"
+      ],
+      "description": "The type of document."
+    },
+    "version": {
+      "type": "string",
+      "description": "The version of the document (e.g., '1.0.0')."
+    },
+    "owner": {
+      "type": "string",
+      "description": "The owner or responsible party for the document."
+    },
+    "content": {
+      "type": "object",
+      "required": [
+        "sections"
+      ],
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "title",
+              "body"
+            ],
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "The title of the section."
+              },
+              "body": {
+                "type": "string",
+                "description": "The content of the section in markdown format."
+              }
+            }
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "A list of other documents this document depends on."
+    },
+    "compliance": {
+      "type": "object",
+      "properties": {
+        "corePrinciples": {
+          "type": "boolean",
+          "description": "Indicates adherence to core principles."
+        },
+        "securityStandards": {
+          "type": "boolean",
+          "description": "Indicates adherence to security standards."
+        }
+      },
+      "required": [
+        "corePrinciples"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

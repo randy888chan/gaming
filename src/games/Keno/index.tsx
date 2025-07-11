@@ -91,7 +91,7 @@ export default function Keno() {
       const remainingNumbers = generateRandomNumbers(
         GRID_SIZE - 1,
         selected,
-        GRID_SIZE,
+        GRID_SIZE
       );
       shuffleArray(remainingNumbers);
       const winningNumbers = remainingNumbers.slice(0, 9);
@@ -111,7 +111,7 @@ export default function Keno() {
   const generateRandomNumbers = (
     count: number,
     exclude: number[],
-    max: number,
+    max: number
   ) => {
     let nums: number[] = [];
     while (nums.length < count) {
@@ -178,7 +178,7 @@ export default function Keno() {
                   >
                     {number}
                   </CellButton>
-                ),
+                )
               )}
             </Grid>
           </Container>
@@ -186,8 +186,8 @@ export default function Keno() {
             {gameWon === true
               ? "Clear the board to play again."
               : gameWon === false
-                ? "Clear the board to play again."
-                : null}
+              ? "Clear the board to play again."
+              : null}
           </p>
         </GambaUi.Responsive>
       </GambaUi.Portal>

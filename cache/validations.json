@@ -1,0 +1,28 @@
+{
+  "version": "3.4",
+  "log": [
+    {
+      "contracts/evm/dependencies/BytesLib.sol:BytesLib": {
+        "src": "contracts/evm/dependencies/BytesLib.sol:4",
+        "version": {
+          "withMetadata": "a7f85d9ea3add3b7ac8a085097fe8d8c8456af873efc44c7744d2e21cbd741ce",
+          "withoutMetadata": "08d24783a787f8a51dea0c166bb6f91a4f0865e02d03d749f102d332e6ead0ff",
+          "linkedWithoutMetadata": "08d24783a787f8a51dea0c166bb6f91a4f0865e02d03d749f102d332e6ead0ff"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      }
+    }
+  ]
+}

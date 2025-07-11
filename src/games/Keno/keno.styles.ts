@@ -61,10 +61,7 @@ export const CellButton = styled.button<{
   font-weight: bold;
   aspect-ratio: 1;
   width: 60px;
-  transition:
-    background 0.3s,
-    opacity 0.3s,
-    filter 0.2s ease;
+  transition: background 0.3s, opacity 0.3s, filter 0.2s ease;
   font-size: 12px;
   cursor: pointer;
   box-shadow: ${({ selected, $revealedWin, $revealedLoss }) => {

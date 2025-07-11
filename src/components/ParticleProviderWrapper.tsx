@@ -6,7 +6,11 @@ import { authWalletConnectors } from "@particle-network/connectkit/auth";
 import { wallet, EntryPosition } from "@particle-network/connectkit/wallet";
 import { WalletProvider } from "@solana/wallet-adapter-react";
 import { TOKENLIST } from "@/constants";
-import { SolanaChain, Ethereum, ZetaChainTestnet } from "@particle-network/chains";
+import {
+  SolanaChain,
+  Ethereum,
+  ZetaChainTestnet,
+} from "@particle-network/chains";
 import { SendTransactionProvider } from "gamba-react-v2"; // Assuming this is the correct provider
 import dynamic from "next/dynamic";
 
@@ -27,12 +31,17 @@ interface ParticleProviderWrapperProps {
   LIVE_EVENT_TOAST: boolean;
   showDisclaimer: boolean;
   DisclaimerModal: React.ComponentType;
-  OnboardingModal: React.ComponentType<{ isOpen: boolean; onClose: () => void }>;
+  OnboardingModal: React.ComponentType<{
+    isOpen: boolean;
+    onClose: () => void;
+  }>;
   showOnboarding: boolean;
   handleCloseOnboarding: () => void;
 }
 
-export const ParticleProviderWrapper: React.FC<ParticleProviderWrapperProps> = ({
+export const ParticleProviderWrapper: React.FC<
+  ParticleProviderWrapperProps
+> = ({
   children,
   wallets,
   sendTransactionConfig,
@@ -68,10 +77,12 @@ export const ParticleProviderWrapper: React.FC<ParticleProviderWrapperProps> = (
         Ethereum,
         new SolanaChain({
           id: 103, // Devnet
-          name: 'Solana Devnet',
-          rpcUrl: process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+          name: "Solana Devnet",
+          rpcUrl:
+            process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
+            "https://api.devnet.solana.com",
         }),
-        ZetaChainTestnet
+        ZetaChainTestnet,
       ],
     });
   }, []);

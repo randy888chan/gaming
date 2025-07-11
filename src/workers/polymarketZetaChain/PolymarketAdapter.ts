@@ -1,6 +1,6 @@
-import { RateLimiter } from './RateLimiter';
-import { ZetaChainService, Chain } from '../../services/zetaChainService'; // Corrected path and casing
-import { TransactionReceipt } from 'ethers';
+import { RateLimiter } from "./RateLimiter";
+import { ZetaChainService, Chain } from "../../services/zetaChainService"; // Corrected path and casing
+import { TransactionReceipt } from "ethers";
 
 export interface PolymarketMarket {
   id: string;
@@ -26,7 +26,7 @@ export interface PolymarketEscrowResponse {
 }
 
 export class PolymarketAdapter {
-  private baseUrl: string = 'https://api.polymarket.com/v2';
+  private baseUrl: string = "https://api.polymarket.com/v2";
   private rateLimiter: RateLimiter;
   private zetaChainService: ZetaChainService;
 
@@ -35,7 +35,7 @@ export class PolymarketAdapter {
     private apiSecret: string,
     zetaChainService: ZetaChainService,
     rateLimitCapacity: number = 20,
-    rateLimitRefillRate: number = 10,
+    rateLimitRefillRate: number = 10
   ) {
     this.rateLimiter = new RateLimiter(rateLimitCapacity, rateLimitRefillRate);
     this.zetaChainService = zetaChainService;
@@ -45,8 +45,8 @@ export class PolymarketAdapter {
     await this.rateLimiter.acquire();
     const response = await fetch(`${this.baseUrl}/markets`, {
       headers: {
-        'X-API-Key': this.apiKey,
-        'X-API-Secret': this.apiSecret,
+        "X-API-Key": this.apiKey,
+        "X-API-Secret": this.apiSecret,
       },
     });
     if (!response.ok) {
@@ -63,7 +63,9 @@ export class PolymarketAdapter {
     sourceChain: Chain,
     polymarketEscrowContractAddress: string // Address of the Polymarket escrow contract
   ): Promise<PolymarketEscrowResponse> {
-    console.log(`Creating escrow for market ${marketId} with ${amount.toString()} ${currency} from ${sourceChain}`);
+    console.log(
+      `Creating escrow for market ${marketId} with ${amount.toString()} ${currency} from ${sourceChain}`
+    );
     // This is a simplified representation. In a real scenario, you'd interact with
     // Polymarket's smart contract or API to initiate the escrow.
     // For cross-chain, this would involve a ZetaChain transfer to the escrow contract.
@@ -90,7 +92,9 @@ export class PolymarketAdapter {
     currency: string,
     targetChain: Chain
   ): Promise<TransactionReceipt> {
-    console.log(`Releasing escrow ${escrowId} to ${recipientAddress} with ${amount.toString()} ${currency} on ${targetChain}`);
+    console.log(
+      `Releasing escrow ${escrowId} to ${recipientAddress} with ${amount.toString()} ${currency} on ${targetChain}`
+    );
     // This would involve interacting with Polymarket's smart contract or API to release the escrow.
     // For cross-chain, this would involve a ZetaChain transfer from the escrow contract.
 

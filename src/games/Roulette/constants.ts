@@ -23,7 +23,7 @@ const allNumbers = Array.from({ length: NUMBERS }).map((_, i) => i + 1);
 const makeSquare = (
   label: string,
   numberFilter: (number: number) => boolean,
-  [column, row]: [number, number],
+  [column, row]: [number, number]
 ): TableSquare => {
   const numbers = allNumbers.filter(numberFilter);
   return { label, numbers, row, column };
@@ -51,7 +51,7 @@ const numbersLayout = Array.from({ length: NUMBERS }).reduce<TableLayout>(
       color: isRed(index + 1) ? "red" : "black",
     },
   }),
-  {},
+  {}
 );
 
 export const tableLayout: TableLayout = {
@@ -59,7 +59,7 @@ export const tableLayout: TableLayout = {
   firstHalf: makeSquare(
     "<" + Math.floor(NUMBERS / 2 + 1),
     (number) => number <= NUMBERS / 2,
-    [1, 4],
+    [1, 4]
   ),
   even: makeSquare("Even", (number) => number % 2 === 0, [2, 4]),
   red: makeSquare("Red", (number) => isRed(number), [3, 4]),
@@ -68,7 +68,7 @@ export const tableLayout: TableLayout = {
   secondHalf: makeSquare(
     ">" + Math.floor(NUMBERS / 2),
     (number) => number > NUMBERS / 2,
-    [6, 4],
+    [6, 4]
   ),
   row1: makeSquare("2:1", (number) => getRow(number - 1) === 1, [
     NUMBER_COLUMNS + 1,

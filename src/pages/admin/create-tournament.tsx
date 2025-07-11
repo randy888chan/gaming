@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import Head from 'next/head';
+import React, { useState } from "react";
+import Head from "next/head";
 
 const CreateTournamentPage: React.FC = () => {
-  const [name, setName] = useState('');
-  const [format, setFormat] = useState('');
-  const [status, setStatus] = useState('');
-  const [entryFee, setEntryFee] = useState('');
-  const [entryCurrency, setEntryCurrency] = useState('');
-  const [liquidityPoolName, setLiquidityPoolName] = useState('');
+  const [name, setName] = useState("");
+  const [format, setFormat] = useState("");
+  const [status, setStatus] = useState("");
+  const [entryFee, setEntryFee] = useState("");
+  const [entryCurrency, setEntryCurrency] = useState("");
+  const [liquidityPoolName, setLiquidityPoolName] = useState("");
   const [isPolymarketTournament, setIsPolymarketTournament] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
 
     try {
-      const response = await fetch('/api/v1/tournaments', {
-        method: 'POST',
+      const response = await fetch("/api/v1/tournaments", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name,
@@ -37,20 +37,20 @@ const CreateTournamentPage: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message || 'Tournament created successfully!');
+        setMessage(data.message || "Tournament created successfully!");
         // Clear form
-        setName('');
-        setFormat('');
-        setStatus('');
-        setEntryFee('');
-        setEntryCurrency('');
-        setLiquidityPoolName('');
+        setName("");
+        setFormat("");
+        setStatus("");
+        setEntryFee("");
+        setEntryCurrency("");
+        setLiquidityPoolName("");
         setIsPolymarketTournament(false);
       } else {
-        setError(data.error || 'Failed to create tournament.');
+        setError(data.error || "Failed to create tournament.");
       }
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || "An unexpected error occurred.");
     }
   };
 
@@ -120,7 +120,9 @@ const CreateTournamentPage: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="isPolymarketTournament">Is Polymarket Tournament:</label>
+            <label htmlFor="isPolymarketTournament">
+              Is Polymarket Tournament:
+            </label>
             <input
               type="checkbox"
               id="isPolymarketTournament"
@@ -131,8 +133,8 @@ const CreateTournamentPage: React.FC = () => {
           <button type="submit">Create Tournament</button>
         </form>
 
-        {message && <p style={{ color: 'green' }}>{message}</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {message && <p style={{ color: "green" }}>{message}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
       </main>
     </div>
   );

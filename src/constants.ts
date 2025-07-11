@@ -155,4 +155,5 @@ export const POLYMARKET_ADAPTER_ADDRESS = "0xYourPolymarketAdapterAddressHere"; 
 export const USDC_ADDRESS = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // Mainnet USDC address, replace if using testnet
 
 export const AI_SERVICE_API_URL = "https://api.smartbet.ai/predict";
-export const AI_SERVICE_API_KEY = process.env.AI_SERVICE_API_KEY || "YOUR_AI_SERVICE_API_KEY";
+export const AI_SERVICE_API_KEY =
+  process.env.AI_SERVICE_API_KEY || "YOUR_AI_SERVICE_API_KEY";

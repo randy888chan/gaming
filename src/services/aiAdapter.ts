@@ -26,10 +26,17 @@ const RETRY_DELAY_MS = 1000; // 1 second
  * @param userId The ID of the user requesting the suggestion.
  * @returns A Promise that resolves to a SmartBetSuggestion or null if no suggestion is available.
  */
-export async function getSmartBetSuggestion(marketId: string, userId: string): Promise<SmartBetSuggestion | null> {
+export async function getSmartBetSuggestion(
+  marketId: string,
+  userId: string
+): Promise<SmartBetSuggestion | null> {
   for (let i = 0; i < MAX_RETRIES; i++) {
     try {
-      console.log(`Requesting smart bet suggestion for market: ${marketId}, user: ${userId}. Attempt ${i + 1}/${MAX_RETRIES}`);
+      console.log(
+        `Requesting smart bet suggestion for market: ${marketId}, user: ${userId}. Attempt ${
+          i + 1
+        }/${MAX_RETRIES}`
+      );
 
       const response = await fetch(AI_SERVICE_API_URL, {
         method: "POST",
@@ -43,23 +50,34 @@ export async function getSmartBetSuggestion(marketId: string, userId: string): P
       if (response.status === 429) {
         // Rate limit exceeded, wait and retry
         const retryAfter = response.headers.get("Retry-After");
-        const delay = retryAfter ? parseInt(retryAfter) * 1000 : RETRY_DELAY_MS * (i + 1);
+        const delay = retryAfter
+          ? parseInt(retryAfter) * 1000
+          : RETRY_DELAY_MS * (i + 1);
         console.warn(`Rate limit hit. Retrying after ${delay / 1000} seconds.`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         continue; // Retry the request
       }
 
       if (!response.ok) {
         const errorBody = await response.text();
-        throw new Error(`AI service responded with status ${response.status}: ${errorBody}`);
+        throw new Error(
+          `AI service responded with status ${response.status}: ${errorBody}`
+        );
       }
 
       const suggestion: SmartBetSuggestion = await response.json();
       return suggestion;
     } catch (error) {
-      console.error(`Error fetching smart bet suggestion (attempt ${i + 1}/${MAX_RETRIES}):`, error);
+      console.error(
+        `Error fetching smart bet suggestion (attempt ${
+          i + 1
+        }/${MAX_RETRIES}):`,
+        error
+      );
       if (i < MAX_RETRIES - 1) {
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1)));
+        await new Promise((resolve) =>
+          setTimeout(resolve, RETRY_DELAY_MS * (i + 1))
+        );
       } else {
         return null; // All retries failed
       }

@@ -71,7 +71,7 @@ export class Plinko {
           isStatic: true,
           label: "Barrier",
           chamfer: { radius: 2 },
-        },
+        }
       );
     });
     const sensors = buckets.map((bucketMultiplier, bucketIndex) => {
@@ -89,7 +89,7 @@ export class Plinko {
             bucketIndex,
             bucketMultiplier,
           },
-        },
+        }
       );
     });
 
@@ -115,8 +115,8 @@ export class Plinko {
       this.ballComposite,
       this.makePlinko(
         Matter.Common.random(-SPAWN_OFFSET_RANGE, SPAWN_OFFSET_RANGE),
-        0,
-      ),
+        0
+      )
     );
     Matter.Runner.run(this.runner, this.engine);
   }
@@ -137,7 +137,7 @@ export class Plinko {
   constructor(props: PlinkoProps) {
     this.props = props;
     this.startPositions = Array.from({ length: SIMULATIONS }).map((_, i) =>
-      Matter.Common.random(-SPAWN_OFFSET_RANGE / 2, SPAWN_OFFSET_RANGE / 2),
+      Matter.Common.random(-SPAWN_OFFSET_RANGE / 2, SPAWN_OFFSET_RANGE / 2)
     );
 
     const rowSize = this.height / (this.props.rows + 2);
@@ -241,8 +241,8 @@ export class Plinko {
     Matter.Events.off(this.engine, "collisionStart", this.collisionHandler);
     const bucket = Matter.Common.choose(
       this.bucketComposite.bodies.filter(
-        (x) => x.plugin.bucketMultiplier === desiredMultiplier,
-      ),
+        (x) => x.plugin.bucketMultiplier === desiredMultiplier
+      )
     );
     // 1. Simulate
     const candidates = this.simulate(bucket.plugin.bucketIndex);
@@ -258,8 +258,8 @@ export class Plinko {
       this.ballComposite,
       this.makePlinko(
         this.startPositions[chosen.plinkoIndex],
-        chosen.plinkoIndex,
-      ),
+        chosen.plinkoIndex
+      )
     );
 
     Matter.Runner.run(this.runner, this.engine);

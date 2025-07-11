@@ -1,5 +1,5 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { D1Database } from '@cloudflare/workers-types';
+import { NextApiRequest, NextApiResponse } from "next";
+import { D1Database } from "@cloudflare/workers-types";
 
 declare global {
   namespace NodeJS {
@@ -9,113 +9,166 @@ declare global {
   }
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   console.log(`[API] /api/v1/tournaments/matches - Method: ${req.method}`);
   // Prioritize req.db for testing, fallback to process.env.DB for runtime
   const db = (req as any).db || process.env.DB;
 
   if (!db) {
-    return res.status(500).json({ error: 'Database not configured.' });
+    return res.status(500).json({ error: "Database not configured." });
   }
 
   switch (req.method) {
-    case 'GET':
+    case "GET":
       try {
         const { id, tournament_id } = req.query || {};
         if (id) {
-          const match = await db.prepare('SELECT * FROM matches WHERE id = ?').bind(id).first();
+          const match = await db
+            .prepare("SELECT * FROM matches WHERE id = ?")
+            .bind(id)
+            .first();
           return res.status(200).json(match || null);
         } else if (tournament_id) {
-          const { results } = await db.prepare('SELECT * FROM matches WHERE tournament_id = ?').bind(tournament_id).all();
+          const { results } = await db
+            .prepare("SELECT * FROM matches WHERE tournament_id = ?")
+            .bind(tournament_id)
+            .all();
           return res.status(200).json(results);
         } else {
-          const { results } = await db.prepare('SELECT * FROM matches').all();
+          const { results } = await db.prepare("SELECT * FROM matches").all();
           return res.status(200).json(results);
         }
       } catch (error: any) {
-        console.error('API Error in matches GET:', error);
+        console.error("API Error in matches GET:", error);
         return res.status(500).json({ error: error.message });
       }
-    case 'POST':
+    case "POST":
       try {
-        const { tournament_id, round, match_number, team1_id, team2_id } = req.body;
+        const { tournament_id, round, match_number, team1_id, team2_id } =
+          req.body;
         if (!tournament_id || !round || !match_number) {
-          return res.status(400).json({ error: 'Missing required fields: tournament_id, round, match_number' });
+          return res
+            .status(400)
+            .json({
+              error:
+                "Missing required fields: tournament_id, round, match_number",
+            });
         }
-        const { success } = await db.prepare('INSERT INTO matches (tournament_id, round, match_number, team1_id, team2_id) VALUES (?, ?, ?, ?, ?)').bind(tournament_id, round, match_number, team1_id, team2_id).run();
+        const { success } = await db
+          .prepare(
+            "INSERT INTO matches (tournament_id, round, match_number, team1_id, team2_id) VALUES (?, ?, ?, ?, ?)"
+          )
+          .bind(tournament_id, round, match_number, team1_id, team2_id)
+          .run();
         if (success) {
-          return res.status(201).json({ message: 'Match created successfully' });
+          return res
+            .status(201)
+            .json({ message: "Match created successfully" });
         } else {
-          return res.status(500).json({ error: 'Failed to create match' });
+          return res.status(500).json({ error: "Failed to create match" });
         }
       } catch (error: any) {
-        console.error('API Error in matches POST:', error);
+        console.error("API Error in matches POST:", error);
         return res.status(500).json({ error: error.message });
       }
-    case 'PUT':
+    case "PUT":
       try {
-        const { id, team1_id, team2_id, score1, score2, winner_id, next_match_id } = req.body;
-        if (!id || (!team1_id && !team2_id && !score1 && !score2 && !winner_id && !next_match_id)) {
-          return res.status(400).json({ error: 'Missing required fields: id and at least one field to update' });
+        const {
+          id,
+          team1_id,
+          team2_id,
+          score1,
+          score2,
+          winner_id,
+          next_match_id,
+        } = req.body;
+        if (
+          !id ||
+          (!team1_id &&
+            !team2_id &&
+            !score1 &&
+            !score2 &&
+            !winner_id &&
+            !next_match_id)
+        ) {
+          return res
+            .status(400)
+            .json({
+              error:
+                "Missing required fields: id and at least one field to update",
+            });
         }
-        let query = 'UPDATE matches SET';
+        let query = "UPDATE matches SET";
         const params = [];
         if (team1_id) {
-          query += ' team1_id = ?,';
+          query += " team1_id = ?,";
           params.push(team1_id);
         }
         if (team2_id) {
-          query += ' team2_id = ?,';
+          query += " team2_id = ?,";
           params.push(team2_id);
         }
         if (score1) {
-          query += ' score1 = ?,';
+          query += " score1 = ?,";
           params.push(score1);
         }
         if (score2) {
-          query += ' score2 = ?,';
+          query += " score2 = ?,";
           params.push(score2);
         }
         if (winner_id) {
-          query += ' winner_id = ?,';
+          query += " winner_id = ?,";
           params.push(winner_id);
         }
         if (next_match_id) {
-          query += ' next_match_id = ?,';
+          query += " next_match_id = ?,";
           params.push(next_match_id);
         }
         query = query.slice(0, -1); // Remove trailing comma
-        query += ' WHERE id = ?';
+        query += " WHERE id = ?";
         params.push(id);
 
-        const { success } = await db.prepare(query).bind(...params).run();
+        const { success } = await db
+          .prepare(query)
+          .bind(...params)
+          .run();
         if (success) {
-          return res.status(200).json({ message: 'Match updated successfully' });
+          return res
+            .status(200)
+            .json({ message: "Match updated successfully" });
         } else {
-          return res.status(500).json({ error: 'Failed to update match' });
+          return res.status(500).json({ error: "Failed to update match" });
         }
       } catch (error: any) {
-        console.error('API Error in matches PUT:', error);
+        console.error("API Error in matches PUT:", error);
         return res.status(500).json({ error: error.message });
       }
-    case 'DELETE':
+    case "DELETE":
       try {
         const { id } = req.query;
         if (!id) {
-          return res.status(400).json({ error: 'Missing required field: id' });
+          return res.status(400).json({ error: "Missing required field: id" });
         }
-        const { success } = await db.prepare('DELETE FROM matches WHERE id = ?').bind(id).run();
+        const { success } = await db
+          .prepare("DELETE FROM matches WHERE id = ?")
+          .bind(id)
+          .run();
         if (success) {
-          return res.status(200).json({ message: 'Match deleted successfully' });
+          return res
+            .status(200)
+            .json({ message: "Match deleted successfully" });
         } else {
-          return res.status(500).json({ error: 'Failed to delete match' });
+          return res.status(500).json({ error: "Failed to delete match" });
         }
       } catch (error: any) {
-        console.error('API Error in matches DELETE:', error);
+        console.error("API Error in matches DELETE:", error);
         return res.status(500).json({ error: error.message });
       }
     default:
-      res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
+      res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
       return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

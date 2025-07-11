@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 
 const RecentPlays = dynamic(
   () => import("@/components/game/RecentPlays/RecentPlays"),
-  { ssr: false },
+  { ssr: false }
 );
 import { toast } from "sonner";
 import { useReferral } from "gamba-react-ui-v2";
@@ -23,7 +23,9 @@ export default function HomePage() {
     }
     copyLinkToClipboard();
     toast.success(
-      `Copied! Share your link to earn a ${PLATFORM_REFERRAL_FEE * 100}% fee when players use this platform`,
+      `Copied! Share your link to earn a ${
+        PLATFORM_REFERRAL_FEE * 100
+      }% fee when players use this platform`
     );
   };
 

@@ -10,6 +10,7 @@ node_modules/
 dist/
 dev-dist/
 .next/
+artifact/
 out/
 coverage/
 .bmad-coverage
@@ -35,7 +36,7 @@ lerna-debug.log*
 .vscode/
 .idea/
 *.tgz
-.bmad-core/
+.stigmergy-core/
 .roomodes
 expansion-packs/
 

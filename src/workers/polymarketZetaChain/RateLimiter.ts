@@ -4,7 +4,7 @@ export class RateLimiter {
 
   constructor(
     private capacity: number,
-    private refillRate: number, // tokens per second
+    private refillRate: number // tokens per second
   ) {
     this.tokens = capacity;
     this.lastRefill = Date.now();
@@ -13,7 +13,10 @@ export class RateLimiter {
   private refillTokens(): void {
     const now = Date.now();
     const timeElapsed = (now - this.lastRefill) / 1000; // in seconds
-    this.tokens = Math.min(this.capacity, this.tokens + timeElapsed * this.refillRate);
+    this.tokens = Math.min(
+      this.capacity,
+      this.tokens + timeElapsed * this.refillRate
+    );
     this.lastRefill = now;
   }
 

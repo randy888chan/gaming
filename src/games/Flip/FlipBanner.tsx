@@ -73,7 +73,7 @@ const YellowBanner = ({ position }: { position: [number, number, number] }) => {
 const createRoundedRectShape = (
   width: number,
   height: number,
-  radius: number,
+  radius: number
 ) => {
   const shape = new Shape();
   const x = -width / 2;
@@ -95,7 +95,7 @@ const createRoundedRectShape = (
 const createRoundedRectOutline = (
   width: number,
   height: number,
-  radius: number,
+  radius: number
 ) => {
   const shape = new Shape();
   const x = -width / 2;

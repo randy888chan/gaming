@@ -39,10 +39,7 @@ const StyledSlot = styled.div<{ $good: boolean }>`
   overflow: hidden;
   border-radius: 10px;
   border: 2px solid #2d2d57;
-  transition:
-    background 0.2s,
-    border 0.2s,
-    box-shadow 0.2s;
+  transition: background 0.2s, border 0.2s, box-shadow 0.2s;
   ${(props) =>
     props.$good &&
     css`
@@ -57,9 +54,7 @@ const Revealed = styled.div<{ $revealed: boolean; $good: boolean }>`
   align-items: center;
   position: relative;
   padding: 10px;
-  transition:
-    opacity 0.2s,
-    transform 0.3s ease;
+  transition: opacity 0.2s, transform 0.3s ease;
   transform: translateY(-100%);
   opacity: 0;
 
@@ -84,7 +79,7 @@ const Revealed = styled.div<{ $revealed: boolean; $good: boolean }>`
 export function Slot({ revealed, good, item, index }: SlotProps) {
   const items = useMemo(
     () => [...SLOT_ITEMS].sort(() => Math.random() - 0.5),
-    [],
+    []
   );
   return (
     <StyledSlot $good={good}>

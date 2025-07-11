@@ -1,14 +1,27 @@
-import { Request, Response, ExecutionContext, ScheduledEvent, D1Database } from '@cloudflare/workers-types';
+import {
+  Request,
+  Response,
+  ExecutionContext,
+  ScheduledEvent,
+  D1Database,
+} from "@cloudflare/workers-types";
 
 export default {
-  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    console.log(`[SocialPoster] Worker triggered by cron at ${event.scheduledTime}`);
+  async scheduled(
+    event: ScheduledEvent,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<void> {
+    console.log(
+      `[SocialPoster] Worker triggered by cron at ${event.scheduledTime}`
+    );
     try {
       // Placeholder for fetching content from D1 or another service
       // const { results } = await env.DB.prepare("SELECT * FROM generated_seo ORDER BY created_at DESC LIMIT 1").all();
       // const contentToPost = results[0]?.content || "Default social media content.";
 
-      const contentToPost = "Daily social media update: " + new Date().toISOString();
+      const contentToPost =
+        "Daily social media update: " + new Date().toISOString();
       console.log(`[SocialPoster] Content to post: ${contentToPost}`);
 
       // Placeholder for posting to social media platforms
@@ -17,7 +30,9 @@ export default {
 
       console.log("[SocialPoster] Content posting completed successfully.");
     } catch (error) {
-      console.error(`[SocialPoster] Error during social media posting: ${error}`);
+      console.error(
+        `[SocialPoster] Error during social media posting: ${error}`
+      );
       // Implement more robust error logging
     }
   },

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 // import { useParticleNetwork } from '@/components/ParticleProviderWrapper'; // Particle Network is no longer directly used here
 
 interface UserProfile {
@@ -27,29 +27,31 @@ const ProfilePage: React.FC = () => {
         // would likely be handled by a middleware or a separate auth service.
         // For this example, we'll mock the user info.
         const mockUserInfo = {
-          token: 'mock-auth-token', // Replace with actual token from a real auth flow
-          walletAddress: '0x1234567890abcdef1234567890abcdef12345678', // Mock wallet address
+          token: "mock-auth-token", // Replace with actual token from a real auth flow
+          walletAddress: "0x1234567890abcdef1234567890abcdef12345678", // Mock wallet address
         };
 
         if (!mockUserInfo || !mockUserInfo.token) {
-          throw new Error('User not authenticated.');
+          throw new Error("User not authenticated.");
         }
 
-        const response = await fetch('/api/v1/users/me', {
+        const response = await fetch("/api/v1/users/me", {
           headers: {
-            'Authorization': `Bearer ${mockUserInfo.token}`,
+            Authorization: `Bearer ${mockUserInfo.token}`,
           },
         });
 
         if (!response.ok) {
-          throw new Error(`Error fetching user profile: ${response.statusText}`);
+          throw new Error(
+            `Error fetching user profile: ${response.statusText}`
+          );
         }
 
         const data: UserProfile = await response.json();
         setUserProfile(data);
       } catch (err: any) {
         setError(err.message);
-        console.error('Failed to fetch user profile:', err);
+        console.error("Failed to fetch user profile:", err);
       } finally {
         setLoading(false);
       }
@@ -97,7 +99,10 @@ const ProfilePage: React.FC = () => {
             <Separator />
             <div>
               <h3 className="text-lg font-semibold">Recent Activity:</h3>
-              <p>Tournaments Played: {userProfile.recentActivity.tournamentsPlayed}</p>
+              <p>
+                Tournaments Played:{" "}
+                {userProfile.recentActivity.tournamentsPlayed}
+              </p>
               {/* Add more activity details here */}
             </div>
           </div>

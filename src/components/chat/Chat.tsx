@@ -1,9 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { connectChat, disconnectChat, sendChatMessage, onChatMessage } from '@/services/chatService';
-import { useUserStore } from '@/hooks/useUserStore';
+import React, { useState, useEffect, useRef } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  connectChat,
+  disconnectChat,
+  sendChatMessage,
+  onChatMessage,
+} from "@/services/chatService";
+import { useUserStore } from "@/hooks/useUserStore";
 
 interface Message {
   id: string;
@@ -15,7 +20,7 @@ interface Message {
 
 export function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const user = useUserStore((state) => state.user);
 
@@ -40,7 +45,7 @@ export function Chat() {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({
         top: scrollAreaRef.current.scrollHeight,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   }, [messages]);
@@ -49,15 +54,15 @@ export function Chat() {
     // Fetch message history on component mount
     const fetchChatHistory = async () => {
       try {
-        const response = await fetch('/api/chat-history');
+        const response = await fetch("/api/chat-history");
         if (response.ok) {
           const history = await response.json();
           setMessages(history);
         } else {
-          console.error('Failed to fetch chat history:', response.statusText);
+          console.error("Failed to fetch chat history:", response.statusText);
         }
       } catch (error) {
-        console.error('Error fetching chat history:', error);
+        console.error("Error fetching chat history:", error);
       }
     };
 
@@ -65,11 +70,11 @@ export function Chat() {
   }, []); // Empty dependency array means this runs once on mount
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() === '' || !user) return;
+    if (newMessage.trim() === "" || !user) return;
 
     const message = {
       userId: user.walletAddress,
-      username: user.username || 'Anonymous',
+      username: user.username || "Anonymous",
       text: newMessage,
     };
 
@@ -78,18 +83,18 @@ export function Chat() {
 
     // Also persist to history via API
     try {
-      await fetch('/api/chat-history', {
-        method: 'POST',
+      await fetch("/api/chat-history", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(message),
       });
     } catch (error) {
-      console.error('Error persisting message:', error);
+      console.error("Error persisting message:", error);
     }
 
-    setNewMessage('');
+    setNewMessage("");
   };
 
   return (
@@ -112,14 +117,18 @@ export function Chat() {
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyPress={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === "Enter") {
               handleSendMessage();
             }
           }}
           className="flex-1 mr-2 bg-gray-700 border-gray-600 text-white"
           disabled={!user}
         />
-        <Button onClick={handleSendMessage} className="bg-blue-600 hover:bg-blue-700 text-white" disabled={!user}>
+        <Button
+          onClick={handleSendMessage}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+          disabled={!user}
+        >
           Send
         </Button>
       </div>

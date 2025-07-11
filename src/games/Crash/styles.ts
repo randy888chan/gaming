@@ -4,7 +4,7 @@ import styled, { keyframes } from "styled-components";
 const generateMultipleBoxShadows = (
   n: number,
   color1: string,
-  color2: string,
+  color2: string
 ) => {
   if (typeof window === "undefined") return "";
   const maxX = window.innerWidth;

@@ -1,7 +1,7 @@
-import withBundleAnalyzer from '@next/bundle-analyzer';
-import withPWA from 'next-pwa';
+import withBundleAnalyzer from "@next/bundle-analyzer";
+import withPWA from "next-pwa";
 
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === "production";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -20,16 +20,16 @@ const nextConfig = {
 };
 
 const withPWAConfig = withPWA({
-  dest: 'public',
+  dest: "public",
   disable: !isProd,
   register: true,
   skipWaiting: true,
   buildExcludes: [/middleware-manifest.json$/],
   fallbacks: {
-    document: '/_offline',
+    document: "/_offline",
   },
 })(nextConfig);
 
 export default withBundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: process.env.ANALYZE === "true",
 })(withPWAConfig);

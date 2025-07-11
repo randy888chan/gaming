@@ -1,5 +1,5 @@
 // src/components/PSeoContentDisplay.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 interface PSeoContent {
   title: string;
@@ -18,7 +18,7 @@ const PSeoContentDisplay: React.FC = () => {
       try {
         // In a real application, this would fetch from a dedicated pSEO content API endpoint
         // For now, we'll simulate fetching some content.
-        const response = await fetch('/api/pSeo/latest'); // Assuming an API endpoint for latest pSEO content
+        const response = await fetch("/api/pSeo/latest"); // Assuming an API endpoint for latest pSEO content
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -39,7 +39,7 @@ const PSeoContentDisplay: React.FC = () => {
   }
 
   if (error) {
-    return <div style={{ color: 'red' }}>Error: {error}</div>;
+    return <div style={{ color: "red" }}>Error: {error}</div>;
   }
 
   if (!pSeoData) {

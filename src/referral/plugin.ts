@@ -54,8 +54,8 @@ export const makeReferralPlugin =
         await createReferral(
           context.provider.anchorProvider!,
           input.creator,
-          recipient,
-        ),
+          recipient
+        )
       );
     }
 
@@ -65,16 +65,16 @@ export const makeReferralPlugin =
           fromPubkey: input.wallet,
           toPubkey: recipient,
           lamports: tokenAmount,
-        }),
+        })
       );
     } else {
       const fromAta = SplToken.getAssociatedTokenAddressSync(
         input.token,
-        input.wallet,
+        input.wallet
       );
       const toAta = SplToken.getAssociatedTokenAddressSync(
         input.token,
-        recipient,
+        recipient
       );
 
       const recipientHasAta = await (async () => {
@@ -82,7 +82,7 @@ export const makeReferralPlugin =
           await SplToken.getAccount(
             context.provider.anchorProvider.connection,
             toAta,
-            "confirmed",
+            "confirmed"
           );
           return true;
         } catch (error) {
@@ -103,8 +103,8 @@ export const makeReferralPlugin =
             input.wallet,
             toAta,
             recipient,
-            input.token,
-          ),
+            input.token
+          )
         );
       }
 
@@ -113,8 +113,8 @@ export const makeReferralPlugin =
           fromAta,
           toAta,
           input.wallet,
-          tokenAmount,
-        ),
+          tokenAmount
+        )
       );
     }
 

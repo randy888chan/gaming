@@ -103,7 +103,7 @@ function Slider({
   range: [min, max],
 }: SliderProps) {
   const labels = Array.from({ length: 5 }).map(
-    (_, i, arr) => min + Math.floor((i / (arr.length - 1)) * (max - min)),
+    (_, i, arr) => min + Math.floor((i / (arr.length - 1)) * (max - min))
   );
 
   const change = (newValue: number) => {

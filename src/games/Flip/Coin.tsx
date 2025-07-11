@@ -68,7 +68,7 @@ export function Coin({
         group.current.rotation.y += clamp(
           (target.current - group.current.rotation.y) * 10 * dt,
           0,
-          1,
+          1
         );
       }
       const currentScale = flipping ? 1.25 : 1;

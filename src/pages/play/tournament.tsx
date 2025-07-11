@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import TournamentBracket from '../../components/tournament/TournamentBracket';
-import { Tournament, Team, Match } from '../../types/tournament';
+import React, { useState } from "react";
+import TournamentBracket from "../../components/tournament/TournamentBracket";
+import { Tournament, Team, Match } from "../../types/tournament";
 
 const initialTeams: Team[] = [
-  { id: 'team1', name: 'Team A' },
-  { id: 'team2', name: 'Team B' },
-  { id: 'team3', name: 'Team C' },
-  { id: 'team4', name: 'Team D' },
-  { id: 'team5', name: 'Team E' },
-  { id: 'team6', name: 'Team F' },
-  { id: 'team7', name: 'Team G' },
-  { id: 'team8', name: 'Team H' },
+  { id: "team1", name: "Team A" },
+  { id: "team2", name: "Team B" },
+  { id: "team3", name: "Team C" },
+  { id: "team4", name: "Team D" },
+  { id: "team5", name: "Team E" },
+  { id: "team6", name: "Team F" },
+  { id: "team7", name: "Team G" },
+  { id: "team8", name: "Team H" },
 ];
 
 const generateSingleEliminationBracket = (teams: Team[]): Match[] => {
@@ -59,11 +59,11 @@ const generateSingleEliminationBracket = (teams: Team[]): Match[] => {
       // Link previous round matches to this new match
       if (currentRoundMatches[i]) {
         currentRoundMatches[i].nextMatchId = match.id;
-        currentRoundMatches[i].nextMatchTeamSlot = 'team1';
+        currentRoundMatches[i].nextMatchTeamSlot = "team1";
       }
       if (currentRoundMatches[i + 1]) {
         currentRoundMatches[i + 1].nextMatchId = match.id;
-        currentRoundMatches[i + 1].nextMatchTeamSlot = 'team2';
+        currentRoundMatches[i + 1].nextMatchTeamSlot = "team2";
       }
     }
     currentRoundMatches = nextRoundMatches;
@@ -73,9 +73,9 @@ const generateSingleEliminationBracket = (teams: Team[]): Match[] => {
 };
 
 const initialTournament: Tournament = {
-  id: 'tournament-1',
-  name: 'Sample Single Elimination Tournament',
-  format: 'single-elimination',
+  id: "tournament-1",
+  name: "Sample Single Elimination Tournament",
+  format: "single-elimination",
   teams: initialTeams,
   matches: generateSingleEliminationBracket(initialTeams),
 };

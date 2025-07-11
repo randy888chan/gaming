@@ -1,6 +1,6 @@
 // src/components/game/Leaderboard.tsx
 
-import React from 'react';
+import React from "react";
 
 interface LeaderboardEntry {
   rank: number;

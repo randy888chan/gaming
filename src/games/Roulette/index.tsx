@@ -148,9 +148,7 @@ export default function Roulette() {
           options={CHIPS}
           value={selectedChip.value}
           onChange={(value) => (selectedChip.value = value)}
-          label={(value) => (
-            `${value} = ${token.baseWager * value}`
-          )}
+          label={(value) => `${value} = ${token.baseWager * value}`}
         />
         <GambaPlayButton
           disabled={!wager || gamba.isPlaying}

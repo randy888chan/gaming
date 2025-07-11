@@ -3,15 +3,15 @@
 import { GAMES } from "@/games";
 import { GameCard } from "./GameCard";
 import React from "react";
-import { Leaderboard } from './Leaderboard';
+import { Leaderboard } from "./Leaderboard";
 
 // Example data for the leaderboard
 const exampleLeaderboardEntries = [
-  { rank: 1, username: 'CryptoKing', score: 15000 },
-  { rank: 2, username: 'GamerX', score: 12000 },
-  { rank: 3, username: 'BetMaster', score: 10000 },
-  { rank: 4, username: 'LuckyLuke', score: 8000 },
-  { rank: 5, username: 'DegenDiva', score: 7500 },
+  { rank: 1, username: "CryptoKing", score: 15000 },
+  { rank: 2, username: "GamerX", score: 12000 },
+  { rank: 3, username: "BetMaster", score: 10000 },
+  { rank: 4, username: "LuckyLuke", score: 8000 },
+  { rank: 5, username: "DegenDiva", score: 7500 },
 ];
 
 export function GameGrid() {

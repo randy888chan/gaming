@@ -25,7 +25,7 @@ const DICE_SIDES = 100;
 
 export const outcomes = (
   length: number,
-  multiplierCallback: (resultIndex: number) => number | undefined,
+  multiplierCallback: (resultIndex: number) => number | undefined
 ) => {
   const payoutArray = Array.from({ length }).map((_, resultIndex) => {
     const payout = multiplierCallback(resultIndex) ?? 0;
@@ -35,8 +35,8 @@ export const outcomes = (
   return payoutArray.map(
     (x) =>
       Number(
-        (BigInt(x * BPS_PER_WHOLE) / BigInt(totalValue || 1)) * BigInt(length),
-      ) / BPS_PER_WHOLE,
+        (BigInt(x * BPS_PER_WHOLE) / BigInt(totalValue || 1)) * BigInt(length)
+      ) / BPS_PER_WHOLE
   );
 };
 
@@ -46,7 +46,7 @@ export default function Dice() {
   const pool = useCurrentPool();
   const [resultIndex, setResultIndex] = useState(-1);
   const [rollUnderIndex, setRollUnderIndex] = useState(
-    Math.floor(DICE_SIDES / 2),
+    Math.floor(DICE_SIDES / 2)
   );
   const sounds = useSound({
     win: SOUND_WIN,
@@ -66,7 +66,7 @@ export default function Dice() {
           return DICE_SIDES - rollUnderIndex;
         }
       }),
-    [rollUnderIndex],
+    [rollUnderIndex]
   );
 
   const maxWin = multiplier * wager;

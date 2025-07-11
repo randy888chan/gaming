@@ -15,7 +15,10 @@
       "plugins": [
         "@babel/plugin-transform-modules-commonjs",
         "@babel/plugin-proposal-private-methods",
-        ["babel-plugin-styled-components", { "ssr": false, "displayName": true, "pure": true }]
+        [
+          "babel-plugin-styled-components",
+          { "ssr": false, "displayName": true, "pure": true }
+        ]
       ]
     }
   }
