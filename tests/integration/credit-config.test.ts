@@ -1,7 +1,7 @@
 import request, { SuperTest, Test } from "supertest";
 import { createServer } from "http";
 import { apiResolver } from "next/dist/server/api-utils/node";
-import creditConfigHandler from "../../src/pages/api/v1/admin/credit-config";
+import handler from "../../src/pages/api/v1/admin/credit-config"; // Import raw handler
 import * as jwt from "jsonwebtoken";
 import type { D1Database } from "@cloudflare/workers-types";
 // Define mock types
@@ -41,14 +41,58 @@ jest.mock("process", () => ({
   }
 }));
 
-// Mock auth middleware to bypass in tests
+// Mock auth middleware to test behavior
 jest.mock("../../src/utils/authMiddleware", () => ({
-  withAuth: jest.fn((handler) => handler) // Must use jest.fn() for proper mocking
+  withAuth: jest.fn((handler) => {
+    return async (req: NextApiRequest, res: NextApiResponse) => {
+      const authHeader = req.headers.authorization;
+      
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        res.status(401).json({
+          success: false,
+          error: "Unauthorized: No token provided."
+        });
+        return;
+      }
+
+      const token = authHeader.split(" ")[1];
+      if (token === "invalid-token") {
+        res.status(401).json({
+          success: false,
+          error: "Unauthorized: Invalid or expired token."
+        });
+        return;
+      }
+
+      return handler(req, res);
+    };
+  })
 }));
 
-// Mock rate limit middleware to bypass in tests
+// Mock rate limit middleware to test behavior with time-based reset
 jest.mock("../../src/utils/rateLimitMiddleware", () => ({
-  withRateLimit: jest.fn((handler) => handler) // Must use jest.fn() for proper mocking
+  withRateLimit: jest.fn((handler) => {
+    const requestTimestamps: number[] = [];
+    const windowMs = 60000; // 1 minute
+    
+    return async (req: NextApiRequest, res: NextApiResponse) => {
+      const now = Date.now();
+      // Remove timestamps older than window
+      while (requestTimestamps.length > 0 && requestTimestamps[0] <= now - windowMs) {
+        requestTimestamps.shift();
+      }
+      
+      requestTimestamps.push(now);
+      if (requestTimestamps.length > 30) {
+        res.status(429).json({
+          success: false,
+          error: "Too many requests, please try again later."
+        });
+        return;
+      }
+      return handler(req, res);
+    };
+  })
 }));
 
 // Only mock jwt verification since it's external
@@ -93,11 +137,15 @@ process.env.PARTICLE_NETWORK_JWT_SECRET = mockJwtSecret;
 // Helper to create a test server for Next.js API routes
 const testServer = (handler: any) => {
   return request(
-    createServer((req, res) =>
+    createServer((req, res) => {
+      // Parse URL to extract query parameters
+      const url = new URL(req.url || '', `http://${req.headers.host}`);
+      const query = Object.fromEntries(url.searchParams.entries());
+      
       apiResolver(
         req,
         res,
-        undefined,
+        query, // Pass parsed query params
         handler,
         {
           previewModeId: '',
@@ -106,7 +154,7 @@ const testServer = (handler: any) => {
         },
         true
       )
-    )
+    })
   );
 };
 
@@ -117,7 +165,7 @@ describe("Credit Configuration API Integration Tests", () => {
   // let originalServer: request.SuperTest<request.Test>; // No longer needed
 
   beforeAll(() => {
-    server = testServer(creditConfigHandler) as unknown as SuperTest<Test>; // Initialize server with the default wrapped handler
+    server = testServer(handler) as unknown as SuperTest<Test>; // Initialize server with raw handler
     // Generate mock JWT tokens
     mockAdminToken = jwt.sign(
       { userId: "adminUser", role: "admin" },

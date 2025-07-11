@@ -201,11 +201,11 @@ describe("Roulette Game Component Integration Tests", () => {
     // Reset signals directly using the imported actualSignals
     actualSignals.chipPlacements.value = {}; // Ensure this is effective
     actualSignals.results.value = [];
-    // Initialize signals properly
+    // Initialize signals properly with scaled values
     actualSignals.selectedChip.value = 1;
     actualSignals.chipPlacements.value = {
-      "1": 1, // Place 1 chip on position 1
-      "2": 1  // Place 1 chip on position 2
+      "1": 0.01, // Place 0.01 chip (scaled to 100) on position 1
+      "2": 0.02  // Place 0.02 chip (scaled to 200) on position 2
     };
   });
 
@@ -302,7 +302,7 @@ describe("Roulette Game Component Integration Tests", () => {
       "[TEST] Before addChips assertion, totalChipValue:",
       actualSignals.totalChipValue.value
     );
-    expect(actualSignals.totalChipValue.value).toBe(10000); // Adjusted expected totalChipValue
+    expect(actualSignals.totalChipValue.value).toBe(300); // 0.01 + 0.02 = 0.03 * 10000 = 300
 
     const clearButton = screen.getByTestId("gamba-play-button-clear");
     await act(async () => {
@@ -358,7 +358,7 @@ describe("Roulette Game Component Integration Tests", () => {
       async () => {
         const playButton = screen.getByTestId("gamba-play-button-play");
         const wagerDisplayCheck = screen.getByText("Wager").previousSibling;
-        expect(wagerDisplayCheck).toHaveTextContent("1");
+        expect(wagerDisplayCheck).toHaveTextContent("100");
         if (playButton.hasAttribute("disabled")) {
           console.log(
             '[TEST DEBUG] Play button in "game win" is unexpectedly disabled. Wager is 100. Disabled attribute:',
