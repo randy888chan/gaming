@@ -1,3 +1,33 @@
+# Story 1.1: Refactor Smart Contracts for Omnichain Support
+
+**Epic:** 1: Compliance & Core Refactoring
+**Status:** Approved
+
+## User Story
+- **As:** The System Architect,
+- **I want:** The `CrossChainSettlement.sol` and `PolymarketAdapter.sol` contracts to be updated for true omnichain functionality,
+- **So that:** The platform can securely and reliably handle transactions originating from EVM, Solana, and TON via ZetaChain.
+
+## Acceptance Criteria
+1.  **`CrossChainSettlement.sol` Updated:**
+    - The `dispatchCrossChainCall` function's `destinationAddress` parameter is changed from `address` to `bytes` to accommodate non-EVM address formats.
+    - The contract strictly adheres to a generic dispatcher pattern; it contains no application-specific logic.
+2.  **`PolymarketAdapter.sol` Refactored:**
+    - The `placeBet` function is refactored to only encode the betting payload and call `CrossChainSettlement.sol`. It does not interact with Polymarket directly.
+    - The `onZetaMessage` function is optimized to decode the incoming message payload only once.
+3.  **Test Coverage Expanded:**
+    - New Foundry tests are created in `test/evm/CrossChainSettlement.t.sol` to simulate calls with byte-encoded Solana and TON addresses, asserting the calls do not revert.
+    - Existing Hardhat tests for `PolymarketAdapter.test.js` are updated to reflect the new interaction flow.
+
+## Dev Notes
+- **Primary Goal:** Decouple the generic cross-chain logic from the application-specific logic.
+- `CrossChainSettlement.sol` is the universal mailman; it doesn't need to know what's in the letter.
+- `PolymarketAdapter.sol` is the recipient; it knows how to read the letter once it arrives.
+- Refer to `docs/architecture/architecture.md` for the clear separation of concerns.
+
+==================== END: docs/stories/story.1.1.md ====================
+
+
 ### **Execution Blueprint for Story 1.1**
 
 **Objective:** Refactor `CrossChainSettlement.sol` and `PolymarketAdapter.sol` to be secure, efficient, and fully omnichain-compliant (supporting EVM, Solana, TON addresses).
