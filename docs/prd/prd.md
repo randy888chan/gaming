@@ -1,25 +1,38 @@
 # Product Requirements Document: Quantum Nexus v2.0 (The Phoenix Blueprint)
 
-**Document Status:** **ACTIVE & DEFINITIVE** | **Version:** 2.0 | **Date:** 2025-07-08
+**Version:** 2.0 | **Date:** 2025-07-12
 
-## 1. Vision & Core Principles
+## 1. Vision
+To build the definitive, viral dApp that seamlessly integrates Web3 gaming and prediction markets, made accessible to existing crypto holders through a radically simple user experience delivered via PWA and Telegram Mini App.
 
-**Vision:** To build the definitive, viral dApp that seamlessly integrates Web3 gaming and prediction markets, made accessible to a mainstream audience of existing crypto holders through a radically simple, "flash and viral" user experience delivered via PWA and Telegram Mini App.
+## 2. The Definitive Project Roadmap
 
-**Core Principles:**
+### **Epic 1: Compliance & Core Refactoring**
+_Goal: To fix the foundational misalignment and create a stable, production-ready base that adheres to the System Directive._
 
-- **User-Centric Simplicity:** Abstract all non-essential blockchain complexity. The user journey must feel as simple as a modern web app.
-- **Maximum Abstraction:** Fully leverage our dependencies (ZetaChain, Particle Network) to minimize bespoke code and security surface.
-- **Singular Logic:** Core cross-chain logic resides in a **single smart contract on the ZetaChain zEVM** for security and upgradeability.
-- **Lean Infrastructure:** The entire platform runs on the **Cloudflare serverless ecosystem** for scalability and cost-efficiency.
+- **Story 1.1: Refactor Smart Contracts for Omnichain Support**
+- **Story 1.2: Overhaul Backend Services for Omnichain & Production**
+- **Story 1.3: Migrate Database to Universal User ID**
 
-## 2. The Four Pillars (Non-Negotiable Dependencies)
+### **Epic 2: The Unified dApp Experience**
+_Goal: To build the core user-facing features on the newly stabilized foundation._
 
-1.  **Gamba v2:** The foundational SDK for all on-chain casino-style gaming.
-2.  **Polymarket:** The exclusive source and settlement layer for all prediction markets, accessed via the `@polymarket/clob-client`.
-3.  **ZetaChain:** The exclusive omnichain layer, enabling our Universal App architecture across **EVM, Solana, and TON**.
-4.  **Particle Network:** The exclusive **Wallet-as-a-Service (WaaS)** provider for one-click social login, Smart Wallet creation (including TON), and gas fee sponsorship (Paymaster).
+- **Story 2.1: Implement Seamless Onboarding & First Play Credit**
+  - **As a new user,** I want to sign up with one click using my social account and receive a small, sponsored credit to try my first game instantly.
+- **Story 2.2: Build Polymarket & Tournament UI**
+  - **As a user,** I want to browse Polymarket markets and view tournament brackets.
 
-## 3. The Definitive Project Roadmap
+### **Epic 3: AI Growth Engine & UX Enhancements**
+_Goal: To activate automated marketing features and implement key UX improvements._
 
-This is the mandatory, sequential plan. No epic begins until the previous one is **complete and validated**.
+- **Story 3.1: Implement AI Marketing Workers with Queues**
+  - **As an operator,** I want content to be generated and posted automatically in a resilient, decoupled manner.
+- **Story 3.2: Implement Session Keys for Seamless Gameplay & AI Smart Bets**
+  - **As a user,** I want to approve a gameplay session once, so that I can place multiple bets without signing every single transaction.
+  - **As a user,** I want to see AI-powered "Smart Bet" suggestions to help inform my decisions on Polymarket.
+
+### **Epic 4: Internationalization & Advanced Features**
+_Goal: To prepare for a global launch and add features for power users and growth._
+
+- **Story 4.1: Platform Internationalization (i18n)**
+- **Story 4.2: Build On-Chain Referral System**
