@@ -1,31 +1,18 @@
-# Story 3.2: Implement Session Keys for Seamless Gameplay
+# Story 3.2: Implement Session Keys & AI Smart Bets
 
 **Epic:** 3: AI Growth Engine & UX Enhancements
 **Status:** Approved
 
 ## User Story
-
-- **As a user,** I want to approve a gameplay session once when I start playing,
-- **So that:** I can place multiple bets or play multiple game rounds rapidly without being interrupted by a signature prompt for every single transaction.
+- **As a user,** I want to approve a gameplay session once and get AI-powered betting suggestions,
+- **So that:** I can play faster and make more informed decisions.
 
 ## Acceptance Criteria
-
-1.  **Session Key Flow Integrated:** The frontend application integrates Particle Network's Session Key feature.
-2.  **Session Prompt:** When a user initiates their first "play" action within a session, they are prompted to sign a transaction that authorizes a session key.
-3.  **Session Rules Defined:** The session key is created with clearly defined rules, such as:
-    - A maximum total wager amount for the session (e.g., $50).
-    - A maximum number of transactions (e.g., 20 plays).
-    - A session expiration time (e.g., 1 hour).
-4.  **Automatic Signing:** Subsequent transactions that fall within the defined session rules are automatically signed by the session key without requiring a new user-facing pop-up.
-5.  **Rule Enforcement:** Any transaction that exceeds the session rules (e.g., a wager amount higher than the session's limit) automatically falls back to requiring a manual signature from the user.
-
-## Tasks / Subtasks
-
-- [ ] **Task 1 (AC #1, #2):** Refactor the core "play" logic in the frontend to check for an active session key before initiating a transaction. If no active key exists, trigger the Particle SDK prompt to create one.
-- [ ] **Task 2 (AC #3):** Define and implement the session key rules. These should be configurable to balance user convenience and security.
-- [ ] **Task 3 (AC #4, #5):** Test both the automatic signing flow (for transactions within the rules) and the manual fallback flow (for transactions that exceed the rules).
+1.  **Session Key Flow Integrated:** The frontend integrates Particle Network's Session Key feature, prompting the user once to authorize a session with defined rules (e.g., total value, tx count).
+2.  **Automatic Signing:** Subsequent transactions within the session's rules are automatically signed by the session key without a new pop-up.
+3.  **Smart Bet UI:** A "Get Smart Bet" button is added to the Polymarket market interface.
+4.  **Smart Bet API:** A new API endpoint (`/api/smart-bet`) is created. It takes a `marketId` and `userId`, calls the `aiAdapter` service, and returns an AI-generated betting suggestion.
 
 ## Dev Notes
-
-- This feature is the cornerstone of the "Web2-like UX" principle. Its successful implementation is critical for user retention.
-- Careful attention must be paid to the security implications of the session key rules. The rules must be restrictive enough to protect users while still providing a seamless experience.
+- Session Keys are the cornerstone of the "Web2-like UX" principle.
+- The Smart Bet feature provides a unique, sticky reason for users to use our platform.
