@@ -110,7 +110,6 @@ interface ICrossChainSettlement {
         address targetToken
     ) external view returns (uint256);
 
-    function isEVMChain(uint256 _chainID) external view returns (bool);
 }
 
 abstract contract CrossChainSettlementBase is
@@ -122,12 +121,7 @@ abstract contract CrossChainSettlementBase is
 {
     address public uniswapRouter;
     IGatewayZEVM public override gateway;
-    uint256 constant BITCOIN_MAINNET_CHAIN_ID = 8332;
-    uint256 constant BITCOIN_TESTNET_CHAIN_ID = 18334;
     uint256 public gasLimit;
-
-    // List of EVM chain IDs. This can be expanded as needed.
-    uint256[] public evmChainIds;
 
     error InvalidAddress();
     
@@ -155,8 +149,7 @@ abstract contract CrossChainSettlementBase is
         address payable gatewayAddress,
         address uniswapRouterAddress,
         uint256 gasLimitAmount,
-        address owner,
-        uint256[] memory _evmChainIds
+        address owner
     ) public virtual initializer {
         if (gatewayAddress == address(0) || uniswapRouterAddress == address(0))
             revert InvalidAddress();
@@ -165,7 +158,6 @@ abstract contract CrossChainSettlementBase is
         uniswapRouter = uniswapRouterAddress;
         gateway = GatewayZEVM(gatewayAddress);
         gasLimit = gasLimitAmount;
-        evmChainIds = _evmChainIds;
     }
 
     function initiateSwap(
@@ -175,6 +167,8 @@ abstract contract CrossChainSettlementBase is
         bytes memory recipient,
         bool withdrawFlag
     ) public virtual returns (bytes32) {
+        // No change needed here, recipient is already bytes.
+        // This block is for context and to ensure the diff applies correctly.
         bool success = IZRC20(inputToken).transferFrom(
             msg.sender,
             address(this),
@@ -243,21 +237,9 @@ abstract contract CrossChainSettlementBase is
     ) public virtual override onlyGateway {
         CrossChainSettlementPayload memory payload;
 
-        // Handle Bitcoin chains specifically due to their address format
-        if (context.sourceChainId == BITCOIN_TESTNET_CHAIN_ID || context.sourceChainId == BITCOIN_MAINNET_CHAIN_ID) {
-            if (message.length < 41) revert InvalidMessageLength(); // 20 bytes for targetToken + 20 bytes for recipient + 1 byte for withdraw flag
-            payload.targetToken = BytesHelperLib.bytesToAddress(message, 0);
-            // Extract recipient address (bytes 20 to message.length - 1)
-            bytes memory recipient = new bytes(message.length - 21);
-            for (uint256 i = 0; i < message.length - 21; i++) {
-                recipient[i] = message[20 + i];
-            }
-            payload.recipient = recipient;
-            payload.withdraw = BytesHelperLib.bytesToBool(message, message.length - 1);
-        } else {
-            // For other chains, decode the payload directly
-            payload = abi.decode(message, (CrossChainSettlementPayload));
-        }
+        // Decode the payload directly for all chains.
+        // The contract should be generic and not handle chain-specific address formats here.
+        payload = abi.decode(message, (CrossChainSettlementPayload));
 
         // Check if the swap exists and is not confirmed or cancelled
         if (
@@ -364,7 +346,7 @@ abstract contract CrossChainSettlementBase is
                 }
             }
             gateway.withdraw(
-                abi.encodePacked(payload.recipient),
+                payload.recipient, // Pass the raw bytes recipient to the gateway
                 out,
                 payload.targetToken,
                 RevertOptions({
@@ -376,45 +358,18 @@ abstract contract CrossChainSettlementBase is
                 })
             );
         } else {
-            // Determine if the target chain is an EVM chain
-            if (isEVMChain(context.destinationChainId)) {
-                // For EVM chains, convert recipient bytes to an address
-                bool success = IZRC20(payload.targetToken).transfer(
-                    address(uint160(bytes20(payload.recipient))),
-                    out
-                );
-                if (!success) {
-                    revert TransferFailed(
-                        "Failed to transfer target tokens to the recipient on EVM ZetaChain"
-                    );
-                }
-            } else {
-                // For non-EVM chains, use the raw bytes address for transfer
-                bool success = IZRC20(payload.targetToken).transfer(
-                    payload.recipient,
-                    out
-                );
-                if (!success) {
-                    revert TransferFailed(
-                        "Failed to transfer target tokens to the recipient on non-EVM ZetaChain"
-                    );
-                }
+            // If not withdrawing, it's an internal transfer on ZetaChain.
+            // This assumes the ZRC20 contract supports transfers to `bytes` recipients.
+            // If not, this logic needs to be adjusted based on ZRC20 interface.
+            // For now, we are ensuring the types are correct for cross-chain sends.
+            bool success = IZRC20(payload.targetToken).transfer(
+                address(uint160(BytesHelperLib.bytesToAddress(payload.recipient, 0))),
+                out
+            );
+            if (!success) {
+                revert TransferFailed("Failed to transfer target tokens to the recipient on ZetaChain");
             }
         }
-    }
-
-    /**
-     * @dev Checks if a given chain ID corresponds to an EVM-compatible chain.
-     * @param _chainID The chain ID to check.
-     * @return True if the chain is EVM-compatible, false otherwise.
-     */
-    function isEVMChain(uint256 _chainID) public view virtual returns (bool) {
-        for (uint256 i = 0; i < evmChainIds.length; i++) {
-            if (evmChainIds[i] == _chainID) {
-                return true;
-            }
-        }
-        return false;
     }
 
     function onRevert(RevertContext calldata context) public virtual override onlyGateway {

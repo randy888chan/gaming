@@ -101,31 +101,49 @@ export const getSimplifiedMarkets = async (
   }
 };
 
+/**
+ * Constructs the payload for placing a bet on Polymarket via the CrossChainSettlement contract.
+ * This function does NOT send the transaction, it only prepares the message bytes.
+ * @param conditionId The unique identifier for the market condition.
+ * @param outcomeIndex The index of the outcome to bet on (0 for "No", 1 for "Yes" in binary markets).
+ * @param amount The amount of collateral to bet.
+ * @returns The ABI-encoded message payload as a Uint8Array.
+ */
+export const placePolymarketBet = (
+  conditionId: string,
+  outcomeIndex: number,
+  amount: bigint // Use bigint for amounts to match Solidity uint256
+): Uint8Array => {
+  // Define the partition for the bet. In a binary market, this would be
+  // [1, 0] for "Yes" and [0, 1] for "No".
+  const partition = [BigInt(0), BigInt(0)];
+  if (outcomeIndex === 0 || outcomeIndex === 1) {
+    partition[outcomeIndex] = BigInt(1);
+  } else {
+    throw new Error("Invalid outcomeIndex. Must be 0 or 1 for binary markets.");
+  }
+
+  // Encode the message for the splitPosition action (actionType 0)
+  // The structure matches PolymarketMessagePayload in PolymarketAdapter.sol
+  const payload = {
+    actionType: 0, // 0 for splitPosition (bet)
+    conditionId: conditionId,
+    dataArray: partition,
+    // amount is not part of the message payload for PolymarketAdapter,
+    // it's passed as a separate parameter to dispatchCrossChainCall
+  };
+
+  // Use ethers.js defaultAbiCoder to encode the payload
+  // The types must match the Solidity struct PolymarketMessagePayload
+  const encodedMessage = ethers.utils.defaultAbiCoder.encode(
+    ["uint8", "bytes32", "uint256[]"],
+    [payload.actionType, payload.conditionId, payload.dataArray]
+  );
+
+  return ethers.getBytes(encodedMessage);
+};
+
 // You might also want a function to get details for a single market
 // export const getMarketDetails = async (conditionId: string) => { ... }
 // And functions to get order books if needed
 // export const getOrderBook = async (conditionId: string) => { ... }
-
-// Note: The actual usage of ClobClient and the structure of SimplifiedMarket
-// need to be verified against the @polymarket/clob-client documentation or source code.
-// The above is a best-guess implementation based on the API docs.
-// The client might handle the full URL construction internally.
-// If `new ClobClient(CLOB_API_URL)` is not the correct way to use `getSimplifiedMarkets` without auth,
-// direct fetch might be an alternative for public data:
-/*
-export const getSimplifiedMarketsDirect = async (cursor: string = ""): Promise<PaginatedSimplifiedMarkets> => {
-  const url = `${CLOB_API_URL}simplified-markets${cursor ? `?next_cursor=${encodeURIComponent(cursor)}` : ''}`;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    // TODO: Map data to PaginatedSimplifiedMarkets, similar to the try block above
-    return data as PaginatedSimplifiedMarkets; // Placeholder
-  } catch (error) {
-    console.error('Error fetching simplified markets directly from Polymarket:', error);
-    return { limit: 0, count: 0, next_cursor: null, data: [] };
-  }
-};
-*/

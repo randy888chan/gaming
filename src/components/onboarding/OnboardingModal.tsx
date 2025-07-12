@@ -1,204 +1,92 @@
-import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { useParticleConnect } from "@particle-network/connect-react-ui";
-import { useUserStore } from "@/hooks/useUserStore";
-import { toast } from "sonner";
-import { useMemo } from "react";
-import { useRouter } from "next/router";
+import React, { useState } from 'react';
+import { ConnectButton } from '@particle-network/connectkit';
+import { useAccount } from 'wagmi';
 
 interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const steps = [
-  {
-    title: "Welcome to Quantum Nexus!",
-    description:
-      "Discover a new dimension of gaming. Let's get you started with a quick tour.",
-  },
-  {
-    title: "Your First Free Play",
-    description:
-      "We've credited your account with a free play. Try out any game without risk!",
-  },
-  {
-    title: "Smart Bets with AI",
-    description:
-      "Our AI-powered Smart Bet feature helps you make informed decisions. Get personalized suggestions based on your risk profile.",
-  },
-  {
-    title: "Explore and Enjoy!",
-    description:
-      "You're all set! Dive into our exciting games and experience the future of gaming.",
-  },
-];
+const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
+  const { address, isConnected } = useAccount();
+  const [claiming, setClaiming] = useState(false);
+  const [claimStatus, setClaimStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-export const OnboardingModal: React.FC<OnboardingModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { connect } = useParticleConnect();
-  const { set, user, hasClaimedFirstPlay, smartBet, referredBy } =
-    useUserStore();
-  const router = useRouter();
-  const { code: referralCodeFromUrl } = router.query;
+  const handleClaimCredits = async () => {
+    if (!address) return;
 
-  // State to track if the first play free API call has been made
-  const [firstPlayApiCalled, setFirstPlayApiCalled] = useState(false);
+    setClaiming(true);
+    setClaimStatus('idle');
 
-  const handleNext = () => {
-    if (currentStep < filteredSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      onClose();
-    }
-  };
-
-  // Ensure the modal closes if the user is already logged in and has claimed the first play
-  React.useEffect(() => {
-    if (user && hasClaimedFirstPlay && isOpen) {
-      onClose();
-    }
-  }, [user, hasClaimedFirstPlay, isOpen, onClose]);
-
-  const handleSkip = () => {
-    onClose();
-  };
-
-  const handleSocialLogin = async () => {
-    setErrorMessage(null); // Clear previous errors
     try {
-      const userInfo = await connect({});
-      if (userInfo) {
-        // Check if first play free API has already been called for this session
-        if (firstPlayApiCalled) {
-          console.log("First play free API already called, skipping.");
-          set((state) => ({
-            ...state,
-            user: userInfo,
-            referredBy: referralCodeFromUrl
-              ? String(referralCodeFromUrl)
-              : null,
-          }));
-          handleNext();
-          return;
-        }
+      const response = await fetch('/api/v1/users/claim-first-play-credits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ walletAddress: address }),
+      });
 
-        // Call the first-play-free API
-        const response = await fetch("/api/first-play-free", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userToken: (userInfo as any).publicAddress, // Assuming publicAddress is the correct field
-            referralCode: referralCodeFromUrl,
-          }),
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          console.log("First play free credited:", data.creditAmount);
-          set((state) => ({
-            ...state,
-            user: userInfo,
-            hasClaimedFirstPlay: true,
-            referredBy: referralCodeFromUrl
-              ? String(referralCodeFromUrl)
-              : null,
-          }));
-          setFirstPlayApiCalled(true); // Mark API call as made
-          handleNext(); // Advance to next step after successful login
-          // Clear referral code from URL after successful processing
-          router.replace(router.pathname, undefined, { shallow: true });
-        } else {
-          const errorMsg = data.error || "Failed to claim first play free.";
-          console.error("Failed to claim first play free:", errorMsg);
-          setErrorMessage(errorMsg);
-          toast.error(errorMsg);
-        }
+      if (response.ok) {
+        setClaimStatus('success');
       } else {
-        const errorMsg = "Social login failed: No user info received.";
-        setErrorMessage(errorMsg);
-        toast.error(errorMsg);
+        setClaimStatus('error');
       }
-    } catch (error: any) {
-      const errorMsg = `Particle Network social login failed: ${
-        error.message || "Unknown error"
-      }`;
-      console.error(errorMsg, error);
-      setErrorMessage(errorMsg);
-      toast.error(errorMsg);
+    } catch (error) {
+      console.error('Error claiming credits:', error);
+      setClaimStatus('error');
+    } finally {
+      setClaiming(false);
     }
   };
 
-  // Skip "Your First Free Play" step if already claimed
-  const filteredSteps = steps.filter((step, index) => {
-    if (step.title === "Your First Free Play" && hasClaimedFirstPlay) {
-      return false;
-    }
-    if (step.title === "Smart Bets with AI" && !smartBet) {
-      return false;
-    }
-    return true;
-  });
-
-  const currentStepContent = filteredSteps[currentStep];
+  if (!isOpen) {
+    return null;
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{currentStepContent.title}</DialogTitle>
-          <DialogDescription>
-            {currentStepContent.description}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 mt-4">
-          {currentStep === 0 && (
-            <>
-              <Button onClick={handleSocialLogin}>Sign in with Social</Button>
-              {errorMessage && (
-                <p className="text-red-500 text-sm text-center">
-                  {errorMessage}
-                </p>
-              )}
-              <Button
-                variant="outline"
-                onClick={() =>
-                  window.open("https://t.me/your_telegram_channel", "_blank")
-                }
-              >
-                Join our Telegram
-              </Button>
-            </>
-          )}
-          <div className="flex justify-between">
-            {currentStep < filteredSteps.length - 1 ? (
-              <Button variant="outline" onClick={handleSkip}>
-                Skip Tour
-              </Button>
-            ) : (
-              <div />
-            )}
-            <Button onClick={handleNext}>
-              {currentStep < filteredSteps.length - 1
-                ? "Next"
-                : "Start Playing!"}
-            </Button>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <h2 className="text-2xl font-bold mb-4">Welcome to the Game!</h2>
+        <p className="mb-4">
+          To get started, connect your wallet and claim your first play credits.
+        </p>
+        <div className="mb-4">
+          <ConnectButton />
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {isConnected && (
+          <div className="mt-4">
+            <button
+              onClick={handleClaimCredits}
+              disabled={claiming || claimStatus === 'success'}
+              className={`px-4 py-2 rounded ${
+                claiming
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-green-500 text-white hover:bg-green-600'
+              }`}
+            >
+              {claiming
+                ? 'Claiming...'
+                : claimStatus === 'success'
+                ? 'Credits Claimed!'
+                : 'Claim First Play Credits'}
+            </button>
+            {claimStatus === 'error' && (
+              <p className="text-red-500 mt-2">Failed to claim credits. Please try again.</p>
+            )}
+          </div>
+        )}
+
+        <button
+          onClick={onClose}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Close
+        </button>
+      </div>
+    </div>
   );
 };
+
+export default OnboardingModal;

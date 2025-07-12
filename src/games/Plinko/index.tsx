@@ -1,3 +1,4 @@
+import React from "react";
 import { DependencyList, useEffect, useMemo, useRef, useState } from "react";
 // src/games/Plinko/index.tsx
 import { GambaUi, useSound, useWagerInput } from "gamba-react-ui-v2";
