@@ -36,3 +36,12 @@ _Goal: To prepare for a global launch and add features for power users and growt
 
 - **Story 4.1: Platform Internationalization (i18n)**
 - **Story 4.2: Build On-Chain Referral System**
+
+## 3. Monetization Strategy
+*Goal: To establish a fair, competitive, and profitable revenue model that leverages our unique omnichain convenience.*
+
+- **Gamba Games Platform Fee:** **2.5%**
+  - **Justification:** This fee is positioned competitively within the standard 1-4% range for GambleFi platforms. It reflects the premium, seamless experience of using assets from any chain without bridging.
+
+- **Polymarket Convenience Fee:** **0.15%**
+  - **Justification:** Applied to the total trade volume for bets initiated through our platform. This is a micro-fee for the unique value proposition of making Polymarket accessible to non-EVM users (e.g., placing bets with Solana or TON assets), a service unavailable anywhere else.
