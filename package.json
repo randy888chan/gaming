@@ -12,7 +12,8 @@
     "clean": "rmdir /s /q .next && rmdir /s /q node_modules",
     "test": "HARDHAT_PRIVATE_KEY=0123456789012345678901234567890123456789012345678901234567890123 jest",
     "test:integration": "jest --config ./jest.config.js",
-    "deploy-functions": "firebase deploy --only functions"
+    "deploy-functions": "firebase deploy --only functions",
+    "stigmergy:start": "stigmergy start"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.8.0",

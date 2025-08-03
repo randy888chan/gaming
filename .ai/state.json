@@ -1,0 +1,28 @@
+{
+  "schema_version": "3.1",
+  "project_name": "New Stigmergy Project",
+  "goal": null,
+  "project_status": "NEEDS_INITIALIZATION",
+  "code_indexed": false,
+  "artifacts_created": {
+    "brief": false,
+    "prd": false,
+    "architecture": false,
+    "blueprint_yaml": false,
+    "stories": false
+  },
+  "project_manifest": {
+    "tasks": []
+  },
+  "secrets": {},
+  "history": [
+    {
+      "id": "init-001",
+      "timestamp": "2025-08-03T10:31:26.724Z",
+      "source": "system",
+      "agent_id": "engine",
+      "message": "Project initialized. State file created."
+    }
+  ],
+  "issue_log": []
+}

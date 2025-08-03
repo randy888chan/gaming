@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: Quantum Nexus API
+  version: 2.0.0
+  description: REST API for Quantum Nexus gaming and prediction platform
+servers:
+  - url: https://api.quantumnexus.xyz/v2
+    description: Production server
+
+paths:
+  /users:
+    post:
+      summary: Create new user or claim credits
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreationRequest'
+      responses:
+        '200':
+          description: User created or credits claimed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  
+  /users/me:
+    get:
+      summary: Get current user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    UserCreationRequest:
+      type: object
+      properties:
+        walletAddress:
+          type: string
+          example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        action:
+          type: string
+          example: "claim-first-play-credits"
+    
+    UserResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserProfile'
+        message:
+          type: string
+    
+    UserProfile:
+      type: object
+      properties:
+        particleUserId:
+          type: string
+        credits:
+          type: number
+        claimedFirstPlayCredits:
+          type: boolean
