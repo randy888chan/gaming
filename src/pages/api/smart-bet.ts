@@ -5,13 +5,14 @@
 
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSmartBetSuggestion } from "../../services/aiAdapter";
+import { withRateLimit } from "../../utils/rateLimitMiddleware";
 
 /**
  * Handles requests to the Smart Bet API endpoint.
  * @param req The NextApiRequest object.
  * @param res The NextApiResponse object.
  */
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
@@ -21,13 +22,13 @@ export default async function handler(
 
   const { marketId, userId } = req.query;
 
-  if (!marketId || typeof marketId !== "string") {
+  // Validate marketId
+  if (!marketId || typeof marketId !== "string" || marketId.length > 100) {
     return res.status(400).json({ message: "Missing or invalid marketId" });
   }
 
-  // In a real application, userId would likely come from an authenticated session
-  // For this example, we'll allow it as a query parameter for simplicity
-  if (!userId || typeof userId !== "string") {
+  // Validate userId
+  if (!userId || typeof userId !== "string" || userId.length > 100) {
     return res.status(400).json({ message: "Missing or invalid userId" });
   }
 
@@ -46,3 +47,5 @@ export default async function handler(
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+export default withRateLimit(handler);

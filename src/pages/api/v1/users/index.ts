@@ -15,7 +15,8 @@ declare global {
 import type { NextApiRequest, NextApiResponse } from "next";
 import { creditConfigService } from "../../services/CreditConfigService";
 import { userService } from "../../services/UserService";
-import { rateLimitMiddleware } from "../../lib/rateLimit";
+import { withRateLimit } from "../../../utils/rateLimitMiddleware"; // Use the more robust rate limiting
+import { verifyParticleToken } from "../../../utils/particleAuth";
 
 // Define a type for the Cloudflare D1 database binding
 declare global {
@@ -53,7 +54,8 @@ const handler = async (
     const idToken = authHeader.split(" ")[1];
 
     try {
-      const particleUserId = "mock-particle-user-id-from-token";
+      // Replace mock authentication with actual Particle Network token verification
+      const particleUserId = await verifyParticleToken(idToken);
 
       const DB = req.env.DB;
 
@@ -91,76 +93,115 @@ const handler = async (
       return res.status(200).json(userProfile);
     } catch (error: any) {
       console.error("Error fetching user preferences:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(401).json({ message: "Unauthorized: " + error.message });
     }
   } else if (req.method === "POST") {
-    const { walletAddress, action } = req.body;
-
-    if (!walletAddress) {
-      return res.status(400).json({ error: "Wallet address is required" });
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized: No token provided" });
     }
 
-    if (action === "claim-first-play-credits") {
-      try {
-        const user = await userService.getUserByWalletAddress(req.env.DB, walletAddress);
+    const idToken = authHeader.split(" ")[1];
 
-        if (!user) {
-          return res.status(404).json({ error: "User not found" });
-        }
+    try {
+      // Verify the Particle Network token before processing the request
+      const particleUserId = await verifyParticleToken(idToken);
+      
+      const { walletAddress, action } = req.body;
 
-        if (user.claimedFirstPlayCredits) {
-          return res.status(200).json({ message: "First play credits already claimed" });
-        }
-
-        const firstPlayConfig = await creditConfigService.getConfig("first-play-free");
-
-        if (!firstPlayConfig || typeof firstPlayConfig.rules.amount !== 'number') {
-          return res.status(500).json({ error: "First play credit configuration not found or invalid" });
-        }
-
-        const newCredits = user.credits + firstPlayConfig.rules.amount;
-
-        await req.env.DB.prepare(
-          "UPDATE users SET credits = ?, claimedFirstPlayCredits = ? WHERE walletAddress = ?"
-        )
-          .bind(newCredits, 1, walletAddress)
-          .run();
-
-        return res.status(200).json({ message: "First play credits claimed successfully", newCredits });
-      } catch (error) {
-        console.error("Error claiming first play credits:", error);
-        return res.status(500).json({ error: "Failed to claim first play credits" });
+      if (!walletAddress) {
+        return res.status(400).json({ error: "Wallet address is required" });
       }
-    } else {
-      try {
-        const existingUser = await req.env.DB.prepare(
-          "SELECT * FROM users WHERE walletAddress = ?"
-        )
-          .bind(walletAddress)
-          .first();
 
-        if (existingUser) {
-          return res.status(200).json({ user: existingUser, message: "User already exists" });
-        }
-
-        const newUser = await req.env.DB.prepare(
-          "INSERT INTO users (walletAddress, credits) VALUES (?1, ?2) RETURNING *"
-        )
-          .bind(walletAddress, 0)
-          .first();
-
-        return res.status(200).json({ user: newUser, message: "User created successfully" });
-      } catch (error) {
-        console.error("Error creating user:", error);
-        return res.status(500).json({ error: "Failed to create user" });
+      // Validate wallet address format
+      if (!isValidWalletAddress(walletAddress)) {
+        return res.status(400).json({ error: "Invalid wallet address format" });
       }
+
+      if (action === "claim-first-play-credits") {
+        try {
+          const user = await userService.getUserByWalletAddress(req.env.DB, walletAddress);
+
+          if (!user) {
+            return res.status(404).json({ error: "User not found" });
+          }
+
+          if (user.claimedFirstPlayCredits) {
+            return res.status(200).json({ message: "First play credits already claimed" });
+          }
+
+          const firstPlayConfig = await creditConfigService.getConfig("first-play-free");
+
+          if (!firstPlayConfig || typeof firstPlayConfig.rules.amount !== 'number') {
+            return res.status(500).json({ error: "First play credit configuration not found or invalid" });
+          }
+
+          const newCredits = user.credits + firstPlayConfig.rules.amount;
+
+          await req.env.DB.prepare(
+            "UPDATE users SET credits = ?, claimedFirstPlayCredits = ? WHERE walletAddress = ?"
+          )
+            .bind(newCredits, 1, walletAddress)
+            .run();
+
+          return res.status(200).json({ message: "First play credits claimed successfully", newCredits });
+        } catch (error) {
+          console.error("Error claiming first play credits:", error);
+          return res.status(500).json({ error: "Failed to claim first play credits" });
+        }
+      } else {
+        try {
+          const existingUser = await req.env.DB.prepare(
+            "SELECT * FROM users WHERE walletAddress = ?"
+          )
+            .bind(walletAddress)
+            .first();
+
+          if (existingUser) {
+            return res.status(200).json({ user: existingUser, message: "User already exists" });
+          }
+
+          const newUser = await req.env.DB.prepare(
+            "INSERT INTO users (walletAddress, credits) VALUES (?1, ?2) RETURNING *"
+          )
+            .bind(walletAddress, 0)
+            .first();
+
+          return res.status(200).json({ user: newUser, message: "User created successfully" });
+        } catch (error) {
+          console.error("Error creating user:", error);
+          return res.status(500).json({ error: "Failed to create user" });
+        }
+      }
+    } catch (error: any) {
+      console.error("Authentication error:", error);
+      return res.status(401).json({ error: "Unauthorized: " + error.message });
     }
   } else {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 };
 
-// This API route is protected by a basic server-side rate limit.
-// For production deployments, it is highly recommended to leverage
-// Cloudflare's robust rate limiting features for enhanced security and performance.
-export default rateLimitMiddleware(5, 10 * 1000)(handler);
+// Helper function to validate wallet address format
+function isValidWalletAddress(address: string): boolean {
+  // Check for valid Ethereum address format
+  if (address.startsWith("0x") && address.length === 42) {
+    // Basic hex check
+    return /^0x[a-fA-F0-9]{40}$/.test(address);
+  }
+  // Check for valid Solana address format (Base58)
+  if (address.length >= 32 && address.length <= 44) {
+    // Basic Base58 check
+    return /^[1-9A-HJ-NP-Za-km-z]+$/.test(address);
+  }
+  return false;
+}
+
+// Helper function to validate particle user ID format
+function isValidParticleUserId(id: string): boolean {
+  // Particle user IDs are typically UUIDs or alphanumeric strings
+  return typeof id === 'string' && id.length > 0 && id.length < 100;
+}
+
+// This API route is protected by a robust rate limit.
+export default withRateLimit(handler);

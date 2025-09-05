@@ -19,3 +19,26 @@ Simply provide your own wallet address to the `<Gamba />` provider and start col
 ## Rewritten in Next.js
 
 This version of the Gamba Demo has been rewritten using Next.js instead of Vite for improved performance and functionality.
+
+## 🤖 Stigmergy Integration
+
+This project is integrated with Stigmergy for AI-powered development coordination.
+
+### Quick Start
+
+1. **Start Stigmergy**: `npm run stigmergy:start`
+2. **Use with Roo Code**: The MCP server (`mcp-server.js`) enables seamless integration
+3. **Coordinate tasks**: Use natural language commands through Roo Code for project coordination
+
+### Commands
+
+- `npm run stigmergy:start` - Start Stigmergy for this project
+- `npm run stigmergy:stop` - Stop Stigmergy processes
+- `npm run mcp:test` - Test MCP server functionality
+
+### Configuration
+
+- Global settings: `/Users/user/Documents/GitHub/Stigmergy/.env`
+- Project overrides: `.env.stigmergy.example` (copy to `.env` to activate)
+
+The integration works universally without requiring project-specific modifications.

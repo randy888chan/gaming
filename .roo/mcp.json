@@ -1,0 +1,12 @@
+{
+  "mcpServers":{
+    "stigmergy-chat": {
+          "command": "node",
+          "args": ["mcp-server.js"],
+          "cwd": "/Users/user/Documents/GitHub/gaming",
+          "env": {
+            "NODE_ENV": "production"
+          }
+      }
+    }
+}
