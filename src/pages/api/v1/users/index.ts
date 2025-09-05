@@ -13,8 +13,7 @@ declare global {
   }
 }
 import type { NextApiRequest, NextApiResponse } from "next";
-import { creditConfigService } from "../../services/CreditConfigService";
-import { userService } from "../../services/UserService";
+import { creditConfigService } from "../../../services/CreditConfigService";
 import { withRateLimit } from "../../../utils/rateLimitMiddleware"; // Use the more robust rate limiting
 import { verifyParticleToken } from "../../../utils/particleAuth";
 
@@ -120,7 +119,12 @@ const handler = async (
 
       if (action === "claim-first-play-credits") {
         try {
-          const user = await userService.getUserByWalletAddress(req.env.DB, walletAddress);
+          // Direct database query instead of using missing UserService
+          const user = await req.env.DB.prepare(
+            "SELECT * FROM users WHERE walletAddress = ?"
+          )
+            .bind(walletAddress)
+            .first();
 
           if (!user) {
             return res.status(404).json({ error: "User not found" });

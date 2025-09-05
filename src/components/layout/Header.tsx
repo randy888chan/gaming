@@ -42,6 +42,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useUserStore } from "@/hooks/useUserStore";
 import { WalletConnectButton } from "./WalletConnectButton";
+import { useAccount } from "@particle-network/connectkit";
 
 export default function Header() {
   const { t } = useTranslation("common");
@@ -49,7 +50,6 @@ export default function Header() {
   const { i18n } = useTranslation();
   const context = React.useContext(GambaPlatformContext);
   const { address, connected } = useAccount();
-  const connectKit = useConnectKit();
   const pool = useCurrentPool();
   const token = useCurrentToken();
   const balance = useTokenBalance();
@@ -97,9 +97,13 @@ export default function Header() {
 
   const copyInvite = () => {
     if (!connected) {
-      return connectKit.openConnectModal();
+      // We'll implement this properly once we have the ConnectKit modal
+      toast.error("Please connect your wallet first");
+      return;
     }
-    copyLinkToClipboard();
+    // In a real implementation, we would use the actual referral system
+    const referralLink = `${window.location.origin}?ref=${address}`;
+    navigator.clipboard.writeText(referralLink);
     toast.success(
       `Copied! Share your link to earn a ${
         PLATFORM_REFERRAL_FEE * 100
@@ -390,9 +394,7 @@ export default function Header() {
                     <p className="text-sm font-medium">{t("referral_link")}</p>
                     <div className="flex space-x-2">
                       <Input
-                        value={`${window.location.origin}?code=${
-                          address || ""
-                        }`}
+                        value={`${window.location.origin}?ref=${address || ""}`}
                         readOnly
                       />
                       <Button onClick={copyInvite} variant="outline">
@@ -414,7 +416,8 @@ export default function Header() {
                       <Button
                         variant="destructive"
                         onClick={() => {
-                          connectKit.disconnect();
+                          // In a real implementation, we would use ConnectKit's disconnect function
+                          window.location.reload();
                         }}
                       >
                         <LogOut className="h-4 w-4 mr-2" />

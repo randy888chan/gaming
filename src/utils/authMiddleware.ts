@@ -14,12 +14,18 @@ export function withAuth(
     }
 
     const token = authHeader.split(" ")[1];
+    
+    // Ensure the JWT secret is properly configured
+    const jwtSecret = process.env.PARTICLE_NETWORK_JWT_SECRET;
+    if (!jwtSecret) {
+      return res
+        .status(500)
+        .json({ success: false, error: "Server configuration error: JWT secret not configured." });
+    }
+    
     try {
       // Verify the token using your Particle Network JWT secret
-      jwt.verify(
-        token,
-        process.env.PARTICLE_NETWORK_JWT_SECRET || "mock-jwt-secret"
-      );
+      jwt.verify(token, jwtSecret);
       // In a real application, you might also check for specific roles or permissions here
       // For now, any valid Particle Network token is considered authenticated for admin access.
     } catch (error) {

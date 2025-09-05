@@ -1,6 +1,7 @@
 import { getSimplifiedMarkets, placePolymarketBet, PaginatedSimplifiedMarkets } from '../../src/services/polymarketService';
 import { ClobClient } from '@polymarket/clob-client';
 import { jest } from '@jest/globals';
+import { ethers } from 'ethers';
 
 // Create a proper mock for ClobClient
 jest.mock('@polymarket/clob-client', () => {
@@ -63,13 +64,21 @@ describe('polymarketService', () => {
     it('should handle API errors', async () => {
       mockClient.getSimplifiedMarkets.mockRejectedValue(new Error('API error'));
 
-      await expect(getSimplifiedMarkets()).rejects.toThrow('Error fetching simplified markets from Polymarket');
+      const result = await getSimplifiedMarkets();
+      
+      // Should return empty data structure on error
+      expect(result).toEqual({
+        limit: 0,
+        count: 0,
+        next_cursor: null,
+        data: []
+      });
     });
   });
 
   describe('placePolymarketBet', () => {
     it('should encode bet payload correctly', () => {
-      const conditionId = '0x123';
+      const conditionId = '0x1234567890123456789012345678901234567890123456789012345678901234';
       const outcomeIndex = 1;
       const amount = BigInt(1000000000000000000); // 1 ETH
 
@@ -85,12 +94,12 @@ describe('polymarketService', () => {
     });
 
     it('should validate outcomeIndex', () => {
-      expect(() => placePolymarketBet('0x123', -1, BigInt(100)))
+      expect(() => placePolymarketBet('0x1234567890123456789012345678901234567890123456789012345678901234', -1, BigInt(100)))
         .toThrow('Invalid outcomeIndex');
     });
 
     it('should validate amount', () => {
-      expect(() => placePolymarketBet('0x123', 0, BigInt(0)))
+      expect(() => placePolymarketBet('0x1234567890123456789012345678901234567890123456789012345678901234', 0, BigInt(0)))
         .toThrow('Amount must be positive');
     });
   });

@@ -17,6 +17,34 @@ export interface SmartBetSuggestion {
   reasoning?: string; // Optional explanation for the suggestion
 }
 
+/**
+ * Interface for text generation requests.
+ */
+export interface GenerationRequest {
+  prompt: string;
+  // Other options like temperature, max_tokens can be added here
+}
+
+/**
+ * Interface for text generation responses.
+ */
+export interface TextGenerationResponse {
+  success: boolean;
+  content?: string;
+  error?: string;
+}
+
+/**
+ * Interface for pSEO content generation.
+ */
+export interface PSEOContent {
+  title: string;
+  description: string;
+  keywords: string;
+  htmlBody: string;
+  imagePrompt: string;
+}
+
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000; // 1 second
 
@@ -84,4 +112,119 @@ export async function getSmartBetSuggestion(
     }
   }
   return null; // Should not reach here if MAX_RETRIES > 0
+}
+
+/**
+ * Function to generate text content using the AI service.
+ * @param req The generation request containing the prompt and other options.
+ * @returns A Promise that resolves to a TextGenerationResponse.
+ */
+export async function generateTextContent(
+  req: GenerationRequest
+): Promise<TextGenerationResponse> {
+  try {
+    const response = await fetch(`${AI_SERVICE_API_URL}/generate-text`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": AI_SERVICE_API_KEY,
+      },
+      body: JSON.stringify(req),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      return {
+        success: false,
+        error: `AI service responded with status ${response.status}: ${errorBody}`,
+      };
+    }
+
+    const content = await response.text();
+    return {
+      success: true,
+      content,
+    };
+  } catch (error: any) {
+    console.error("Error generating text content:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to generate text content",
+    };
+  }
+}
+
+/**
+ * Function to generate pSEO content using the AI service.
+ * @returns A Promise that resolves to PSEOContent or null if generation fails.
+ */
+export async function generatePSEOContent(): Promise<PSEOContent | null> {
+  try {
+    // First, generate the main content
+    const contentResponse = await generateTextContent({
+      prompt: "Generate engaging content about prediction markets and blockchain gaming for SEO purposes. Include a title, description, and main body content.",
+    });
+
+    if (!contentResponse.success || !contentResponse.content) {
+      throw new Error(contentResponse.error || "Failed to generate main content");
+    }
+
+    // Then, generate keywords
+    const keywordsResponse = await generateTextContent({
+      prompt: "Based on this content, generate 10 relevant SEO keywords separated by commas: " + contentResponse.content,
+    });
+
+    if (!keywordsResponse.success || !keywordsResponse.content) {
+      throw new Error(keywordsResponse.error || "Failed to generate keywords");
+    }
+
+    // Finally, generate an image prompt
+    const imagePromptResponse = await generateTextContent({
+      prompt: "Based on this content, generate a detailed prompt for creating an engaging image: " + contentResponse.content,
+    });
+
+    if (!imagePromptResponse.success || !imagePromptResponse.content) {
+      throw new Error(imagePromptResponse.error || "Failed to generate image prompt");
+    }
+
+    // Parse the content to extract title, description, and body
+    // This is a simplified parsing - in a real implementation, you might want more sophisticated parsing
+    const lines = contentResponse.content.split('\n');
+    const title = lines[0] || "Generated Content";
+    const description = lines.slice(1, 3).join(' ') || "Description of the content";
+    const htmlBody = `<p>${lines.slice(3).join('</p><p>')}</p>`;
+
+    return {
+      title,
+      description,
+      keywords: keywordsResponse.content,
+      htmlBody,
+      imagePrompt: imagePromptResponse.content,
+    };
+  } catch (error: any) {
+    console.error("Error generating pSEO content:", error);
+    return null;
+  }
+}
+
+/**
+ * Function to generate a social media post variant of content.
+ * @param content The base content to transform into a social media post.
+ * @returns A Promise that resolves to a string containing the social media post or null if generation fails.
+ */
+export async function generateSocialPost(content: string): Promise<string | null> {
+  try {
+    const response = await generateTextContent({
+      prompt: `Transform this content into an engaging social media post (under 280 characters): ${content}`,
+    });
+
+    if (!response.success || !response.content) {
+      throw new Error(response.error || "Failed to generate social media post");
+    }
+
+    return response.content;
+  } catch (error: any) {
+    console.error("Error generating social media post:", error);
+    return null;
+  }
 }

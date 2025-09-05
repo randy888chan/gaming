@@ -51,9 +51,11 @@ export class ZetaChainService {
   constructor(config: ZetaChainServiceConfig) {
     this.config = config;
     this.provider = new ethers.JsonRpcProvider(config.zetaChainRpcUrl);
-    // For production, load private key securely from Cloudflare secrets
-    // For development, you might use a placeholder or environment variable
-    const privateKey = process.env.ZETACHAIN_PRIVATE_KEY || "0x..."; // Replace with actual secure loading
+    // Load private key securely from Cloudflare secrets
+    const privateKey = process.env.ZETACHAIN_PRIVATE_KEY;
+    if (!privateKey) {
+      throw new Error("ZETACHAIN_PRIVATE_KEY is not set in environment variables");
+    }
     this.wallet = new ethers.Wallet(privateKey, this.provider);
     this.crossChainSettlementContract = CrossChainSettlement__factory.connect(
       config.crossChainSettlementAddress,

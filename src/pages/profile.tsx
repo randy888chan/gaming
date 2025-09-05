@@ -1,334 +1,185 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
+import { useAccount } from "@particle-network/connectkit";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Copy, ExternalLink, RefreshCw, Wallet, X } from "lucide-react";
-import {
-  TokenValue,
-  useCurrentToken,
-  useReferral,
-  useTokenBalance,
-} from "gamba-react-ui-v2";
-
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { PLATFORM_REFERRAL_FEE } from "@/constants";
-import { PublicKey } from "@solana/web3.js";
-import type React from "react";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { useUserStore } from "@/hooks/useUserStore";
+import { Copy, Share2 } from "lucide-react";
 
-const Profile: React.FC = () => {
-  const wallet = useWallet();
-  const walletModal = useWalletModal();
-  const {
-    referrerAddress,
-    isOnChain,
-    referralStatus,
-    referralLink,
-    copyLinkToClipboard,
-    acceptInvite,
-    removeInvite,
-    acceptInviteOnNextPlay,
-    clearCache,
-  } = useReferral();
+const ProfilePage: React.FC = () => {
+  const { address, isConnected } = useAccount();
+  const [referralLink, setReferralLink] = useState<string>("");
+  const [referralStats, setReferralStats] = useState<any>(null);
+  const [referredUsers, setReferredUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const { balance, bonusBalance } = useTokenBalance();
-  const currentToken = useCurrentToken();
+  useEffect(() => {
+    if (isConnected && address) {
+      // Generate referral link
+      const link = `${window.location.origin}?ref=${address}`;
+      setReferralLink(link);
+      
+      // Fetch referral stats
+      fetchReferralStats();
+      
+      // Fetch referred users
+      fetchReferredUsers();
+    }
+  }, [isConnected, address]);
 
-  const [newReferrer, setNewReferrer] = useState("");
-  const [copied, setCopied] = useState(false);
-  const { smartBet, set } = useUserStore();
+  const fetchReferralStats = async () => {
+    try {
+      const response = await fetch("/api/v1/referrals");
+      const data = await response.json();
+      
+      if (data.success) {
+        setReferralStats(data.stats);
+      }
+    } catch (error) {
+      console.error("Error fetching referral stats:", error);
+    }
+  };
 
-  const connect = () => {
-    if (wallet.wallet) {
-      wallet.connect();
+  const fetchReferredUsers = async () => {
+    try {
+      const response = await fetch("/api/v1/referrals/referred-users");
+      const data = await response.json();
+      
+      if (data.success) {
+        setReferredUsers(data.referredUsers);
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching referred users:", error);
+      setLoading(false);
+    }
+  };
+
+  const copyReferralLink = () => {
+    navigator.clipboard.writeText(referralLink);
+    toast.success("Referral link copied to clipboard!");
+  };
+
+  const shareReferralLink = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Join me on Gamba Play!",
+          text: "Use my referral link to get started:",
+          url: referralLink,
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+        copyReferralLink();
+      }
     } else {
-      walletModal.setVisible(true);
+      copyReferralLink();
     }
   };
 
-  const handleCopyInvite = () => {
-    copyLinkToClipboard();
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success(
-      `Copied! Share your link to earn a ${
-        PLATFORM_REFERRAL_FEE * 100
-      }% fee when players use this platform`
-    );
-  };
-
-  const handleAcceptInvite = async () => {
-    try {
-      await acceptInvite(new PublicKey(newReferrer));
-      toast.success("Invite accepted successfully!");
-      setNewReferrer("");
-    } catch (error) {
-      toast.error("Failed to accept invite. Please try again.");
-    }
-  };
-
-  const handleRemoveInvite = async () => {
-    try {
-      await removeInvite();
-      toast.success("Referrer removed successfully!");
-    } catch (error) {
-      toast.error("Failed to remove referrer. Please try again.");
-    }
-  };
-
-  const handleAcceptInviteOnNextPlay = async () => {
-    try {
-      await acceptInviteOnNextPlay(new PublicKey(newReferrer));
-      toast.success("Invite will be accepted on your next play!");
-      setNewReferrer("");
-    } catch (error) {
-      toast.error("Failed to set invite for next play. Please try again.");
-    }
-  };
-
-  const handleClearCache = () => {
-    clearCache();
-    toast.success("Local referral cache cleared.");
-  };
-
-  const truncateString = (s: string, startLen = 4, endLen = startLen) =>
-    s ? `${s.slice(0, startLen)}...${s.slice(-endLen)}` : "";
-
-  if (!wallet.connected) {
+  if (!isConnected) {
     return (
-      <section className="py-12 px-4 md:px-0">
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
-            <CardTitle>Connect Your Wallet</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <p className="text-center text-muted-foreground">
-              Connect your wallet to view your profile, manage referrals, and
-              track your earnings.
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4">Please connect your wallet</h2>
+            <p className="text-gray-600">
+              You need to connect your wallet to view your profile and referral information.
             </p>
-            <Button onClick={connect} size="lg">
-              {wallet.connecting ? "Connecting..." : "Connect Wallet"}
-            </Button>
           </CardContent>
         </Card>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="py-12 px-4 md:px-0">
-      <Card className="max-w-4xl mx-auto">
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Your Profile</h1>
+      
+      {/* Referral Section */}
+      <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="text-2xl md:text-3xl font-bold">
-            Profile Dashboard
-          </CardTitle>
+          <CardTitle>Referral Program</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="bg-secondary p-2 rounded-full">
-                <Wallet className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-medium">
-                  {wallet.publicKey &&
-                    truncateString(wallet.publicKey.toString(), 8, 8)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Connected with {wallet.wallet?.adapter.name}
-                </p>
-              </div>
-            </div>
-            <Button variant="outline" asChild className="w-full md:w-auto">
-              <a
-                href={`https://solscan.io/account/${wallet.publicKey?.toString()}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center"
-              >
-                View on Solscan
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </a>
-            </Button>
-          </div>
-
-          <Separator />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Balance</h3>
-              <p className="text-2xl font-bold">
-                <TokenValue amount={balance} />
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {currentToken.symbol}
-              </p>
-            </div>
-            {bonusBalance > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Bonus Balance</h3>
-                <p className="text-2xl font-bold text-green-500">
-                  <TokenValue amount={bonusBalance} />
-                </p>
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Your Referral Link</h3>
-            <div className="flex flex-col md:flex-row items-stretch md:items-center space-y-2 md:space-y-0 md:space-x-2">
-              <Input
-                value={referralLink || ""}
-                readOnly
-                className="flex-grow"
-              />
-              <Button
-                onClick={handleCopyInvite}
-                variant="outline"
-                className="md:w-auto"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 mr-2" />
-                ) : (
-                  <Copy className="h-4 w-4 mr-2" />
-                )}
-                {copied ? "Copied" : "Copy"}
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              Share your link to earn a {PLATFORM_REFERRAL_FEE * 100}% fee on
-              each play
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              Share your referral link with friends and earn rewards when they join and play!
             </p>
-            <div className="mt-2">
-              <Badge variant={isOnChain ? "default" : "secondary"}>
-                Status: {referralStatus}
-                {isOnChain && " (On-chain)"}
-              </Badge>
+            
+            <div className="flex gap-2">
+              <Input 
+                value={referralLink} 
+                readOnly 
+                className="flex-1"
+              />
+              <Button onClick={copyReferralLink} variant="outline">
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button onClick={shareReferralLink}>
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
             </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">
-              {referrerAddress ? "Current Referrer" : "Accept Referral"}
-            </h3>
-            {referrerAddress ? (
-              <>
-                <p className="mb-4">
-                  <span className="font-medium">
-                    {truncateString(referrerAddress.toString(), 8, 8)}
-                  </span>{" "}
-                  earns a{" "}
-                  <span className="font-bold">
-                    {PLATFORM_REFERRAL_FEE * 100}%
-                  </span>{" "}
-                  fee on each play
-                </p>
-                <div className="flex space-x-2">
-                  {isOnChain ? (
-                    <Button onClick={handleRemoveInvite} variant="destructive">
-                      <X className="h-4 w-4 mr-2" />
-                      Remove Referrer
-                    </Button>
-                  ) : (
-                    <Button onClick={handleClearCache} variant="outline">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Clear Local Referrer
-                    </Button>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col space-y-2">
-                <Label htmlFor="referrer">Referrer&apos;s Public Key</Label>
-                <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-                  <Input
-                    id="referrer"
-                    value={newReferrer}
-                    onChange={(e) => setNewReferrer(e.target.value)}
-                    placeholder="Enter referrer's public key"
-                    className="flex-grow"
-                  />
-                  <Button
-                    onClick={handleAcceptInvite}
-                    disabled={!newReferrer}
-                    className="md:w-auto"
-                  >
-                    Accept Now
-                  </Button>
-                </div>
-                <Button
-                  onClick={handleAcceptInviteOnNextPlay}
-                  disabled={!newReferrer}
-                  variant="outline"
-                  className="w-full md:w-auto"
-                >
-                  Accept on Next Play
-                </Button>
+            
+            {referralStats && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold">{referralStats.referredCount}</p>
+                    <p className="text-sm text-gray-600">Referred Users</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold">${referralStats.totalEarned.toFixed(2)}</p>
+                    <p className="text-sm text-gray-600">Total Earned</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold">${referralStats.unpaidBalance.toFixed(2)}</p>
+                    <p className="text-sm text-gray-600">Unpaid Balance</p>
+                  </CardContent>
+                </Card>
               </div>
             )}
-          </div>
-
-          <Separator />
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Advanced Options</h3>
-            <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-              <Button
-                onClick={handleClearCache}
-                variant="outline"
-                className="w-full md:w-auto"
-              >
-                Clear Local Cache
-              </Button>
-              {referralStatus === "local" && (
-                <Button
-                  onClick={handleAcceptInvite}
-                  variant="outline"
-                  className="w-full md:w-auto"
-                >
-                  Confirm On-Chain
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Game Preferences</h3>
-            <div className="flex items-center justify-between">
-              <Label
-                htmlFor="smart-bet-toggle"
-                className="flex flex-col space-y-1"
-              >
-                <span>Smart Bet</span>
-                <span className="font-normal text-muted-foreground">
-                  Automatically optimize bets based on game history
-                </span>
-              </Label>
-              <Switch
-                id="smart-bet-toggle"
-                checked={smartBet}
-                onCheckedChange={(checked) => set({ smartBet: checked })}
-              />
-            </div>
           </div>
         </CardContent>
       </Card>
-    </section>
+      
+      {/* Referred Users */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Referred Users</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p>Loading referred users...</p>
+          ) : referredUsers.length > 0 ? (
+            <div className="space-y-4">
+              {referredUsers.map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <p className="font-medium">{user.username}</p>
+                    <p className="text-sm text-gray-600">Joined: {new Date(user.joinDate).toLocaleDateString()}</p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    View Details
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">You haven't referred any users yet.</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
-export default Profile;
+export default ProfilePage;

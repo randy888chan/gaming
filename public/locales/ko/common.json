@@ -1,5 +1,7 @@
 {
   "welcome": "Gamba Play에 오신 것을 환영합니다!",
   "play_games": "게임하기",
-  "language": "언어"
+  "language": "언어",
+  "profile": "프로필",
+  "view_profile": "프로필 보기"
 }

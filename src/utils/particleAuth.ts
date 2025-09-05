@@ -7,11 +7,17 @@ import jwt from "jsonwebtoken";
  * @throws Error if verification fails
  */
 export async function verifyParticleToken(token: string): Promise<string> {
+  // Ensure the JWT secret is properly configured
+  const jwtSecret = process.env.PARTICLE_NETWORK_JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error("PARTICLE_NETWORK_JWT_SECRET is not configured");
+  }
+
   try {
     // Verify the token using your Particle Network JWT secret
     const decoded = jwt.verify(
       token,
-      process.env.PARTICLE_NETWORK_JWT_SECRET || "mock-jwt-secret"
+      jwtSecret
     ) as { particle_user_id?: string; sub?: string };
     
     // Extract the particle_user_id from the decoded token

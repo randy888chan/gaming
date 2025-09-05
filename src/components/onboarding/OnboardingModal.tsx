@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ConnectButton } from '@particle-network/connectkit';
-import { useAccount } from 'wagmi';
+import { useConnectKit } from '@particle-network/connectkit';
+import { useAccount } from '@particle-network/connectkit';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -9,6 +9,7 @@ interface OnboardingModalProps {
 
 const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
   const { address, isConnected } = useAccount();
+  const connectKit = useConnectKit();
   const [claiming, setClaiming] = useState(false);
   const [claimStatus, setClaimStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -40,6 +41,10 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
     }
   };
 
+  const handleConnect = () => {
+    connectKit.openConnectModal();
+  };
+
   if (!isOpen) {
     return null;
   }
@@ -52,7 +57,12 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
           To get started, connect your wallet and claim your first play credits.
         </p>
         <div className="mb-4">
-          <ConnectButton />
+          <button
+            onClick={handleConnect}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Connect Wallet
+          </button>
         </div>
 
         {isConnected && (
@@ -80,7 +90,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
 
         <button
           onClick={onClose}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="mt-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
         >
           Close
         </button>

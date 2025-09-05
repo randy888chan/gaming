@@ -1,15 +1,17 @@
--- This schema is the definitive data foundation for Quantum Nexus v2.0.
+-- Migration 0000: Initial schema migration
+-- This migration creates all the initial tables with proper idempotent statements
 
--- Drop old tables to ensure a clean migration.
-DROP TABLE IF EXISTS matches;
-DROP TABLE IF EXISTS teams;
-DROP TABLE IF EXISTS tournaments;
-DROP TABLE IF EXISTS user_preferences;
-DROP TABLE IF EXISTS content_metadata;
-DROP TABLE IF EXISTS leads;
+-- Create schema version tracking table first
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    version TEXT PRIMARY KEY,
+    applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert this migration version
+INSERT OR IGNORE INTO schema_migrations (version) VALUES ('0000_initial_schema');
 
 -- Stores user-specific preferences and settings, keyed by a universal ID.
-CREATE TABLE user_preferences (
+CREATE TABLE IF NOT EXISTS user_preferences (
     particle_user_id TEXT PRIMARY KEY NOT NULL, -- Universal ID from Particle Network
     username TEXT,
     riskTolerance TEXT CHECK(riskTolerance IN ('low', 'medium', 'high')) DEFAULT 'medium',
@@ -21,7 +23,7 @@ CREATE TABLE user_preferences (
 );
 
 -- Caches data from the Polymarket API to reduce external calls and improve performance.
-CREATE TABLE polymarket_markets_cache (
+CREATE TABLE IF NOT EXISTS polymarket_markets_cache (
     condition_id TEXT PRIMARY KEY NOT NULL,
     question TEXT NOT NULL,
     category TEXT,
@@ -34,7 +36,7 @@ CREATE TABLE polymarket_markets_cache (
 );
 
 -- Logs all cross-chain transactions for auditing and status tracking.
-CREATE TABLE zetachain_cctx_log (
+CREATE TABLE IF NOT EXISTS zetachain_cctx_log (
     cctx_hash TEXT PRIMARY KEY NOT NULL,
     source_chain TEXT NOT NULL,
     destination_chain TEXT NOT NULL,
@@ -46,7 +48,7 @@ CREATE TABLE zetachain_cctx_log (
 );
 
 -- Stores metadata for AI-generated pSEO pages.
-CREATE TABLE content_metadata (
+CREATE TABLE IF NOT EXISTS content_metadata (
     id TEXT PRIMARY KEY DEFAULT (hex(randomblob(16))),
     urlPath TEXT UNIQUE NOT NULL,
     title TEXT NOT NULL,
@@ -59,7 +61,7 @@ CREATE TABLE content_metadata (
 );
 
 -- Stores tournament information.
-CREATE TABLE tournaments (
+CREATE TABLE IF NOT EXISTS tournaments (
     id TEXT PRIMARY KEY DEFAULT (hex(randomblob(16))),
     name TEXT NOT NULL,
     format TEXT CHECK(format IN ('single-elimination', 'double-elimination', 'round-robin')) NOT NULL,
@@ -68,7 +70,7 @@ CREATE TABLE tournaments (
 );
 
 -- Stores team information linked to tournaments.
-CREATE TABLE teams (
+CREATE TABLE IF NOT EXISTS teams (
     id TEXT PRIMARY KEY DEFAULT (hex(randomblob(16))),
     tournament_id TEXT NOT NULL,
     name TEXT NOT NULL,
@@ -77,7 +79,7 @@ CREATE TABLE teams (
 );
 
 -- Stores individual match information.
-CREATE TABLE matches (
+CREATE TABLE IF NOT EXISTS matches (
     id TEXT PRIMARY KEY DEFAULT (hex(randomblob(16))),
     tournament_id TEXT NOT NULL,
     round INTEGER NOT NULL,

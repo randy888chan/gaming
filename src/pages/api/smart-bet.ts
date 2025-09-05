@@ -6,6 +6,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSmartBetSuggestion } from "../../services/aiAdapter";
 import { withRateLimit } from "../../utils/rateLimitMiddleware";
+import { verifyParticleToken } from "../../utils/particleAuth";
 
 /**
  * Handles requests to the Smart Bet API endpoint.
@@ -20,16 +21,26 @@ async function handler(
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
-  const { marketId, userId } = req.query;
+  // Authenticate the user using Particle Network JWT token
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Missing or invalid authorization header" });
+  }
+
+  const token = authHeader.substring(7); // Remove "Bearer " prefix
+  
+  let userId: string;
+  try {
+    userId = await verifyParticleToken(token);
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+
+  const { marketId } = req.query;
 
   // Validate marketId
   if (!marketId || typeof marketId !== "string" || marketId.length > 100) {
     return res.status(400).json({ message: "Missing or invalid marketId" });
-  }
-
-  // Validate userId
-  if (!userId || typeof userId !== "string" || userId.length > 100) {
-    return res.status(400).json({ message: "Missing or invalid userId" });
   }
 
   try {

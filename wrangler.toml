@@ -1,0 +1,62 @@
+name = "gaming-platform"
+main = "src/index.ts"
+compatibility_date = "2023-04-01"
+
+# D1 database configuration
+[[ d1_databases ]]
+binding = "DB"
+database_name = "gaming-platform-db"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Replace with your actual database ID
+
+# Queue configuration
+[[ queues ]]
+binding = "SOCIAL_POST_QUEUE"
+queue_name = "social-post-queue"
+
+# pSeoGenerator worker configuration
+[[ workers ]]
+name = "pSeoGenerator"
+main = "src/workers/pSeoGenerator/index.ts"
+compatibility_date = "2023-04-01"
+
+[[ workers.d1_databases ]]
+binding = "DB"
+database_name = "gaming-platform-db"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Replace with your actual database ID
+
+[[ workers.queue_producers ]]
+binding = "SOCIAL_POST_QUEUE"
+queue = "social-post-queue"
+
+# CRON trigger for daily execution at 5 AM UTC
+[workers.triggers]
+crons = ["0 5 * * *"]
+
+# socialPoster worker configuration
+[[ workers ]]
+name = "socialPoster"
+main = "src/workers/socialPoster/index.ts"
+compatibility_date = "2023-04-01"
+
+[[ workers.d1_databases ]]
+binding = "DB"
+database_name = "gaming-platform-db"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Replace with your actual database ID
+
+[[ workers.queue_consumers ]]
+queue = "social-post-queue"
+
+# referralPayout worker configuration
+[[ workers ]]
+name = "referralPayout"
+main = "src/workers/referralPayout/index.ts"
+compatibility_date = "2023-04-01"
+
+[[ workers.d1_databases ]]
+binding = "DB"
+database_name = "gaming-platform-db"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # Replace with your actual database ID
+
+# CRON trigger for daily execution at 6 AM UTC
+[workers.triggers]
+crons = ["0 6 * * *"]

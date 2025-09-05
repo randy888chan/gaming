@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Lightbulb, Loader2 } from 'lucide-react';
+import { useAccount } from '@particle-network/connectkit';
 
 interface Market {
   id: string;
@@ -15,16 +18,53 @@ interface Market {
   status: 'active' | 'resolved' | 'upcoming';
 }
 
-interface MarketListProps {
-  markets: Market[];
-  loading?: boolean;
+interface SmartBetSuggestion {
+  marketId: string;
+  outcome: string;
+  suggestedBetAmount: number;
+  confidenceScore: number;
+  reasoning?: string;
 }
 
-const MarketList: React.FC<MarketListProps> = ({ markets, loading = false }) => {
+const MarketList: React.FC = () => {
+  const { address, isConnected } = useAccount();
+  const [markets, setMarkets] = useState<Market[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('volume-desc');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [smartBetSuggestions, setSmartBetSuggestions] = useState<Record<string, SmartBetSuggestion>>({});
+  const [smartBetLoading, setSmartBetLoading] = useState<Record<string, boolean>>({});
+
+  // Fetch markets from API
+  useEffect(() => {
+    const fetchMarkets = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/v1/polymarket/markets');
+        const data = await response.json();
+        
+        if (data.success) {
+          // Convert date strings to Date objects
+          const marketsWithDates = data.markets.map((market: any) => ({
+            ...market,
+            endDate: new Date(market.endDate),
+          }));
+          setMarkets(marketsWithDates);
+        } else {
+          setError(data.error || 'Failed to fetch markets');
+        }
+      } catch (err: any) {
+        setError(err.message || 'An error occurred while fetching markets');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMarkets();
+  }, []);
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -67,6 +107,43 @@ const MarketList: React.FC<MarketListProps> = ({ markets, loading = false }) => 
         return result;
     }
   }, [markets, categoryFilter, statusFilter, searchQuery, sortBy]);
+
+  // Function to get smart bet suggestion
+  const getSmartBetSuggestion = async (marketId: string) => {
+    if (!isConnected || !address) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    setSmartBetLoading(prev => ({ ...prev, [marketId]: true }));
+    
+    try {
+      // Get the JWT token from localStorage or however it's stored
+      const token = localStorage.getItem('particle-network-auth-token');
+      
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`/api/smart-bet?marketId=${marketId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch smart bet suggestion: ${response.statusText}`);
+      }
+      
+      const suggestion: SmartBetSuggestion = await response.json();
+      setSmartBetSuggestions(prev => ({ ...prev, [marketId]: suggestion }));
+    } catch (error: any) {
+      console.error('Error fetching smart bet suggestion:', error);
+      alert('Failed to get smart bet suggestion. Please try again.');
+    } finally {
+      setSmartBetLoading(prev => ({ ...prev, [marketId]: false }));
+    }
+  };
 
   // Calculate time remaining percentage (for progress bar)
   const getTimeRemainingPercentage = (endDate: Date) => {
@@ -117,6 +194,24 @@ const MarketList: React.FC<MarketListProps> = ({ markets, loading = false }) => 
             </CardContent>
           </Card>
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="bg-red-100 border-2 border-red-300 rounded-xl w-16 h-16 mb-4 flex items-center justify-center">
+          <span className="text-red-500 text-2xl">!</span>
+        </div>
+        <h3 className="text-xl font-semibold mb-2">Error Loading Markets</h3>
+        <p className="text-gray-500 mb-4">{error}</p>
+        <button 
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -222,13 +317,60 @@ const MarketList: React.FC<MarketListProps> = ({ markets, loading = false }) => 
                 </div>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 mb-4">
                 {market.outcomes.map((outcome, index) => (
                   <div key={index} className="flex justify-between text-sm">
                     <span>{outcome.name}</span>
                     <span className="font-semibold">{(outcome.probability * 100).toFixed(1)}%</span>
                   </div>
                 ))}
+              </div>
+              
+              {/* Smart Bet Button */}
+              <div className="mt-4">
+                <Button
+                  onClick={() => getSmartBetSuggestion(market.id)}
+                  disabled={smartBetLoading[market.id] || !isConnected}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {smartBetLoading[market.id] ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Getting Suggestion...
+                    </>
+                  ) : (
+                    <>
+                      <Lightbulb className="mr-2 h-4 w-4" />
+                      Get Smart Bet
+                    </>
+                  )}
+                </Button>
+                
+                {/* Smart Bet Suggestion Display */}
+                {smartBetSuggestions[market.id] && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-start">
+                      <Lightbulb className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-800">
+                          AI Suggestion: Bet on "{smartBetSuggestions[market.id].outcome}" 
+                          <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {Math.round(smartBetSuggestions[market.id].confidenceScore * 100)}% confidence
+                          </span>
+                        </p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          Suggested amount: ${smartBetSuggestions[market.id].suggestedBetAmount.toFixed(2)}
+                        </p>
+                        {smartBetSuggestions[market.id].reasoning && (
+                          <p className="text-xs text-blue-600 mt-1">
+                            {smartBetSuggestions[market.id].reasoning}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

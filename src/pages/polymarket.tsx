@@ -9,9 +9,9 @@ const PolymarketPage: NextPage = () => {
       <NextSeo
         title="Polymarket Prediction Markets"
         description="Browse and view active prediction markets from Polymarket."
-        // Add other SEO props as needed
       />
-      <div className="py-8">
+      <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-6">Prediction Markets</h1>
         <MarketList />
       </div>
     </>
