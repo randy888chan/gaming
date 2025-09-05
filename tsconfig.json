@@ -2,8 +2,11 @@
   "compilerOptions": {
     "target": "es2022",
     "module": "esnext",
-    "lib": ["es2022", "dom"],
-    "jsx": "react",
+    "lib": [
+      "es2022",
+      "dom"
+    ],
+    "jsx": "preserve",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -12,13 +15,35 @@
     "resolveJsonModule": true,
     "baseUrl": "./src", // Base URL for module resolution
     "paths": {
-      "@services/*": ["services/*"],
-      "@workers/*": ["workers/*"],
-      "@lib/*": ["lib/*"],
-      "@/components/*": ["components/*"],
-      "*": ["./*", "../node_modules/*"]
-    }
+      "@services/*": [
+        "services/*"
+      ],
+      "@workers/*": [
+        "workers/*"
+      ],
+      "@lib/*": [
+        "lib/*"
+      ],
+      "@/components/*": [
+        "components/*"
+      ],
+      "*": [
+        "./*",
+        "../node_modules/*"
+      ]
+    },
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "isolatedModules": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

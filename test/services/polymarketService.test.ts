@@ -3,6 +3,19 @@ import { ClobClient } from '@polymarket/clob-client';
 import { jest } from '@jest/globals';
 import { ethers } from 'ethers';
 
+// Mock the WebSocket module that's causing issues
+jest.mock('ws', () => {
+  return {
+    WebSocket: jest.fn().mockImplementation(() => {
+      return {
+        on: jest.fn(),
+        send: jest.fn(),
+        close: jest.fn(),
+      };
+    }),
+  };
+});
+
 // Create a proper mock for ClobClient
 jest.mock('@polymarket/clob-client', () => {
   return {

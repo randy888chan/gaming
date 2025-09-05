@@ -1,21 +1,20 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import "@testing-library/jest-dom";
-import React from "react";
-import { signal } from "@preact/signals-react";
-import { TextEncoder, TextDecoder } from "util";
 
-global.React = React; // Explicitly make React global
-
-// Polyfill TextEncoder and TextDecoder for environments where they're not globally available (e.g., some Jest setups)
-if (typeof global.TextEncoder === "undefined") {
-  global.TextEncoder = TextEncoder;
-}
-if (typeof global.TextDecoder === "undefined") {
-  global.TextDecoder = TextDecoder;
-}
-
-// The custom mock for styled-components is removed.
-// jest-styled-components, added to setupFilesAfterEnv, will handle necessary setup.
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => {},
+  }),
+});
 
 // Mock HTMLCanvasElement.prototype.getContext
 HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
@@ -76,71 +75,6 @@ HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   lineJoin: "miter",
 }));
 
-// Mock OffscreenCanvas
-global.OffscreenCanvas = class OffscreenCanvas {
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
-    this.getContext = jest.fn(() => ({
-      clearRect: jest.fn(),
-      fillRect: jest.fn(),
-      getImageData: jest.fn(() => ({ data: [] })),
-      putImageData: jest.fn(),
-      createImageData: jest.fn(() => ({ data: [] })),
-      setTransform: jest.fn(),
-      drawImage: jest.fn(),
-      save: jest.fn(),
-      fillText: jest.fn(),
-      restore: jest.fn(),
-      beginPath: jest.fn(),
-      moveTo: jest.fn(),
-      lineTo: jest.fn(),
-      closePath: jest.fn(),
-      stroke: jest.fn(),
-      fill: jest.fn(),
-      measureText: jest.fn(() => ({ width: 0 })),
-      scale: jest.fn(),
-      translate: jest.fn(),
-      rotate: jest.fn(),
-      arc: jest.fn(),
-      strokeText: jest.fn(),
-      rect: jest.fn(),
-      clip: jest.fn(),
-      bezierCurveTo: jest.fn(),
-      quadraticCurveTo: jest.fn(),
-      createLinearGradient: jest.fn(),
-      createRadialGradient: jest.fn(),
-      createPattern: jest.fn(),
-      setLineDash: jest.fn(),
-      getLineDash: jest.fn(() => []),
-      strokeRect: jest.fn(),
-      clearRect: jest.fn(),
-      resetTransform: jest.fn(),
-      roundRect: jest.fn(),
-      ellipse: jest.fn(),
-      arcTo: jest.fn(),
-      direction: "ltr",
-      font: "",
-      textAlign: "start",
-      textBaseline: "alphabetic",
-      shadowBlur: 0,
-      shadowColor: "rgba(0, 0, 0, 0)",
-      shadowOffsetX: 0,
-      shadowOffsetY: 0,
-      filter: "none",
-      imageSmoothingEnabled: true,
-      imageSmoothingQuality: "low",
-      globalAlpha: 1,
-      globalCompositeOperation: "source-over",
-      strokeStyle: "#000",
-      fillStyle: "#000",
-      lineWidth: 1,
-      lineCap: "butt",
-      lineJoin: "miter",
-    }));
-  }
-};
-
 global.ResizeObserver = jest.fn(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
@@ -155,63 +89,69 @@ global.cancelAnimationFrame = (id) => {
   clearTimeout(id);
 };
 
-jest.mock("gamba-react-ui-v2", () => ({
-  ...jest.requireActual("gamba-react-ui-v2"),
-  GambaUi: {
-    ...jest.requireActual("gamba-react-ui-v2").GambaUi,
-    Responsive: ({ children }) => (
-      <div data-testid="gamba-ui-responsive">{children}</div>
-    ),
-    Canvas: ({ render }) => {
-      const ActualReact = jest.requireActual("react");
-      const canvasRef = ActualReact.useRef(null);
-      ActualReact.useEffect(() => {
-        const ctx = canvasRef.current?.getContext("2d");
-        if (ctx) {
-          // Mock the render function if needed, or just ensure it's present
-        }
-      }, [render]);
-      return <canvas ref={canvasRef} data-testid="gamba-ui-canvas" />;
+jest.mock("gamba-react-ui-v2", () => {
+  const mockReact = jest.requireActual("react");
+  return {
+    ...jest.requireActual("gamba-react-ui-v2"),
+    GambaUi: {
+      ...jest.requireActual("gamba-react-ui-v2").GambaUi,
+      Responsive: ({ children }) => (
+        mockReact.createElement("div", { "data-testid": "gamba-ui-responsive" }, children)
+      ),
+      Canvas: ({ render }) => {
+        const ActualReact = jest.requireActual("react");
+        const canvasRef = ActualReact.useRef(null);
+        ActualReact.useEffect(() => {
+          const ctx = canvasRef.current?.getContext("2d");
+          if (ctx) {
+            // Mock the render function if needed, or just ensure it's present
+          }
+        }, [render]);
+        return mockReact.createElement("canvas", { ref: canvasRef, "data-testid": "gamba-ui-canvas" });
+      },
     },
-  },
-}));
+  };
+});
 
-jest.mock("next/router", () => ({
-  useRouter: () => ({
-    route: "/",
-    pathname: "",
-    query: {},
-    asPath: "",
-    push: jest.fn(),
-    replace: jest.fn(),
-    reload: jest.fn(),
-    back: jest.fn(),
-    prefetch: jest.fn(),
-    events: {
-      on: jest.fn(),
-      off: jest.fn(),
-      emit: jest.fn(),
-    },
-    isFallback: false,
-    isLocaleDomain: false,
-    isReady: true,
-    isPreview: false,
-  }),
-}));
+jest.mock("next/router", () => {
+  const mockReact = jest.requireActual("react");
+  return {
+    useRouter: () => ({
+      route: "/",
+      pathname: "",
+      query: {},
+      asPath: "",
+      push: jest.fn(),
+      replace: jest.fn(),
+      reload: jest.fn(),
+      back: jest.fn(),
+      prefetch: jest.fn(),
+      events: {
+        on: jest.fn(),
+        off: jest.fn(),
+        emit: jest.fn(),
+      },
+      isFallback: false,
+      isLocaleDomain: false,
+      isReady: true,
+      isPreview: false,
+    }),
+  };
+});
 
 jest.mock("@react-three/drei", () => {
-  const ActualReact = jest.requireActual("react");
+  const mockReact = jest.requireActual("react");
   return {
     ...jest.requireActual("@react-three/drei"),
     Text: ({ children, ...props }) =>
-      ActualReact.createElement("div", props, children),
+      mockReact.createElement("div", props, children),
     // Add other drei components if they cause issues
   };
 });
 
 // Mock R3F intrinsic elements that are causing ReferenceErrors
 jest.mock("@react-three/fiber", () => {
-  const ActualReact = jest.requireActual("react");
+  const mockReact = jest.requireActual("react");
   const actualR3F = jest.requireActual("@react-three/fiber");
   return {
     ...actualR3F,
@@ -300,3 +240,23 @@ global.HemisphereLight = (props) =>
     "data-testid": "mock-hemispherelight",
     ...props,
   });
+
+// Mock fetch globally
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({}),
+    text: () => Promise.resolve(""),
+    ok: true,
+    status: 200,
+  })
+);
+
+// Mock window.location
+delete window.location;
+window.location = {
+  assign: jest.fn(),
+  reload: jest.fn(),
+  replace: jest.fn(),
+  href: "http://localhost",
+  origin: "http://localhost",
+};
