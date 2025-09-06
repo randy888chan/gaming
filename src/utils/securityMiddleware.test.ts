@@ -46,9 +46,22 @@ describe('Security Middleware', () => {
       expect(mockRes.setHeader).toHaveBeenCalledWith('X-Frame-Options', 'DENY');
       expect(mockRes.setHeader).toHaveBeenCalledWith('X-XSS-Protection', '1; mode=block');
       expect(mockRes.setHeader).toHaveBeenCalledWith('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-      expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;");
+      expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; font-src 'self' data:;");
       expect(mockRes.setHeader).toHaveBeenCalledWith('Referrer-Policy', 'strict-origin-when-cross-origin');
       expect(handler).toHaveBeenCalled();
+    });
+
+    it('should not include "unsafe-inline" in Content-Security-Policy', async () => {
+      const mockReq = createMockRequest();
+      const mockRes = createMockResponse();
+
+      const handler = jest.fn().mockResolvedValue(undefined);
+      const middleware = withEnhancedSecurity(handler);
+
+      await middleware(mockReq, mockRes);
+
+      const cspHeaderCall = (mockRes.setHeader as jest.Mock).mock.calls.find(call => call[0] === 'Content-Security-Policy');
+      expect(cspHeaderCall[1]).not.toContain('unsafe-inline');
     });
   });
 

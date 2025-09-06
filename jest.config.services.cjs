@@ -1,11 +1,10 @@
-export default {
-  testEnvironment: "node",
+module.exports = {
+  testEnvironment: "jsdom",
   rootDir: "./",
   testMatch: [
     "<rootDir>/test/services/**/*.test.[tj]s?(x)",
     "<rootDir>/src/**/*.test.[tj]s?(x)"
   ],
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@services/(.*)$": "<rootDir>/src/services/$1",
@@ -24,7 +23,8 @@ export default {
       { 
         presets: [
           ["@babel/preset-env", { targets: { node: "current" } }],
-          "@babel/preset-typescript"
+          "@babel/preset-typescript",
+          "@babel/preset-react"
         ]
       },
     ],
@@ -32,7 +32,8 @@ export default {
       "babel-jest",
       { 
         presets: [
-          ["@babel/preset-env", { targets: { node: "current" } }]
+          ["@babel/preset-env", { targets: { node: "current" } }],
+          "@babel/preset-react"
         ]
       },
     ],
@@ -41,7 +42,7 @@ export default {
     "/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2|@react-three/drei|lucide-react|hardhat-gas-reporter)/)",
   ],
   verbose: true,
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.services.js"],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.services.js", "<rootDir>/jest.setup.text-encoding.js"],
   // Add timeout for long-running tests
   testTimeout: 10000,
 };
