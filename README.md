@@ -20,6 +20,44 @@ Simply provide your own wallet address to the `<Gamba />` provider and start col
 
 This version of the Gamba Demo has been rewritten using Next.js instead of Vite for improved performance and functionality.
 
+## 🛡️ Security Implementation
+
+This platform includes a comprehensive security implementation with the following features:
+
+- **Authentication & Authorization** - Particle Network JWT verification
+- **Rate Limiting & Throttling** - Standard and sensitive rate limiting
+- **Input Validation & Sanitization** - Comprehensive input validation
+- **Database Security** - SQL injection prevention
+- **Security Monitoring & Auditing** - Event logging and dashboard
+- **Performance Monitoring** - API performance tracking
+
+For detailed information about the security implementation, see [SECURITY.md](./docs/SECURITY.md).
+
+## ⚡ Performance Optimization
+
+This platform includes performance optimizations to improve user experience and reduce load times:
+
+- **Bundle Analysis** - Using `@next/bundle-analyzer` to identify optimization opportunities
+- **Code Splitting** - Dynamic imports with lazy loading for game components
+- **Caching Strategy** - HTTP caching headers and Next.js caching optimizations
+- **Tree Shaking** - Removal of unused code
+- **Image Optimization** - Next.js Image component for automatic optimization
+
+For detailed information about performance optimizations, see [PERFORMANCE_OPTIMIZATION.md](./docs/PERFORMANCE_OPTIMIZATION.md).
+
+### Performance Analysis Commands
+
+```bash
+# Analyze both server and browser bundles
+npm run analyze
+
+# Analyze only server bundle
+npm run analyze:server
+
+# Analyze only browser bundle
+npm run analyze:browser
+```
+
 ## 🤖 Stigmergy Integration
 
 This project is integrated with Stigmergy for AI-powered development coordination.
@@ -38,7 +76,7 @@ This project is integrated with Stigmergy for AI-powered development coordinatio
 
 ### Configuration
 
-- Global settings: `/Users/user/Documents/GitHub/Stigmergy/.env`
+- Global settings: `/Users/user/.stigmergy/.env`
 - Project overrides: `.env.stigmergy.example` (copy to `.env` to activate)
 
 The integration works universally without requiring project-specific modifications.

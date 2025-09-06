@@ -27,6 +27,12 @@
       "@/components/*": [
         "components/*"
       ],
+      "@/games/*": [
+        "games/*"
+      ],
+      "@/*": [
+        "*"
+      ],
       "*": [
         "./*",
         "../node_modules/*"
