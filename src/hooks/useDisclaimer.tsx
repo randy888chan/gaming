@@ -20,7 +20,7 @@ export function useDisclaimer() {
   }, [agreedToTerms]);
 
   const handleDisclaimerClose = () => {
-    set((state) => ({ ...state, agreedToTerms: true }));
+    set({ agreedToTerms: true });
     setShowDisclaimer(false);
   };
 

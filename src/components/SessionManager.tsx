@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSession } from '@particle-network/connectkit';
+import { useAccount } from '@particle-network/connectkit';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -9,10 +9,25 @@ interface SessionManagerProps {
 }
 
 const SessionManager: React.FC<SessionManagerProps> = ({ onSessionExpired }) => {
-  const { session, setSession } = useSession();
+  const { isConnected, address } = useAccount();
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [valueSpent, setValueSpent] = useState<number>(0);
   const [maxValue, setMaxValue] = useState<number>(100); // Default max value
+  const [session, setSession] = useState<any>(null);
+
+  // Mock session data - in a real implementation, this would come from the Particle Network
+  useEffect(() => {
+    if (isConnected && address) {
+      // Create a mock session object
+      const mockSession = {
+        expireTime: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+        createTime: Math.floor(Date.now() / 1000),
+      };
+      setSession(mockSession);
+    } else {
+      setSession(null);
+    }
+  }, [isConnected, address]);
 
   // Update time remaining countdown
   useEffect(() => {
@@ -54,6 +69,9 @@ const SessionManager: React.FC<SessionManagerProps> = ({ onSessionExpired }) => 
     ? (timeRemaining / (session.expireTime - session.createTime)) * 100 
     : 0;
 
+  const valueSpentPercentage = (valueSpent / maxValue) * 100;
+  const isValueSpentHigh = valueSpent > maxValue * 0.8;
+
   if (!session) {
     return (
       <div className="fixed bottom-4 right-4 z-50">
@@ -93,9 +111,8 @@ const SessionManager: React.FC<SessionManagerProps> = ({ onSessionExpired }) => 
                 <span className="font-medium">{valueSpent.toFixed(2)} / {maxValue.toFixed(2)} USDC</span>
               </div>
               <Progress 
-                value={(valueSpent / maxValue) * 100} 
-                className="w-full" 
-                indicatorColor={valueSpent > maxValue * 0.8 ? "bg-red-500" : "bg-blue-500"}
+                value={valueSpentPercentage} 
+                className={`w-full ${isValueSpentHigh ? 'bg-red-500' : 'bg-blue-500'}`}
               />
             </div>
             

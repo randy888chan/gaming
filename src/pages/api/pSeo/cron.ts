@@ -1,6 +1,6 @@
 // src/pages/api/pSeo/cron.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { generatePSeoContent } from "../../../workers/pSeoGenerator";
+import { generatePSEOContent } from "../../../services/aiAdapter";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,7 +10,7 @@ export default async function handler(
   // to ensure only your scheduled job can trigger it (e.g., by checking a secret token).
   if (req.method === "POST") {
     try {
-      await generatePSeoContent();
+      await generatePSEOContent();
       res
         .status(200)
         .json({

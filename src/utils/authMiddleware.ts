@@ -82,7 +82,7 @@ export function withAuth(
       
       // In a real application, you might also check for specific roles or permissions here
       // For now, any valid Particle Network token is considered authenticated for admin access.
-    } catch (error) {
+    } catch (error: any) {
       console.error("Token verification failed:", error);
       
       // Log authentication failure

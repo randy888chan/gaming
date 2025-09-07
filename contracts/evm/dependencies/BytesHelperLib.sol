@@ -23,6 +23,15 @@ library BytesHelperLib {
         }
     }
 
+    function bytesStorageToAddress(
+        bytes storage data,
+        uint256 offset
+    ) internal view returns (address output) {
+        // Create a memory copy of the data
+        bytes memory memData = data;
+        return bytesMemoryToAddress(memData, offset);
+    }
+
     function bytesToUint32(
         bytes calldata data,
         uint256 offset

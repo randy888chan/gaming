@@ -8,6 +8,7 @@ import { Coin } from "./Coin";
 import { Effect } from "./Effect";
 import GambaPlayButton from "@/components/GambaPlayButton";
 import { Text } from "@react-three/drei";
+import * as THREE from "three";
 import { toast } from "sonner";
 import { useGamba } from "gamba-react-v2";
 
@@ -97,7 +98,7 @@ function Flip() {
           }}
         >
           <Suspense fallback={null}>
-            <AmbientLight />
+            <primitive object={new THREE.AmbientLight(0xffffff, 1)} />
             <BannerWithMessages messages={messages} />
 
             <Coin
@@ -129,20 +130,9 @@ function Flip() {
 
           {flipping && <Effect color="white" />}
           {win && <Effect color="#42ff78" />}
-          <AmbientLight intensity={3} />
-          <DirectionalLight
-            position-z={1}
-            position-y={1}
-            castShadow
-            color="#CCCCCC"
-          />
-          <HemisphereLight
-            intensity={0.5}
-            position={[0, 1, 0]}
-            scale={[1, 1, 1]}
-            color="#ffadad"
-            groundColor="#6666fe"
-          />
+          <primitive object={new THREE.AmbientLight(0xffffff, 3)} />
+          <primitive object={new THREE.DirectionalLight(0xffffff, 1)} position={[0, 1, 1]} castShadow color="#CCCCCC" />
+          <primitive object={new THREE.HemisphereLight(0xffadad, 0x6666fe, 0.5)} position={[0, 1, 0]} />
         </Canvas>
       </GambaUi.Portal>
 

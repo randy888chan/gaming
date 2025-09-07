@@ -31,7 +31,6 @@ import {
 } from "gamba-react-ui-v2";
 import { PLATFORM_REFERRAL_FEE, TOKENLIST } from "@/constants";
 import React, { useCallback, useState } from "react";
-import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 
 import { Button } from "@/components/ui/button";
@@ -45,11 +44,11 @@ import { WalletConnectButton } from "./WalletConnectButton";
 import { useAccount } from "@particle-network/connectkit";
 
 export default function Header() {
-  const { t } = useTranslation("common");
+  // const { t } = useTranslation("common");
   const router = useRouter();
-  const { i18n } = useTranslation();
+  // const { i18n } = useTranslation();
   const context = React.useContext(GambaPlatformContext);
-  const { address, connected } = useAccount();
+  const { address, isConnected } = useAccount();
   const pool = useCurrentPool();
   const token = useCurrentToken();
   const balance = useTokenBalance();
@@ -96,7 +95,7 @@ export default function Header() {
   };
 
   const copyInvite = () => {
-    if (!connected) {
+    if (!isConnected) {
       // We'll implement this properly once we have the ConnectKit modal
       toast.error("Please connect your wallet first");
       return;
@@ -121,31 +120,31 @@ export default function Header() {
         <div className="flex gap-2 items-center">
           <NexusOrb
             href="/"
-            label={t("home")}
+            label={"Home"}
             icon={<Home />}
             isActive={router.pathname === "/"}
           />
           <NexusOrb
             href="/profile"
-            label={t("profile")}
+            label={"Profile"}
             icon={<User />}
             isActive={router.pathname === "/profile"}
           />
           <NexusOrb
             href="/polymarket"
-            label={t("polymarket")}
+            label={"Polymarket"}
             icon={<BarChart />}
             isActive={router.pathname === "/polymarket"}
           />
           <NexusOrb
             href="/games"
-            label={t("games")}
+            label={"Games"}
             icon={<Gamepad />}
             isActive={router.pathname === "/games"}
           />
           <NexusOrb
             href="/info"
-            label={t("info")}
+            label={"Info"}
             icon={<Info />}
             isActive={router.pathname === "/info"}
           />
@@ -155,12 +154,12 @@ export default function Header() {
             <DialogTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
                 <Languages className="h-4 w-4" />
-                <span>{i18n.language?.toUpperCase()}</span>
+                <span>{"EN"}</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[300px]">
               <DialogHeader>
-                <DialogTitle>{t("language")}</DialogTitle>
+                <DialogTitle>{"Language"}</DialogTitle>
               </DialogHeader>
               <ScrollArea className="h-[200px] rounded-md border p-4">
                 <div className="space-y-2">
@@ -183,14 +182,14 @@ export default function Header() {
           <Dialog open={showBonusHelp} onOpenChange={setShowBonusHelp}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{t("bonus_title")}</DialogTitle>
+                <DialogTitle>{"Bonus"}</DialogTitle>
               </DialogHeader>
               <p>
-                {t("bonus_description_part1")}{" "}
+                {"You have a bonus of "}{" "}
                 <b>
                   <TokenValue amount={balance.bonusBalance} />
                 </b>{" "}
-                {t("bonus_description_part2")}
+                {"available to use."}
               </p>
             </DialogContent>
           </Dialog>
@@ -199,7 +198,7 @@ export default function Header() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {token.name} {t("jackpot_details_title")}
+                  {token.name} {" Jackpot Details"}
                 </DialogTitle>
               </DialogHeader>
               {pool.jackpotBalance > 0 && (
@@ -208,21 +207,21 @@ export default function Header() {
                 </div>
               )}
               <div className="mt-4">
-                <p>{t("jackpot_description")}</p>
+                <p>{"This is the current jackpot pool for this token."}</p>
                 <div className="mt-4">
                   <div>
-                    <strong>{t("pool_fee")}:</strong> {pool.poolFee}%
+                    <strong>{"Pool Fee"}:</strong> {pool.poolFee}%
                   </div>
                   <div>
-                    <strong>{t("liquidity")}:</strong>{" "}
+                    <strong>{"Liquidity"}:</strong>{" "}
                     <TokenValue amount={Number(pool.liquidity)} />
                   </div>
                   <div>
-                    <strong>{t("minimum_wager")}:</strong>{" "}
+                    <strong>{"Minimum Wager"}:</strong>{" "}
                     <TokenValue amount={pool.minWager} />
                   </div>
                   <div>
-                    <strong>{t("maximum_payout")}:</strong>{" "}
+                    <strong>{"Maximum Payout"}:</strong>{" "}
                     <TokenValue amount={pool.maxPayout} />
                   </div>
                 </div>
@@ -233,7 +232,7 @@ export default function Header() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      {t("view_pool_on_explorer")}
+                      {"View Pool on Explorer"}
                     </a>
                   </Button>
                 </div>
@@ -257,7 +256,7 @@ export default function Header() {
               +<TokenValue amount={balance.bonusBalance} />
             </button>
           )}
-          {connected ? (
+          {isConnected ? (
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline">
@@ -272,7 +271,8 @@ export default function Header() {
                         <TokenValue amount={balance.balance} />
                         {balance.bonusBalance > 0 && (
                           <span className="text-xs">
-                            +<TokenValue amount={balance.bonusBalance} />
+                            +<TokenValue amount={balance.bonusBalance} />{" "}
+                            {"Bonus"}
                           </span>
                         )}
                       </>
@@ -283,14 +283,14 @@ export default function Header() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>{t("wallet_settings_title")}</DialogTitle>
+                  <DialogTitle>{"Wallet Settings"}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium">
-                          {t("connected_wallet")}
+                          {"Connected Wallet"}
                         </p>
                         <p className="text-xs opacity-70">
                           {truncateString(address || "", 8, 8)}
@@ -305,7 +305,7 @@ export default function Header() {
                       </Avatar>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{t("balance")}</p>
+                      <p className="text-sm font-medium">{"Balance"}</p>
                       <div className="flex items-center gap-2">
                         <img
                           className="w-8 h-8 rounded-full"
@@ -318,7 +318,7 @@ export default function Header() {
                             <span className="text-sm ml-1">
                               (+
                               <TokenValue amount={balance.bonusBalance} />{" "}
-                              {t("bonus")})
+                              {"Bonus"})
                             </span>
                           )}
                         </p>
@@ -349,17 +349,17 @@ export default function Header() {
                     </div>
                   </ScrollArea>
                   <div className="space-y-4">
-                    <p className="text-sm font-medium">{t("priority_fee")}</p>
+                    <p className="text-sm font-medium">{"Priority Fee"}</p>
                     <div className="flex items-center justify-between">
-                      <span>{t("enable_priority_fee")}</span>
+                      <span>{"Enable Priority Fee"}</span>
                       <Switch
                         checked={isPriorityFeeEnabled}
                         onCheckedChange={(checked) => {
                           set({ isPriorityFeeEnabled: checked });
                           if (checked) {
-                            toast.success(t("priority_fee_enabled"));
+                            toast.success("Priority fee enabled");
                           } else {
-                            toast.error(t("priority_fee_disabled"));
+                            toast.error("Priority fee disabled");
                           }
                         }}
                       />
@@ -367,7 +367,7 @@ export default function Header() {
                     {isPriorityFeeEnabled && (
                       <div className="space-y-2">
                         <label className="text-sm">
-                          {t("priority_fee_microlamports")}:
+                          {"Priority Fee (microlamports)"}:
                         </label>
                         <div className="flex gap-2">
                           <Input
@@ -384,14 +384,14 @@ export default function Header() {
                             }}
                           />
                           <Button onClick={handleSetPriorityFee}>
-                            {t("set")}
+                            {"Set"}
                           </Button>
                         </div>
                       </div>
                     )}
                   </div>
                   <div className="space-y-4">
-                    <p className="text-sm font-medium">{t("referral_link")}</p>
+                    <p className="text-sm font-medium">{"Referral Link"}</p>
                     <div className="flex space-x-2">
                       <Input
                         value={`${window.location.origin}?ref=${address || ""}`}
@@ -399,7 +399,7 @@ export default function Header() {
                       />
                       <Button onClick={copyInvite} variant="outline">
                         <ClipboardCopy className="h-4 w-4 mr-2" />
-                        {t("copy")}
+                        {"Copy"}
                       </Button>
                     </div>
                   </div>
@@ -408,7 +408,7 @@ export default function Header() {
                       <Link href="/profile" passHref legacyBehavior>
                         <Button variant="outline" className="flex items-center">
                           <User className="h-4 w-4 mr-2" />
-                          {t("view_profile")}
+                          {"View Profile"}
                         </Button>
                       </Link>
                     </DialogClose>
@@ -421,7 +421,7 @@ export default function Header() {
                         }}
                       >
                         <LogOut className="h-4 w-4 mr-2" />
-                        {t("disconnect")}
+                        {"Disconnect"}
                       </Button>
                     </DialogClose>
                   </div>

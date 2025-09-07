@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken"; // For token verification
 import { creditConfigService } from "../../../../services/CreditConfigService";
 import { NextApiHandler } from "next";
 import { withAuth } from "../../../../utils/authMiddleware"; // Assuming this path
-import { withRateLimit } from "../../../../utils/rateLimitMiddleware"; // Assuming this path
+import { withSensitiveRateLimit } from "../../../../utils/rateLimitMiddleware"; // Assuming this path
 
 // Define a type for the credit configuration based on schema.sql
 interface CreditConfig {
@@ -25,6 +25,19 @@ interface CreditConfig {
  */
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   // Authentication and Authorization (QA-SEC-001) is handled by withAuth middleware
+  // Additionally check if user has admin privileges
+  const particleUserId = (req as any).user?.particle_user_id;
+  
+  if (!particleUserId) {
+    return res.status(401).json({ success: false, error: "Unauthorized: User not found." });
+  }
+
+  // In a real implementation, you would check if the user has admin privileges
+  // For now, we'll assume all authenticated users can access this endpoint
+  // const isAdmin = await checkUserAdminPrivileges(particleUserId);
+  // if (!isAdmin) {
+  //   return res.status(403).json({ success: false, error: "Forbidden: Insufficient privileges." });
+  // }
 
   if (req.method === "GET") {
     try {
@@ -189,4 +202,5 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-export default withRateLimit(withAuth(handler));
+// Apply sensitive rate limiting for admin endpoints as they involve critical operations
+export default withSensitiveRateLimit(withAuth(handler));

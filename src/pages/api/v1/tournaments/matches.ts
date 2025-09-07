@@ -58,22 +58,24 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { tournamentId } = req.query;
     
     if (!tournamentId) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false, 
         error: "Missing tournamentId parameter" 
       });
+      return;
     }
     
     const tournamentMatches = matches.filter(match => match.tournamentId === tournamentId);
-    return res.status(200).json({ success: true, matches: tournamentMatches });
+    res.status(200).json({ success: true, matches: tournamentMatches });
   } else if (req.method === "POST") {
     const { tournamentId, round, matchNumber, team1Id, team2Id } = req.body;
     
     if (!tournamentId || !round || !matchNumber) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false, 
         error: "Missing required fields: tournamentId, round, matchNumber" 
       });
+      return;
     }
     
     const newMatch: Match = {
@@ -91,24 +93,26 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     
     matches.push(newMatch);
     
-    return res.status(201).json({ success: true, match: newMatch });
+    res.status(201).json({ success: true, match: newMatch });
   } else if (req.method === "PUT") {
     const { id, score1, score2, winnerId } = req.body;
     
     if (!id) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false, 
         error: "Missing required field: id" 
       });
+      return;
     }
     
     const matchIndex = matches.findIndex(match => match.id === id);
     
     if (matchIndex === -1) {
-      return res.status(404).json({ 
+      res.status(404).json({ 
         success: false, 
         error: "Match not found" 
       });
+      return;
     }
     
     const updatedMatch = { ...matches[matchIndex] };
@@ -119,10 +123,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     
     matches[matchIndex] = updatedMatch;
     
-    return res.status(200).json({ success: true, match: updatedMatch });
+    res.status(200).json({ success: true, match: updatedMatch });
   } else {
     res.setHeader("Allow", ["GET", "POST", "PUT"]);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 };
 

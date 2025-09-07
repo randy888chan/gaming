@@ -4,6 +4,7 @@ pragma solidity 0.8.26;
 import { RevertContext } from "./Revert.sol";
 import "./IGatewayZEVM.sol";
 import "./ICoreRegistry.sol";
+import "./ZetaInterfaces.sol";
 
 /// @custom:deprecated should be removed once v2 SystemContract is not used anymore.
 /// MessageContext should be used
@@ -57,7 +58,7 @@ abstract contract UniversalContract {
     /// where message validation occurs.
     /// Important for security in functions like `onCall()` and `onRevert()` that handle incoming cross-chain
     /// operations.
-    modifier virtual onlyGateway() {
+    modifier onlyGateway() virtual {
         if (msg.sender != address(gateway)) revert Unauthorized();
         _;
     }
@@ -70,7 +71,9 @@ abstract contract UniversalContract {
     }
 
     /// @notice Function to handle cross-chain calls with native ZETA transfers
-    function onCall(ZetaInterfaces.ZetaMessage calldata context, bytes calldata message) external payable virtual;
+    function onCall(ZetaInterfaces.ZetaMessage calldata context, bytes calldata message) external payable virtual {
+        revert("onCall with native ZETA not implemented");
+    }
 
     /// @notice Function to handle cross-chain calls with ZRC20 token transfers
     function onCall(
@@ -79,5 +82,7 @@ abstract contract UniversalContract {
         uint256 amount,
         bytes calldata message
     )
-        external virtual;
+        external virtual {
+        revert("onCall with ZRC20 not implemented");
+    }
 }

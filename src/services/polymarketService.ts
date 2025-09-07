@@ -1,11 +1,11 @@
-import { ClobClient } from "@polymarket/clob-client";
+import { ClobClient, Chain } from "@polymarket/clob-client";
 import { ethers } from "ethers";
 
 // The REST API base URL for Polymarket CLOB
 const CLOB_API_URL = "https://clob.polymarket.com/";
 
-// Initialize the ClobClient with the API URL
-const clobClient = new ClobClient(CLOB_API_URL);
+// Initialize the ClobClient with the API URL and required parameters
+const clobClient = new ClobClient(CLOB_API_URL, Chain.POLYGON);
 
 // ... existing interfaces and other code ...
 
@@ -16,15 +16,13 @@ const clobClient = new ClobClient(CLOB_API_URL);
  */
 export const getSimplifiedMarkets = async (
   cursor: string = ""
-): Promise<PaginatedSimplifiedMarkets> => {
+): Promise<any> => {
   try {
     // Use the official clob-client SDK method
-    const response = await clobClient.getSimplifiedMarkets({
-      next_cursor: cursor,
-    });
+    const response = await clobClient.getSimplifiedMarkets(cursor);
     
     // Return the response directly as it's already in the correct format
-    return response as PaginatedSimplifiedMarkets;
+    return response;
   } catch (error) {
     console.error("Error fetching simplified markets from Polymarket:", error);
     // Return an empty or error structure

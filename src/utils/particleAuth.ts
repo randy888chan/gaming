@@ -103,7 +103,7 @@ export async function enhancedVerifyParticleToken(
     });
     
     return particleUserId;
-  } catch (error) {
+  } catch (error: any) {
     // Log authentication failure
     logSecurityEvent({
       eventType: 'AUTH_FAILURE',

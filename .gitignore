@@ -11,6 +11,8 @@ dist/
 dev-dist/
 .next/
 artifact/
+artifacts/
+cache/
 out/
 coverage/
 .bmad-coverage
@@ -59,3 +61,24 @@ yarn.lock
 .cache
 temp_zetachain_examples/
 temp_zetachain_template/
+
+# Qoder files
+.qoder/
+
+# Documentation files
+ROO_CODE_FIX_SUMMARY.md
+ROO_CODE_INTEGRATION.md
+
+# Hardhat files
+hardhat.config.cjs
+
+# Health check files
+health-check-output.txt
+
+# Scripts
+stigmergy-health.sh
+verify-integration.sh
+
+# Temp files
+temp.json
+test-mcp.js

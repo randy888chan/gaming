@@ -2,15 +2,11 @@
 
 import React, { useMemo } from "react";
 import { ConnectKitProvider, createConfig } from "@particle-network/connectkit";
-import { authWalletConnectors } from "@particle-network/connectkit/auth";
-import { wallet, EntryPosition } from "@particle-network/connectkit/wallet";
+import { authWalletConnectors } from "@particle-network/auth-connectors";
+import { wallet, EntryPosition } from "@particle-network/wallet-plugin";
 import { WalletProvider } from "@solana/wallet-adapter-react";
 import { TOKENLIST } from "@/constants";
-import {
-  SolanaChain,
-  Ethereum,
-  ZetaChainTestnet,
-} from "@particle-network/chains";
+import { mainnet, zetachainAthensTestnet } from "viem/chains";
 import { SendTransactionProvider } from "gamba-react-v2"; // Assuming this is the correct provider
 import dynamic from "next/dynamic";
 
@@ -74,15 +70,8 @@ export const ParticleProviderWrapper: React.FC<
         }),
       ],
       chains: [
-        Ethereum,
-        new SolanaChain({
-          id: 103, // Devnet
-          name: "Solana Devnet",
-          rpcUrl:
-            process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
-            "https://api.devnet.solana.com",
-        }),
-        ZetaChainTestnet,
+        mainnet,
+        zetachainAthensTestnet,
       ],
     });
   }, []);

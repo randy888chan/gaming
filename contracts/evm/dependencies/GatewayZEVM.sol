@@ -44,6 +44,10 @@ contract GatewayZEVM is
     /// @notice New role identifier for pauser role.
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
+    /// @notice Error thrown when execution fails
+    error ExecutionFailed(address target, MessageContext context, address zrc20, uint256 amount, bytes message);
+    error ExecutionFailedWithZeta(address target, MessageContext context, bytes message);
+
     /// @dev Only protocol address allowed modifier.
     modifier onlyProtocol() {
         if (msg.sender != PROTOCOL_ADDRESS) {
@@ -463,7 +467,19 @@ contract GatewayZEVM is
         whenNotPaused
     {
         GatewayZEVMValidations.validateExecuteParams(zrc20, target);
-        UniversalContract(target).onCall(context, zrc20, amount, message);
+        // Use low-level call instead of direct casting
+        (bool success, ) = target.call(
+            abi.encodeWithSignature(
+                "onCall((bytes,address,uint256),address,uint256,bytes)",
+                context,
+                zrc20,
+                amount,
+                message
+            )
+        );
+        if (!success) {
+            revert ExecutionFailed(target, context, zrc20, amount, message);
+        }
     }
 
     /// @notice Deposit foreign coins into ZRC20 and call a user-specified contract on ZEVM.
@@ -489,7 +505,19 @@ contract GatewayZEVM is
             revert ZRC20DepositFailed(zrc20, target, amount);
         }
 
-        UniversalContract(target).onCall(context, zrc20, amount, message);
+        // Use low-level call instead of direct casting
+        (bool success, ) = target.call(
+            abi.encodeWithSignature(
+                "onCall((bytes,address,uint256),address,uint256,bytes)",
+                context,
+                zrc20,
+                amount,
+                message
+            )
+        );
+        if (!success) {
+            revert ExecutionFailed(target, context, zrc20, amount, message);
+        }
     }
 
     /// @notice Deposit native ZETA and call a user-specified contract on ZEVM.
@@ -509,7 +537,17 @@ contract GatewayZEVM is
     {
         GatewayZEVMValidations.validateZetaDepositParams(msg.value, target, PROTOCOL_ADDRESS, address(this));
 
-        UniversalContract(target).onCall{ value: msg.value }(context, message);
+        // Use low-level call instead of direct casting
+        (bool success, ) = target.call{ value: msg.value }(
+            abi.encodeWithSignature(
+                "onCall((bytes,address,uint256),bytes)",
+                context,
+                message
+            )
+        );
+        if (!success) {
+            revert ExecutionFailedWithZeta(target, context, message);
+        }
     }
 
     /// @notice Revert a user-specified contract on ZEVM.

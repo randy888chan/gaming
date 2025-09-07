@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useConnectKit } from '@particle-network/connectkit';
+import { useModal } from '@particle-network/connectkit';
 import { useAccount } from '@particle-network/connectkit';
 
 interface OnboardingModalProps {
@@ -9,7 +9,7 @@ interface OnboardingModalProps {
 
 const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
   const { address, isConnected } = useAccount();
-  const connectKit = useConnectKit();
+  const { setOpen } = useModal();
   const [claiming, setClaiming] = useState(false);
   const [claimStatus, setClaimStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -42,7 +42,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) =>
   };
 
   const handleConnect = () => {
-    connectKit.openConnectModal();
+    setOpen(true);
   };
 
   if (!isOpen) {

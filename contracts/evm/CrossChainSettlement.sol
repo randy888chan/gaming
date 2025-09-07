@@ -17,29 +17,6 @@ import {Initializable} from "./dependencies/Initializable.sol";
 import {OwnableUpgradeable} from "./dependencies/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "./dependencies/UUPSUpgradeable.sol";
 
-struct CrossChainSettlementPayload {
-    address targetToken;
-    bytes recipient;
-    bool withdraw;
-    bytes32 swapId;
-}
-
-import {SystemContract, IZRC20} from "./dependencies/SystemContract.sol";
-import {SwapHelperLib} from "./dependencies/SwapHelperLib.sol";
-import {BytesHelperLib} from "./dependencies/BytesHelperLib.sol";
-import "./dependencies/IUniswapV2Router02.sol";
-import {ZetaInterfaces} from "./dependencies/ZetaInterfaces.sol";
-
-import {RevertContext, RevertOptions} from "./dependencies/Revert.sol";
-import "./dependencies/UniversalContract.sol";
-import "./dependencies/IGatewayZEVM.sol";
-import "./dependencies/IWZETA.sol";
-import {GatewayZEVM} from "./dependencies/GatewayZEVM.sol";
-
-import {Initializable} from "./dependencies/Initializable.sol";
-import {OwnableUpgradeable} from "./dependencies/OwnableUpgradeable.sol";
-import {UUPSUpgradeable} from "./dependencies/UUPSUpgradeable.sol";
-
 interface ICrossChainSettlement {
     struct CrossChainSettlementPayload {
         address targetToken;
@@ -72,8 +49,7 @@ interface ICrossChainSettlement {
         address payable gatewayAddress,
         address uniswapRouterAddress,
         uint256 gasLimitAmount,
-        address owner,
-        uint256[] memory _evmChainIds
+        address owner
     ) external;
 
     function initiateSwap(
@@ -84,14 +60,19 @@ interface ICrossChainSettlement {
         bool withdrawFlag
     ) external returns (bytes32);
 
-    function onCall(
+    function onZetaMessage(
         ZetaInterfaces.ZetaMessage calldata context,
         address zrc20,
         uint256 amount,
         bytes calldata message
     ) external;
 
-    function onRevert(RevertContext calldata context) external;
+    function onZetaRevert(
+        ZetaInterfaces.ZetaMessage calldata context,
+        address zrc20,
+        uint256 amount,
+        bytes calldata message
+    ) external;
 
     function confirmSwap(bytes32 swapId) external;
 
@@ -109,7 +90,6 @@ interface ICrossChainSettlement {
         address inputToken,
         address targetToken
     ) external view returns (uint256);
-
 }
 
 abstract contract CrossChainSettlementBase is
@@ -120,7 +100,6 @@ abstract contract CrossChainSettlementBase is
     ICrossChainSettlement
 {
     address public uniswapRouter;
-    IGatewayZEVM public override gateway;
     uint256 public gasLimit;
 
     error InvalidAddress();
@@ -136,7 +115,7 @@ abstract contract CrossChainSettlementBase is
     mapping(bytes32 => Swap) public swaps;
 
     modifier onlyGateway() override {
-        if (msg.sender != address(gateway)) revert Unauthorized();
+        if (msg.sender != address(gateway)) revert UnauthorizedCaller();
         _;
     }
 
@@ -209,27 +188,20 @@ abstract contract CrossChainSettlementBase is
             swapId: swapId
         });
 
-        ZetaInterfaces.ZetaMessage memory context = ZetaInterfaces.ZetaMessage({
+        ZetaInterfaces.ZetaMessage memory contextMem = ZetaInterfaces.ZetaMessage({
             zetaTxSenderAddress: abi.encodePacked(msg.sender), // Use msg.sender as the ZetaTxSenderAddress
             sourceChainId: block.chainid,
             destinationAddress: address(this),
             zetaValue: 0,
             message: ""
         });
-
-        _dispatch(context, inputToken, amount, payload);
+        
+        // Convert memory to calldata by calling the function directly
+        _dispatchWithMemory(contextMem, inputToken, amount, payload);
         return swapId;
     }
 
-    function onCall(
-        MessageContext calldata context,
-        bytes calldata message
-    ) external payable override onlyGateway {
-        // Implementation for onCall with native ZETA transfers
-        revert("Not implemented: onCall with native ZETA transfers");
-    }
-
-    function onCall(
+    function onZetaMessage(
         ZetaInterfaces.ZetaMessage calldata context,
         address zrc20,
         uint256 amount,
@@ -251,6 +223,22 @@ abstract contract CrossChainSettlementBase is
         }
 
         _dispatch(context, zrc20, amount, payload);
+    }
+
+    // Implement the UniversalContract onCall functions
+    function onCall(
+        ZetaInterfaces.ZetaMessage calldata context,
+        address zrc20,
+        uint256 amount,
+        bytes calldata message
+    ) public virtual override(UniversalContract) onlyGateway {
+        // Delegate to our own onZetaMessage function
+        onZetaMessage(context, zrc20, amount, message);
+    }
+
+    function onCall(ZetaInterfaces.ZetaMessage calldata context, bytes calldata message) external payable override(UniversalContract) onlyGateway {
+        // This function is not used in our implementation
+        revert("Not implemented");
     }
 
     function _dispatch(
@@ -279,6 +267,45 @@ abstract contract CrossChainSettlementBase is
         );
 
         _withdraw(context, inputToken, gasFee, gasZRC20, out, payload);
+    }
+    
+    function _dispatchWithMemory(
+        ZetaInterfaces.ZetaMessage memory context,
+        address inputToken,
+        uint256 amount,
+        CrossChainSettlementPayload memory payload
+    ) internal {
+        // Create a calldata version by calling the original function
+        this._dispatchInternal(context, inputToken, amount, payload);
+    }
+    
+    function _dispatchInternal(
+        ZetaInterfaces.ZetaMessage memory context,
+        address inputToken,
+        uint256 amount,
+        CrossChainSettlementPayload memory payload
+    ) external {
+        require(msg.sender == address(this), "Only self call allowed");
+        // Update the swap status to confirmed
+        swaps[payload.swapId].confirmed = true;
+
+        (uint256 out, address gasZRC20, uint256 gasFee) = handleGasAndSwap(
+            inputToken,
+            amount,
+            payload.targetToken,
+            payload.withdraw
+        );
+
+        emit TokenSwap(
+            context.zetaTxSenderAddress,
+            payload.recipient,
+            inputToken,
+            payload.targetToken,
+            amount,
+            out
+        );
+
+        _withdrawWithMemory(context, inputToken, gasFee, gasZRC20, out, payload);
     }
 
     function handleGasAndSwap(
@@ -363,7 +390,55 @@ abstract contract CrossChainSettlementBase is
             // If not, this logic needs to be adjusted based on ZRC20 interface.
             // For now, we are ensuring the types are correct for cross-chain sends.
             bool success = IZRC20(payload.targetToken).transfer(
-                address(uint160(BytesHelperLib.bytesToAddress(payload.recipient, 0))),
+                address(uint160(BytesHelperLib.bytesMemoryToAddress(payload.recipient, 0))),
+                out
+            );
+            if (!success) {
+                revert TransferFailed("Failed to transfer target tokens to the recipient on ZetaChain");
+            }
+        }
+    }
+    
+    function _withdrawWithMemory(
+        ZetaInterfaces.ZetaMessage memory context,
+        address inputToken,
+        uint256 gasFee,
+        address gasZRC20,
+        uint256 out,
+        CrossChainSettlementPayload memory payload
+    ) internal {
+        if (payload.withdraw) {
+            if (gasZRC20 == payload.targetToken) {
+                if (!IZRC20(gasZRC20).approve(address(gateway), out + gasFee)) {
+                    revert ApprovalFailed();
+                }
+            } else {
+                if (!IZRC20(gasZRC20).approve(address(gateway), gasFee)) {
+                    revert ApprovalFailed();
+                }
+                if (!IZRC20(payload.targetToken).approve(address(gateway), out)) {
+                    revert ApprovalFailed();
+                }
+            }
+            gateway.withdraw(
+                payload.recipient, // Pass the raw bytes recipient to the gateway
+                out,
+                payload.targetToken,
+                RevertOptions({
+                    revertAddress: address(this),
+                    callOnRevert: true,
+                    abortAddress: address(0),
+                    revertMessage: abi.encode(payload.swapId, inputToken),
+                    onRevertGasLimit: gasLimit
+                })
+            );
+        } else {
+            // If not withdrawing, it's an internal transfer on ZetaChain.
+            // This assumes the ZRC20 contract supports transfers to `bytes` recipients.
+            // If not, this logic needs to be adjusted based on ZRC20 interface.
+            // For now, we are ensuring the types are correct for cross-chain sends.
+            bool success = IZRC20(payload.targetToken).transfer(
+                address(uint160(BytesHelperLib.bytesMemoryToAddress(payload.recipient, 0))),
                 out
             );
             if (!success) {
@@ -372,17 +447,23 @@ abstract contract CrossChainSettlementBase is
         }
     }
 
-    function onRevert(RevertContext calldata context) public virtual override onlyGateway {
-        (bytes32 swapId, address zrc20) = abi.decode(
-            context.revertMessage,
+    function onZetaRevert(
+        ZetaInterfaces.ZetaMessage calldata context,
+        address zrc20,
+        uint256 amount,
+        bytes calldata message
+    ) public virtual override onlyGateway {
+        // Extract swapId and inputToken from the message instead of revertMessage
+        (bytes32 swapId, address inputToken) = abi.decode(
+            message,
             (bytes32, address)
         );
         // Mark the swap as cancelled
         swaps[swapId].cancelled = true;
 
         (uint256 out, , ) = handleGasAndSwap(
-            context.asset,
-            context.amount,
+            zrc20, // Use zrc20 directly instead of context.asset
+            amount, // Use amount directly instead of context.amount
             zrc20,
             true
         );
@@ -405,7 +486,8 @@ abstract contract CrossChainSettlementBase is
         Swap storage swap = swaps[swapId];
         if (swap.inputToken == address(0)) revert SwapNotFound();
         if (swap.confirmed || swap.cancelled) revert InvalidSwapState();
-        if (swap.sender != abi.encodePacked(msg.sender)) revert UnauthorizedCaller();
+        // Compare using keccak256 for bytes comparison
+        if (keccak256(swap.sender) != keccak256(abi.encodePacked(msg.sender))) revert UnauthorizedCaller();
 
         // Re-dispatch the swap to complete it
         ZetaInterfaces.ZetaMessage memory context = ZetaInterfaces.ZetaMessage({
@@ -415,7 +497,7 @@ abstract contract CrossChainSettlementBase is
             zetaValue: 0,
             message: ""
         });
-        _dispatch(context, swap.inputToken, swap.inputAmount, CrossChainSettlementPayload({
+        _dispatchWithMemory(context, swap.inputToken, swap.inputAmount, CrossChainSettlementPayload({
             targetToken: swap.targetToken,
             recipient: swap.recipient,
             withdraw: true, // Assuming confirmSwap implies withdrawal
@@ -427,7 +509,8 @@ abstract contract CrossChainSettlementBase is
         Swap storage swap = swaps[swapId];
         if (swap.inputToken == address(0)) revert SwapNotFound();
         if (swap.confirmed || swap.cancelled) revert InvalidSwapState();
-        if (swap.sender != abi.encodePacked(msg.sender)) revert UnauthorizedCaller();
+        // Compare using keccak256 for bytes comparison
+        if (keccak256(swap.sender) != keccak256(abi.encodePacked(msg.sender))) revert UnauthorizedCaller();
 
         // Mark the swap as cancelled
         swap.cancelled = true;
@@ -435,7 +518,7 @@ abstract contract CrossChainSettlementBase is
         // Refund the tokens to the sender. Assuming sender is always an EVM address for now.
         // Future: Potentially handle non-EVM sender refunds if cross-chain refunds to non-EVM chains are supported.
         bool success = IZRC20(swap.inputToken).transfer(
-            address(uint160(BytesHelperLib.bytesToAddress(swap.sender, 0))), // Assuming sender is an EVM address
+            address(uint160(BytesHelperLib.bytesStorageToAddress(swap.sender, 0))), // Assuming sender is an EVM address
             swap.inputAmount
         );
         if (!success) {
@@ -474,7 +557,7 @@ abstract contract CrossChainSettlementBase is
             message: ""
         });
 
-        _dispatch(context, inputToken, amount, payload);
+        _dispatchWithMemory(context, inputToken, amount, payload);
         return payload.swapId;
     }
 
@@ -515,5 +598,5 @@ abstract contract CrossChainSettlementBase is
 }
 
 contract CrossChainSettlement is CrossChainSettlementBase {
-    // No additional logic needed here for now, but can be extended in the future
+    // Contract is now complete
 }

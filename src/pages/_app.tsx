@@ -12,32 +12,30 @@ import {
   PLATFORM_CREATOR_FEE, 
   PLATFORM_NAME, 
   PLATFORM_SHARABLE, 
-  TOKENLIST 
+  TOKENLIST,
+  BASE_SEO_CONFIG,
+  LIVE_EVENT_TOAST
 } from '@/constants';
-import { Footer } from '@/components/layout/Footer';
-import { Header } from '@/components/layout/Header';
-import { BASE_SEO_CONFIG } from '@/config';
-import { GambaTransactions } from '@/components/GambaTransactions';
-import { GameToast } from '@/components/GameToast';
-import { GameProvider } from '@/hooks/useGame';
-import { GameBundleProvider } from '@/hooks/useGameBundle';
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
 import { ParticleProviderWrapper } from '@/components/ParticleProviderWrapper';
 import { ThemeProvider } from 'next-themes';
-import { OnboardingModal } from '@/components/OnboardingModal';
-import { DisclaimerModal } from '@/components/DisclaimerModal';
-import { GameHistory } from '@/components/GameHistory';
+import OnboardingModal from '@/components/onboarding/OnboardingModal';
 import { 
-  ConnectionProvider, 
-  WalletModalProvider 
+  ConnectionProvider
 } from '@solana/wallet-adapter-react';
+import { 
+  WalletModalProvider 
+} from '@solana/wallet-adapter-react-ui';
 import { 
   PhantomWalletAdapter, 
   SolflareWalletAdapter 
 } from '@solana/wallet-adapter-wallets';
 import { 
-  evmChains, 
-  solanaChains, 
-  tonChains 
+  Ethereum, 
+  Polygon, 
+  BNBChain, 
+  Solana
 } from "@particle-network/chains";
 import { Toaster } from "sonner";
 import { PublicKey } from "@solana/web3.js";
@@ -47,13 +45,13 @@ function MyApp({ Component, pageProps }: AppProps) {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const evmChainsList = useMemo(() => [
-    evmChains.ethereum, 
-    evmChains.polygon, 
-    evmChains.bsc
+    Ethereum, 
+    Polygon, 
+    BNBChain
   ], []);
   
-  const solanaChainsList = useMemo(() => [solanaChains.solana], []);
-  const tonChainsList = useMemo(() => [tonChains.ton], []);
+  const solanaChainsList = useMemo(() => [Solana], []);
+  const tonChainsList = useMemo(() => [], []);
 
   const handleCloseOnboarding = () => {
     setShowOnboarding(false);
@@ -92,11 +90,12 @@ function MyApp({ Component, pageProps }: AppProps) {
           }}
           PLATFORM_CREATOR_ADDRESS={PLATFORM_CREATOR_ADDRESS}
           PLATFORM_CREATOR_FEE={PLATFORM_CREATOR_FEE}
-          PLATFORM_NAME={PLATFORM_NAME}
-          PLATFORM_SHARABLE={PLATFORM_SHARABLE}
-          TOKENLIST={TOKENLIST}
+          PLATFORM_JACKPOT_FEE={0}
+          PLATFORM_REFERRAL_FEE={0}
+          BASE_SEO_CONFIG={BASE_SEO_CONFIG}
+          LIVE_EVENT_TOAST={LIVE_EVENT_TOAST}
           showDisclaimer={showDisclaimer}
-          DisclaimerModal={DisclaimerModal}
+          DisclaimerModal={() => null}
           OnboardingModal={OnboardingModal}
           showOnboarding={showOnboarding}
           handleCloseOnboarding={handleCloseOnboarding}
@@ -107,36 +106,38 @@ function MyApp({ Component, pageProps }: AppProps) {
                 <GambaProvider>
                   <GambaPlatformProvider
                     creator={PLATFORM_CREATOR_ADDRESS}
-                    fee={PLATFORM_CREATOR_FEE}
-                    jackpotFee={0}
-                    referralFee={0}
-                    tokenMetas={TOKENLIST}
+                    defaultCreatorFee={PLATFORM_CREATOR_FEE}
+                    defaultJackpotFee={0}
                   >
-                    <GameBundleProvider>
-                      <GameProvider>
-                        <Header />
-                        <div className="min-h-[75vh] mt-20 mb-20">
-                          <Component {...pageProps} />
+                    <Header />
+                    <div className="min-h-[75vh] mt-20 mb-20">
+                      <Component {...pageProps} />
+                    </div>
+                    <Footer />
+                    <Toaster />
+                    {showOnboarding && (
+                      <OnboardingModal 
+                        isOpen={showOnboarding} 
+                        onClose={handleCloseOnboarding} 
+                      />
+                    )}
+                    {showDisclaimer && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+                          <h2 className="text-2xl font-bold mb-4">Disclaimer</h2>
+                          <p className="mb-4">
+                            This is a gaming platform for entertainment purposes only. 
+                            Please play responsibly and understand the risks involved.
+                          </p>
+                          <button
+                            onClick={() => setShowDisclaimer(false)}
+                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                          >
+                            I Understand
+                          </button>
                         </div>
-                        <Footer />
-                        <GameToast />
-                        <GambaTransactions />
-                        <GameHistory />
-                        <Toaster />
-                        {showOnboarding && (
-                          <OnboardingModal 
-                            isOpen={showOnboarding} 
-                            onClose={handleCloseOnboarding} 
-                          />
-                        )}
-                        {showDisclaimer && (
-                          <DisclaimerModal 
-                            isOpen={showDisclaimer} 
-                            onClose={() => setShowDisclaimer(false)} 
-                          />
-                        )}
-                      </GameProvider>
-                    </GameBundleProvider>
+                      </div>
+                    )}
                   </GambaPlatformProvider>
                 </GambaProvider>
               </TokenMetaProvider>

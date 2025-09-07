@@ -52,8 +52,11 @@ const TournamentPage: React.FC = () => {
           id: tournament.id,
           name: tournament.name,
           format: tournament.format,
+          status: tournament.status || "upcoming",
           teams,
           matches,
+          createdAt: tournament.createdAt || new Date(),
+          updatedAt: tournament.updatedAt || new Date(),
         };
         
         setTournament(fullTournament);

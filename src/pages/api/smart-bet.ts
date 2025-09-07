@@ -5,7 +5,7 @@
 
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSmartBetSuggestion } from "../../services/aiAdapter";
-import { withEnhancedSecurity, withSensitiveRateLimit, withRequestValidation } from "../../utils/securityMiddleware";
+import { withEnhancedSecurity, withRequestValidation } from "../../utils/securityMiddleware";
 import { enhancedVerifyParticleToken, hashUserId } from "../../utils/particleAuth";
 import { performanceMonitor, withPerformanceMonitoring } from "../../utils/performanceMonitor";
 import { createSafeQuery } from "../../utils/databaseSecurity";
@@ -118,6 +118,6 @@ async function handler(
 // Apply enhanced security and performance monitoring
 export default withPerformanceMonitoring(
   withRequestValidation(smartBetValidator)(
-    withEnhancedSecurity(withSensitiveRateLimit(handler))
+    withEnhancedSecurity(handler)
   )
 );

@@ -14,7 +14,7 @@ export default async function handler(
       } else {
         res.status(500).json({ status: "unhealthy", database: "disconnected" });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Health check failed:", error);
       res.status(500).json({ status: "unhealthy", error: error.message });
     }

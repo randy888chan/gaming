@@ -106,10 +106,10 @@ export default function CustomRenderer() {
   useEffect(() => {
     if (newcomer || !gamesPlayed.includes(game.id)) {
       setInfo(true);
-      set((state) => ({
+      set({
         newcomer: false,
-        gamesPlayed: [...state.gamesPlayed, game.id],
-      }));
+        gamesPlayed: [...gamesPlayed, game.id],
+      });
     }
   }, [game.id, gamesPlayed, newcomer, set]);
 

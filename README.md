@@ -80,3 +80,16 @@ This project is integrated with Stigmergy for AI-powered development coordinatio
 - Project overrides: `.env.stigmergy.example` (copy to `.env` to activate)
 
 The integration works universally without requiring project-specific modifications.
+## 🏥 Stigmergy Health Check
+
+Run a comprehensive health check of your Stigmergy installation:
+
+```bash
+stigmergy validate
+```
+
+Or use the convenience script:
+
+```bash
+./stigmergy-health.sh
+```

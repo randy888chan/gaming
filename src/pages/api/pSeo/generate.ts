@@ -1,6 +1,6 @@
 // src/pages/api/pSeo/generate.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { generatePSeoContent } from "../../../workers/pSeoGenerator";
+import { generatePSEOContent } from "../../../services/aiAdapter";
 
 export default async function handler(
   req: NextApiRequest,
@@ -8,7 +8,7 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     try {
-      await generatePSeoContent();
+      await generatePSEOContent();
       res
         .status(200)
         .json({ message: "pSEO content generation initiated successfully." });

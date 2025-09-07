@@ -7,7 +7,6 @@ import "./dependencies/ZetaCommon.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./CrossChainSettlement.sol";
-import "./interfaces/ICrossChainSettlement.sol";
 import "./interfaces/IGambaToken.sol"; // Add Gamba token interface
  
  struct PolymarketMessagePayload {
@@ -135,7 +134,7 @@ import "./interfaces/IGambaToken.sol"; // Add Gamba token interface
         // The PolymarketAdapter should not directly interact with Polymarket.
         // It only prepares the payload and dispatches it via CrossChainSettlement.
         crossChainSettlement.dispatchCrossChainCall(
-            collateral, // inputToken: The collateral token on the source chain
+            address(collateral), // inputToken: The collateral token on the source chain
             amount, // amount: The amount of collateral to bet
             targetToken, // targetToken: The ZRC20 token on the target chain
             recipient, // destinationAddress: The recipient address on the target chain
@@ -156,9 +155,11 @@ import "./interfaces/IGambaToken.sol"; // Add Gamba token interface
     ) external override isValidRevert(context) {
         // Refund user with Gamba tokens
         require(zrc20 == gambaToken, "PolymarketAdapter: Invalid ZRC20 token for refund.");
-        require(IGambaToken(gambaToken).transfer(context.zetaTxSenderAddress, amount),
+        // Convert bytes to address using the BytesHelperLib
+        address senderAddress = address(uint160(BytesHelperLib.bytesToAddress(context.zetaTxSenderAddress, 0)));
+        require(IGambaToken(gambaToken).transfer(senderAddress, amount),
             "Refund failed");
-        emit GambaRefund(context.zetaTxSenderAddress, amount);
+        emit GambaRefund(senderAddress, amount);
     }
  
      /// @notice Allows the owner to withdraw any excess gas fees.

@@ -226,3 +226,53 @@ SUSPICIOUS_IPS=comma_separated_list_of_suspicious_ips
 ## Conclusion
 
 This security implementation provides a comprehensive defense-in-depth approach to protecting the gaming platform. By following the best practices outlined in this document and using the provided utilities, you can ensure your API endpoints are secure and performant.
+
+## Common Blockchain and GameFi Vulnerabilities
+
+Based on industry research, blockchain gaming projects face specific risks. This section outlines key vulnerabilities and mitigation strategies relevant to our platform, which integrates blockchain elements like smart contracts (via contracts/), ZetaChain services, and Polymarket APIs.
+
+### 1. Smart Contract Vulnerabilities
+Smart contracts in gaming (e.g., for tournaments, bets) are prone to exploits like reentrancy attacks, integer overflows, and logic bugs. The DAO hack (2016) exploited code vulnerabilities, leading to $60M loss.
+
+**Mitigations:**
+- Conduct formal audits using tools like Slither or Mythril on contracts/.
+- Implement access controls and use libraries like OpenZeppelin for secure patterns.
+- Test with Foundry/Hardhat as per foundry.toml and hardhat.config.ts.
+
+### 2. 51% Attacks and Double Spending
+In proof-of-work chains, attackers controlling >50% hash power can reverse transactions, affecting game fairness (e.g., bet settlements).
+
+**Mitigations:**
+- Use proof-of-stake chains where possible (e.g., ZetaChain integration in src/services/zetaChainService.ts).
+- Implement confirmations for cross-chain settlements in CrossChainSettlementService.ts.
+- Monitor network health via security dashboard.
+
+### 3. Phishing and Private Key Attacks
+Users in GameFi are targeted via phishing for wallet access, especially with Particle Network integration.
+
+**Mitigations:**
+- Enhance particleAuth.ts with multi-factor checks and IP validation.
+- Educate users via onboarding (src/components/onboarding/OnboardingModal.tsx).
+- Use secure token handling in authMiddleware.ts.
+
+### 4. Rug Pulls and DAO Governance Issues
+GameFi projects risk "rug pulls" where developers abandon, or DAO exploits in token governance.
+
+**Mitigations:**
+- Transparent code in public repo; use referrals and tournaments transparently (src/services/ReferralService.ts, src/components/tournament/).
+- Audit DAO if implemented; current setup uses centralized admin (src/components/admin/CreditConfigPanel.tsx).
+
+### 5. Bridge and NFT/ERC-20 Management
+Bridges for cross-chain gaming (e.g., to Polymarket) and token handling are vulnerable.
+
+**Mitigations:**
+- Secure bridge interactions in polymarketService.ts.
+- Validate ERC-20/NFT transfers with rate limiting in rateLimit.ts.
+- Use Semgrep scans for supply chain issues (integrate via CI).
+
+### References
+- [Blockchain Security Issues](https://www.getastra.com/blog/knowledge-base/blockchain-security-issues/)
+- [GameFi Security Challenges](https://academy.binance.com/en/articles/what-are-the-common-security-issues-in-gamefi)
+- [Blockchain Vulnerabilities](https://101blockchains.com/blockchain-security-issues/)
+
+Regularly update this section based on new scans and audits to maintain robust security.

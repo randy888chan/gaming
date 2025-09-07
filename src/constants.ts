@@ -3,6 +3,21 @@ import { PublicKey } from "@solana/web3.js";
 
 /******************************************
  * ┌──────────────────────────────────────┐ *
+ * │          PLATFORM CONFIG             │ *
+ * └──────────────────────────────────────┘ *
+ ******************************************/
+
+// Platform creator address (replace with your actual creator address)
+export const PLATFORM_CREATOR_ADDRESS = new PublicKey("11111111111111111111111111111111");
+
+// Platform name
+export const PLATFORM_NAME = "Quantum Nexus";
+
+// Platform sharable flag
+export const PLATFORM_SHARABLE = true;
+
+/******************************************
+ * ┌──────────────────────────────────────┐ *
  * │          PLATFORM FEES               │ *
  * └──────────────────────────────────────┘ *
  ******************************************/

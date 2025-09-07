@@ -15,13 +15,13 @@ const standardLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   keyGenerator: (req) => {
     // Use a combination of IP and user agent for more granular rate limiting
-    return req.ip + req.headers['user-agent'];
+    return (req.ip || req.socket.remoteAddress || 'unknown') + req.headers['user-agent'];
   },
   handler: (req, res) => {
     // Log rate limit exceeded event
     logSecurityEvent({
       eventType: 'RATE_LIMIT_EXCEEDED',
-      ipAddress: req.ip,
+      ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
       userAgent: req.headers['user-agent'],
       endpoint: req.url,
       details: 'Standard rate limit exceeded'
@@ -43,7 +43,7 @@ const speedLimiter = slowDown({
   delayMs: 200, // Add 200ms of delay per request above delayAfter
   keyGenerator: (req) => {
     // Use a combination of IP and user agent for more granular speed limiting
-    return req.ip + req.headers['user-agent'];
+    return (req.ip || req.socket.remoteAddress || 'unknown') + req.headers['user-agent'];
   },
 });
 
@@ -64,13 +64,13 @@ const sensitiveLimiter = rateLimit({
     if (authHeader && authHeader.startsWith("Bearer ")) {
       return authHeader.substring(7); // Use token as key
     }
-    return req.ip + req.headers['user-agent']; // Fallback to IP + user agent
+    return (req.ip || req.socket.remoteAddress || 'unknown') + req.headers['user-agent']; // Fallback to IP + user agent
   },
   handler: (req, res) => {
     // Log rate limit exceeded event for sensitive endpoint
     logSecurityEvent({
       eventType: 'RATE_LIMIT_EXCEEDED',
-      ipAddress: req.ip,
+      ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
       userAgent: req.headers['user-agent'],
       endpoint: req.url,
       details: 'Sensitive endpoint rate limit exceeded',
@@ -96,12 +96,12 @@ const ipLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip, // Use IP address only
+  keyGenerator: (req) => req.ip || req.socket.remoteAddress || 'unknown', // Use IP address only
   handler: (req, res) => {
     // Log rate limit exceeded event for IP-based limiting
     logSecurityEvent({
       eventType: 'RATE_LIMIT_EXCEEDED',
-      ipAddress: req.ip,
+      ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
       userAgent: req.headers['user-agent'],
       endpoint: req.url,
       details: 'IP-based rate limit exceeded',

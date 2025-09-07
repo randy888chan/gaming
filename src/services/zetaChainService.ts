@@ -1,4 +1,4 @@
-import { TransactionReceipt } from "ethers";
+// import { TransactionReceipt } from "ethers";
 
 // Using native BigInt for large number operations with ethers v6
 // import { BigNumber } from 'ethers'; // No longer needed for ethers v6
@@ -32,8 +32,8 @@ export enum TxStatus {
 }
 
 import { ethers, TransactionReceipt } from "ethers";
-import { CrossChainSettlement__factory } from "../../typechain-types/factories/contracts/evm/CrossChainSettlement__factory";
-import { CrossChainSettlement } from "../../typechain-types/contracts/evm/CrossChainSettlement";
+// import { CrossChainSettlement__factory } from "../../typechain-types/factories/contracts/evm/CrossChainSettlement__factory";
+// import { CrossChainSettlement } from "../../typechain-types/contracts/evm/CrossChainSettlement";
 
 // Configuration for ZetaChain Service
 interface ZetaChainServiceConfig {
@@ -45,7 +45,7 @@ interface ZetaChainServiceConfig {
 export class ZetaChainService {
   private provider: ethers.JsonRpcProvider;
   private wallet: ethers.Wallet;
-  private crossChainSettlementContract: CrossChainSettlement;
+  // private crossChainSettlementContract: CrossChainSettlement;
   private config: ZetaChainServiceConfig;
 
   constructor(config: ZetaChainServiceConfig) {
@@ -57,10 +57,10 @@ export class ZetaChainService {
       throw new Error("ZETACHAIN_PRIVATE_KEY is not set in environment variables");
     }
     this.wallet = new ethers.Wallet(privateKey, this.provider);
-    this.crossChainSettlementContract = CrossChainSettlement__factory.connect(
-      config.crossChainSettlementAddress,
-      this.wallet
-    );
+    // this.crossChainSettlementContract = CrossChainSettlement__factory.connect(
+    //   config.crossChainSettlementAddress,
+    //   this.wallet
+    // );
     console.log("ZetaChainService initialized with config:", config);
   }
 
@@ -74,37 +74,37 @@ export class ZetaChainService {
    * @param withdrawFlag True if the tokens should be withdrawn to the recipient on the target chain, false for internal transfer.
    * @returns The transaction response from dispatching the cross-chain call.
    */
-  async dispatchCrossChainCall(
-    inputToken: string,
-    amount: bigint,
-    targetToken: string,
-    recipient: string | Uint8Array, // Can be address string or bytes for non-EVM
-    withdrawFlag: boolean
-  ): Promise<ethers.TransactionResponse> {
-    console.log(
-      `Dispatching cross-chain call: inputToken=${inputToken}, amount=${amount.toString()}, targetToken=${targetToken}, recipient=${recipient}, withdrawFlag=${withdrawFlag}`
-    );
+  // async dispatchCrossChainCall(
+  //   inputToken: string,
+  //   amount: bigint,
+  //   targetToken: string,
+  //   recipient: string | Uint8Array, // Can be address string or bytes for non-EVM
+  //   withdrawFlag: boolean
+  // ): Promise<ethers.TransactionResponse> {
+  //   console.log(
+  //     `Dispatching cross-chain call: inputToken=${inputToken}, amount=${amount.toString()}, targetToken=${targetToken}, recipient=${recipient}, withdrawFlag=${withdrawFlag}`
+  //   );
 
-    let recipientBytes: Uint8Array;
-    if (typeof recipient === 'string' && ethers.isAddress(recipient)) {
-      // If it's an EVM address string, convert to bytes
-      recipientBytes = ethers.getBytes(recipient);
-    } else if (recipient instanceof Uint8Array) {
-      // If it's already Uint8Array (bytes), use directly
-      recipientBytes = recipient;
-    } else {
-      throw new Error("Invalid recipient format. Must be an EVM address string or Uint8Array.");
-    }
+  //   let recipientBytes: Uint8Array;
+  //   if (typeof recipient === 'string' && ethers.isAddress(recipient)) {
+  //     // If it's an EVM address string, convert to bytes
+  //     recipientBytes = ethers.getBytes(recipient);
+  //   } else if (recipient instanceof Uint8Array) {
+  //     // If it's already Uint8Array (bytes), use directly
+  //     recipientBytes = recipient;
+  //   } else {
+  //     throw new Error("Invalid recipient format. Must be an EVM address string or Uint8Array.");
+  //   }
 
-    const tx = await this.crossChainSettlementContract.dispatchCrossChainCall(
-      inputToken,
-      amount,
-      targetToken,
-      recipientBytes,
-      withdrawFlag
-    );
-    return tx;
-  }
+  //   const tx = await this.crossChainSettlementContract.dispatchCrossChainCall(
+  //     inputToken,
+  //     amount,
+  //     targetToken,
+  //     recipientBytes,
+  //     withdrawFlag
+  //   );
+  //   return tx;
+  // }
 
   /**
    * Fetches the status of a cross-chain transaction (CCTX) from ZetaChain.

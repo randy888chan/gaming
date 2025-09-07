@@ -161,7 +161,7 @@ export function ShareModal({
                       />
                       <TokenValue
                         exact
-                        amount={event.data.wager}
+                        amount={event.data.wager.toNumber()}
                         mint={event.data.tokenMint}
                       />
                     </div>

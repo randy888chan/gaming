@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { polymarketService } from "@/services/polymarketService";
+import { getSimplifiedMarkets } from "@/services/polymarketService";
 
 // Simple in-memory cache
 const cache: { data: any; timestamp: number } = {
@@ -24,7 +24,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       }
 
       // Fetch fresh data from polymarketService
-      const markets = await polymarketService.getSimplifiedMarkets();
+      const markets = await getSimplifiedMarkets();
       
       // Update cache
       cache.data = markets;

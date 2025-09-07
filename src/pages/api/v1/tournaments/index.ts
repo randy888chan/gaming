@@ -29,16 +29,17 @@ const tournaments: Tournament[] = [
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "GET") {
     // Return list of tournaments
-    return res.status(200).json({ success: true, tournaments });
+    res.status(200).json({ success: true, tournaments });
   } else if (req.method === "POST") {
     // Create a new tournament
     const { name, format } = req.body;
     
     if (!name || !format) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false, 
         error: "Missing required fields: name, format" 
       });
+      return;
     }
     
     const newTournament: Tournament = {
@@ -51,10 +52,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     
     tournaments.push(newTournament);
     
-    return res.status(201).json({ success: true, tournament: newTournament });
+    res.status(201).json({ success: true, tournament: newTournament });
   } else {
     res.setHeader("Allow", ["GET", "POST"]);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 };
 

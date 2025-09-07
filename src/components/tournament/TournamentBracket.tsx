@@ -51,10 +51,10 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, onUpd
         }
         
         // Determine winner if both scores are set
-        if (updatedMatch.score1 !== null && updatedMatch.score2 !== null) {
+        if (updatedMatch.score1 !== undefined && updatedMatch.score2 !== undefined) {
           updatedMatch.winnerId = updatedMatch.score1 > updatedMatch.score2 
-            ? updatedMatch.team1?.id || null 
-            : updatedMatch.team2?.id || null;
+            ? updatedMatch.team1?.id || undefined 
+            : updatedMatch.team2?.id || undefined;
         }
         
         return updatedMatch;

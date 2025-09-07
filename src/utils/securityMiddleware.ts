@@ -15,7 +15,7 @@ const enhancedLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   keyGenerator: (req) => {
     // Use a combination of IP and user agent for more granular rate limiting
-    return req.ip + req.headers['user-agent'];
+    return (req.ip || req.socket.remoteAddress || 'unknown') + req.headers['user-agent'];
   },
   handler: (req, res) => {
     // Log rate limit exceeded event
@@ -41,7 +41,7 @@ const speedLimiter = slowDown({
   delayMs: 500, // Add 500ms of delay per request above delayAfter
   keyGenerator: (req) => {
     // Use a combination of IP and user agent for more granular speed limiting
-    return req.ip + req.headers['user-agent'];
+    return (req.ip || req.socket.remoteAddress || 'unknown') + req.headers['user-agent'];
   },
 });
 

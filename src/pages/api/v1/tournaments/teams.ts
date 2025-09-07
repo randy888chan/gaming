@@ -28,22 +28,24 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { tournamentId } = req.query;
     
     if (!tournamentId) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false, 
         error: "Missing tournamentId parameter" 
       });
+      return;
     }
     
     const tournamentTeams = teams.filter(team => team.tournamentId === tournamentId);
-    return res.status(200).json({ success: true, teams: tournamentTeams });
+    res.status(200).json({ success: true, teams: tournamentTeams });
   } else if (req.method === "POST") {
     const { tournamentId, name, players } = req.body;
     
     if (!tournamentId || !name || !players) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         success: false, 
         error: "Missing required fields: tournamentId, name, players" 
       });
+      return;
     }
     
     const newTeam: Team = {
@@ -55,10 +57,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     
     teams.push(newTeam);
     
-    return res.status(201).json({ success: true, team: newTeam });
+    res.status(201).json({ success: true, team: newTeam });
   } else {
     res.setHeader("Allow", ["GET", "POST"]);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 };
 
