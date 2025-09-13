@@ -112,8 +112,7 @@ export function withAuth(
  * @param id The user ID to validate
  * @returns True if the ID is valid, false otherwise
  */
-function isValidParticleUserId(id: string): boolean {
-  // Particle user IDs are typically UUIDs or alphanumeric strings
-  // This is a basic validation - in production, you might want more specific checks
-  return typeof id === 'string' && id.length > 0 && id.length < 100 && /^[a-zA-Z0-9-_]+$/.test(id);
+export function isValidParticleUserId(id: string): boolean {
+  // Particle user IDs should be strictly alphanumeric to avoid potential injection vulnerabilities.
+  return typeof id === 'string' && id.length > 0 && id.length < 100 && /^[a-zA-Z0-9]+$/.test(id);
 }

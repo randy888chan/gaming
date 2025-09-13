@@ -44,6 +44,7 @@ class PerformanceMonitor {
     method: string,
     responseTime: number,
     statusCode: number,
+    memoryUsage: number,
     userId?: string
   ): void {
     const metrics: PerformanceMetrics = {
@@ -52,7 +53,7 @@ class PerformanceMonitor {
       method,
       responseTime,
       statusCode,
-      memoryUsage: process.memoryUsage().heapUsed,
+      memoryUsage,
       userId
     };
 
@@ -164,27 +165,36 @@ export function withPerformanceMonitoring(
       undefined;
       
     const stopTimer = performanceMonitor.startTiming(req.url, req.method, userId);
-    
-    const originalSend = res.send;
-    let statusCode = 200;
-    
-    // Override res.send to capture status code
-    res.send = function(body: any) {
-      statusCode = res.statusCode;
-      return originalSend.call(this, body);
-    };
-    
-    try {
-      await handler(req, res);
-    } finally {
+
+    const record = () => {
       const { responseTime, memoryUsage } = stopTimer();
       performanceMonitor.recordMetrics(
         req.url,
         req.method,
         responseTime,
-        statusCode,
+        res.statusCode,
+        memoryUsage,
         userId
       );
+       // Clean up the listener to avoid memory leaks
+      res.removeListener('finish', record);
+      res.removeListener('close', record);
+    }
+
+    res.on('finish', record);
+    res.on('close', record)
+
+    try {
+      await handler(req, res);
+    } catch (err) {
+      // If the handler throws an error, the response might not be sent.
+      // We should still record the metrics.
+      if (!res.headersSent) {
+        res.statusCode = 500; // Default to 500 if no status is set
+        record();
+      }
+      // Re-throw the error to be handled by the server's error handling
+      throw err;
     }
   };
 }

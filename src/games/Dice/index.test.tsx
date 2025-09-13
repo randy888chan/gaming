@@ -1,13 +1,14 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Dice, { outcomes } from './index';
+import Dice from './index';
+import { jest } from '@jest/globals';
 
+const mockPlay = jest.fn();
 // Mock gamba-react-ui-v2
 jest.mock('gamba-react-ui-v2', () => ({
-  ...jest.requireActual('gamba-react-ui-v2'),
   GambaUi: {
     useGame: () => ({
-      play: jest.fn(),
+      play: mockPlay,
       result: jest.fn(),
     }),
     Portal: ({ children }: { children: React.ReactNode }) => <div data-testid="portal">{children}</div>,
@@ -20,6 +21,7 @@ jest.mock('gamba-react-ui-v2', () => ({
         onChange={(e) => onChange(Number(e.target.value))}
       />
     ),
+    TokenValue: ({ amount }: { amount: number }) => <div>{amount}</div>,
   },
   useWagerInput: () => [100, jest.fn()],
   useCurrentPool: () => ({
@@ -32,26 +34,17 @@ jest.mock('gamba-react-ui-v2', () => ({
 
 // Mock gamba-react-v2
 jest.mock('gamba-react-v2', () => ({
-  ...jest.requireActual('gamba-react-v2'),
   useGamba: () => ({
     isPlaying: false,
   }),
 }));
 
 // Mock components
-jest.mock('@/components/GambaPlayButton', () => {
-  const MockComponent = ({ onClick, text }: { onClick: () => void; text: string }) => (
-    <button data-testid="gamba-play-button" onClick={onClick}>{text}</button>
-  );
-  MockComponent.displayName = 'GambaPlayButton';
-  return MockComponent;
-});
-
-// Mock sonner
-jest.mock('sonner', () => ({
-  toast: {
-    error: jest.fn(),
-  },
+jest.mock('@/components/GambaPlayButton', () => ({
+    __esModule: true,
+    default: ({ onClick, text }: { onClick: () => void; text: string }) => (
+        <button data-testid="gamba-play-button" onClick={onClick}>{text}</button>
+    )
 }));
 
 // Mock slider component
@@ -77,6 +70,9 @@ jest.mock('./styles', () => ({
 }));
 
 describe('Dice Game', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
   it('should render the dice game component', () => {
     render(<Dice />);
     
@@ -88,42 +84,32 @@ describe('Dice Game', () => {
     expect(screen.getByText('Roll')).toBeInTheDocument();
   });
 
-  it('should update roll under value when slider changes', () => {
+  it('should have consistent multiplier and bet values', () => {
     render(<Dice />);
-    
-    // Since we're mocking the slider, we can't directly test the slider interaction
-    // But we can verify the component renders
-    expect(screen.getByText('Roll Under')).toBeInTheDocument();
-  });
+    const slider = screen.getByTestId('dice-slider');
 
-  it('should calculate correct multiplier', () => {
-    // Test the multiplier calculation logic
-    const DICE_SIDES = 100;
-    const rollUnderIndex = 50;
-    const multiplier = Number(BigInt(DICE_SIDES * 10000) / BigInt(rollUnderIndex)) / 10000;
+    // Test with a roll under value of 50
+    fireEvent.change(slider, { target: { value: '50' } });
+    expect(screen.getByText('2.00x')).toBeInTheDocument();
     
-    expect(multiplier).toBe(2);
-  });
-});
+    const playButton = screen.getByTestId('gamba-play-button');
+    fireEvent.click(playButton);
 
-describe('outcomes function', () => {
-  it('should calculate correct outcomes array', () => {
-    const length = 100;
-    const multiplierCallback = (resultIndex: number) => {
-      if (resultIndex < 50) {
-        return 50; // 100 - 50
-      }
-      return 0;
-    };
-    
-    const result = outcomes(length, multiplierCallback);
-    
-    // Should return an array of length 100
-    expect(result).toHaveLength(100);
-    
-    // First 50 elements should have the same positive value
-    // Last 50 elements should be 0
-    expect(result[0]).toBeGreaterThan(0);
-    expect(result[99]).toBe(0);
+    const expectedBet = Array(100).fill(0).map((_, i) => (i < 50 ? 2 : 0));
+    expect(mockPlay).toHaveBeenCalledWith({
+        wager: 100,
+        bet: expectedBet,
+    });
+
+    // Test with a roll under value of 25
+    fireEvent.change(slider, { target: { value: '25' } });
+    expect(screen.getByText('4.00x')).toBeInTheDocument();
+
+    fireEvent.click(playButton);
+    const expectedBet2 = Array(100).fill(0).map((_, i) => (i < 25 ? 4 : 0));
+    expect(mockPlay).toHaveBeenCalledWith({
+        wager: 100,
+        bet: expectedBet2,
+    });
   });
 });

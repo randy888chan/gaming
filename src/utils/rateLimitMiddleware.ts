@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import rateLimit from "express-rate-limit";
+import jwt from "jsonwebtoken";
 import slowDown from "express-slow-down";
 import { logSecurityEvent } from "./securityAudit";
 
@@ -58,13 +59,21 @@ const sensitiveLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false, // Count all requests, even successful ones
-  keyGenerator: (req) => {
-    // For sensitive operations, use more specific identification
+  keyGenerator: (req: NextApiRequest) => {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith("Bearer ")) {
-      return authHeader.substring(7); // Use token as key
+      const token = authHeader.split(" ")[1];
+      try {
+        const decoded = jwt.verify(token, process.env.PARTICLE_NETWORK_JWT_SECRET || '') as { particle_user_id?: string; sub?: string };
+        const particleUserId = decoded.particle_user_id || decoded.sub;
+        if (particleUserId) {
+          return particleUserId;
+        }
+      } catch (error) {
+        // Invalid token, fall back to IP + user agent
+      }
     }
-    return (req.ip || req.socket.remoteAddress || 'unknown') + req.headers['user-agent']; // Fallback to IP + user agent
+    return (req.ip || req.socket.remoteAddress || 'unknown') + (req.headers['user-agent'] || '');
   },
   handler: (req, res) => {
     // Log rate limit exceeded event for sensitive endpoint
@@ -117,60 +126,35 @@ const ipLimiter = rateLimit({
   },
 });
 
+const applyMiddleware = (middleware: any) => (req: NextApiRequest, res: NextApiResponse) =>
+  new Promise((resolve, reject) => {
+    middleware(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+
 export function withRateLimit(
   handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 ) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
-    // Apply IP-based rate limiting first
-    await new Promise<void>((resolve, reject) => {
-      ipLimiter(req, res, (result: any) => {
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        resolve(result);
-      });
-    }).catch((error) => {
-      console.error("IP rate limit middleware error:", error);
-      return; // Exit the handler as response is already sent
-    });
+    try {
+      await applyMiddleware(ipLimiter)(req, res);
+      if (res.headersSent) return;
+      await applyMiddleware(standardLimiter)(req, res);
+      if (res.headersSent) return;
+      await applyMiddleware(speedLimiter)(req, res);
+      if (res.headersSent) return;
 
-    if (res.headersSent) {
-      return;
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      standardLimiter(req, res, (result: any) => {
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        resolve(result);
-      });
-    }).catch((error) => {
+      return handler(req, res);
+    } catch (error) {
       console.error("Rate limit middleware error:", error);
-      return; // Exit the handler as response is already sent
-    });
-
-    if (res.headersSent) {
-      return;
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, error: "Internal server error" });
+      }
     }
-
-    await new Promise<void>((resolve, reject) => {
-      speedLimiter(req, res, (result: any) => {
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        resolve(result);
-      });
-    }).catch((error) => {
-      console.error("Speed limit middleware error:", error);
-      return; // Exit the handler as response is already sent
-    });
-
-    if (res.headersSent) {
-      return;
-    }
-
-    return handler(req, res);
   };
 }
 
@@ -178,39 +162,18 @@ export function withSensitiveRateLimit(
   handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 ) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
-    // Apply IP-based rate limiting first
-    await new Promise<void>((resolve, reject) => {
-      ipLimiter(req, res, (result: any) => {
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        resolve(result);
-      });
-    }).catch((error) => {
-      console.error("IP rate limit middleware error:", error);
-      return; // Exit the handler as response is already sent
-    });
+    try {
+      await applyMiddleware(ipLimiter)(req, res);
+      if (res.headersSent) return;
+      await applyMiddleware(sensitiveLimiter)(req, res);
+      if (res.headersSent) return;
 
-    if (res.headersSent) {
-      return;
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      sensitiveLimiter(req, res, (result: any) => {
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        resolve(result);
-      });
-    }).catch((error) => {
+      return handler(req, res);
+    } catch (error) {
       console.error("Sensitive rate limit middleware error:", error);
-      return; // Exit the handler as response is already sent
-    });
-
-    if (res.headersSent) {
-      return;
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, error: "Internal server error" });
+      }
     }
-
-    return handler(req, res);
   };
 }

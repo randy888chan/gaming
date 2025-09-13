@@ -1,21 +1,37 @@
-import { withRateLimit } from './rateLimitMiddleware';
+import { withRateLimit, withSensitiveRateLimit } from './rateLimitMiddleware';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { jest } from '@jest/globals';
+import jwt from 'jsonwebtoken';
 
-// Mock express-rate-limit
-jest.mock('express-rate-limit', () => {
-  return jest.fn().mockImplementation(() => {
-    return (req: any, res: any, next: any) => {
-      // Simple mock implementation that just calls next()
-      next();
-    };
-  });
+let mockIpLimiter: jest.Mock;
+let mockStandardLimiter: jest.Mock;
+let mockSpeedLimiter: jest.Mock;
+let mockSensitiveLimiter: jest.Mock;
+
+jest.doMock('express-rate-limit', () => {
+    mockIpLimiter = jest.fn((req, res, next) => next());
+    mockStandardLimiter = jest.fn((req, res, next) => next());
+    mockSensitiveLimiter = jest.fn((req, res, next) => next());
+    return jest.fn().mockImplementation((options) => {
+        if (options && options.keyGenerator) {
+            // This is the sensitive limiter
+            return mockSensitiveLimiter;
+        }
+        if (options && options.max === 100) {
+            return mockIpLimiter;
+        }
+        return mockStandardLimiter;
+    });
+});
+
+jest.doMock('express-slow-down', () => {
+    mockSpeedLimiter = jest.fn((req, res, next) => next());
+    return jest.fn(() => mockSpeedLimiter);
 });
 
 describe('rateLimitMiddleware', () => {
   let mockRequest: Partial<NextApiRequest>;
   let mockResponse: Partial<NextApiResponse>;
-  let mockNext: jest.Mock;
   let mockHandler: jest.Mock;
   let mockStatus: jest.Mock;
   let mockJson: jest.Mock;
@@ -28,6 +44,8 @@ describe('rateLimitMiddleware', () => {
       ip: '127.0.0.1',
       method: 'GET',
       url: '/api/test',
+      socket: { remoteAddress: '127.0.0.1' } as any,
+      headers: {},
     };
     
     mockResponse = {
@@ -36,64 +54,103 @@ describe('rateLimitMiddleware', () => {
       setHeader: jest.fn(),
       getHeader: jest.fn(),
       headersSent: false,
-    };
+    } as any;
     
-    mockNext = jest.fn();
     mockHandler = jest.fn();
+    jest.clearAllMocks();
   });
 
-  it('should call the handler when rate limit is not exceeded', async () => {
-    const wrappedHandler = withRateLimit(mockHandler);
-    
-    await wrappedHandler(
-      mockRequest as NextApiRequest,
-      mockResponse as NextApiResponse
-    );
-    
-    expect(mockHandler).toHaveBeenCalledWith(
-      mockRequest,
-      mockResponse
-    );
+  describe('withRateLimit', () => {
+    it('should call the handler when rate limit is not exceeded', async () => {
+        const { withRateLimit } = await import('./rateLimitMiddleware');
+        const wrappedHandler = withRateLimit(mockHandler);
+        await wrappedHandler(
+            mockRequest as NextApiRequest,
+            mockResponse as NextApiResponse
+        );
+        expect(mockHandler).toHaveBeenCalled();
+    });
+
+    it('should not call the handler when middleware throws an error', async () => {
+        mockIpLimiter.mockImplementationOnce((req, res, next) => {
+            next(new Error("Middleware error"));
+        });
+        const { withRateLimit } = await import('./rateLimitMiddleware');
+        const wrappedHandler = withRateLimit(mockHandler);
+        await wrappedHandler(
+            mockRequest as NextApiRequest,
+            mockResponse as NextApiResponse
+        );
+        expect(mockHandler).not.toHaveBeenCalled();
+        expect(mockStatus).toHaveBeenCalledWith(500);
+        expect(mockJson).toHaveBeenCalledWith({ success: false, error: "Internal server error" });
+    });
   });
 
-  it('should return rate limit error when limit is exceeded', async () => {
-    const wrappedHandler = withRateLimit(mockHandler);
-    
-    // Simulate making many requests to trigger rate limiting
-    // Note: This is a simplified test. In a real scenario, we would need to
-    // mock the express-rate-limit library or make actual requests
-    
-    // For now, we'll test that the middleware structure works
-    expect(typeof withRateLimit).toBe('function');
-    
-    // Test that it returns a function
-    expect(typeof wrappedHandler).toBe('function');
-  });
+  describe('withSensitiveRateLimit', () => {
+    it('should call the handler when rate limit is not exceeded', async () => {
+        const { withSensitiveRateLimit } = await import('./rateLimitMiddleware');
+        const wrappedHandler = withSensitiveRateLimit(mockHandler);
+        await wrappedHandler(
+            mockRequest as NextApiRequest,
+            mockResponse as NextApiResponse
+        );
+        expect(mockHandler).toHaveBeenCalled();
+    });
 
-  it('should not call handler if response headers are already sent', async () => {
-    const wrappedHandler = withRateLimit(mockHandler);
-    
-    // Mock headersSent to true
-    mockResponse.headersSent = true;
-    
-    await wrappedHandler(
-      mockRequest as NextApiRequest,
-      mockResponse as NextApiResponse
-    );
-    
-    // Handler should not be called if headers are already sent
-    expect(mockHandler).not.toHaveBeenCalled();
-  });
+    it('should not call the handler when middleware throws an error', async () => {
+        mockIpLimiter.mockImplementationOnce((req, res, next) => {
+            next(new Error("Middleware error"));
+        });
+        const { withSensitiveRateLimit } = await import('./rateLimitMiddleware');
+        const wrappedHandler = withSensitiveRateLimit(mockHandler);
+        await wrappedHandler(
+            mockRequest as NextApiRequest,
+            mockResponse as NextApiResponse
+        );
+        expect(mockHandler).not.toHaveBeenCalled();
+        expect(mockStatus).toHaveBeenCalledWith(500);
+        expect(mockJson).toHaveBeenCalledWith({ success: false, error: "Internal server error" });
+    });
 
-  it('should handle errors gracefully', async () => {
-    const errorMockHandler = withRateLimit(mockHandler);
-    
-    // Test that the function doesn't throw errors
-    await expect(
-      errorMockHandler(
-        mockRequest as NextApiRequest,
-        mockResponse as NextApiResponse
-      )
-    ).resolves.not.toThrow();
+    it('should use user ID as key for valid token', async () => {
+        const { withSensitiveRateLimit } = await import('./rateLimitMiddleware');
+        const rateLimit = require('express-rate-limit');
+        const keyGenerator = rateLimit.mock.calls[0][0].keyGenerator;
+
+        const req = {
+            headers: { authorization: 'Bearer valid-token' },
+            ip: '127.0.0.1',
+            socket: { remoteAddress: '127.0.0.1' },
+            'user-agent': 'test-agent',
+        } as any;
+
+        const verifySpy = jest.spyOn(jwt, 'verify').mockReturnValue({ particle_user_id: 'test-user' } as any);
+
+        const key = keyGenerator(req);
+        expect(key).toBe('test-user');
+        verifySpy.mockRestore();
+    });
+
+    it('should use IP and user agent as key for invalid token', async () => {
+        const { withSensitiveRateLimit } = await import('./rateLimitMiddleware');
+        const rateLimit = require('express-rate-limit');
+        const keyGenerator = rateLimit.mock.calls[0][0].keyGenerator;
+
+        const req = {
+            headers: { authorization: 'Bearer invalid-token' },
+            ip: '127.0.0.1',
+            socket: { remoteAddress: '127.0.0.1' },
+            'user-agent': 'test-agent',
+        } as any;
+
+        const verifySpy = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+            throw new Error('Invalid token');
+        });
+
+        const key = keyGenerator(req);
+        expect(key).toBe('127.0.0.1test-agent');
+        verifySpy.mockRestore();
+    });
   });
 });

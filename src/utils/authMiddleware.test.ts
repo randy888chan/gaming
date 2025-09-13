@@ -1,15 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { jest } from '@jest/globals';
 
-// Mock jsonwebtoken
-const mockVerify = jest.fn();
+let mockVerify: jest.Mock;
 
-jest.mock('jsonwebtoken', () => ({
-  default: {
+jest.doMock('jsonwebtoken', () => {
+  mockVerify = jest.fn();
+  return {
+    default: {
+      verify: mockVerify,
+    },
     verify: mockVerify,
-  },
-  verify: mockVerify,
-}));
+  };
+});
+
+import { withAuth, isValidParticleUserId } from './authMiddleware';
 
 describe('authMiddleware', () => {
   let mockRequest: Partial<NextApiRequest>;
@@ -18,13 +22,6 @@ describe('authMiddleware', () => {
   let mockJson: jest.Mock;
   let mockHandler: jest.Mock;
   let originalEnv: NodeJS.ProcessEnv;
-  let withAuth: any;
-
-  // Import after mocking
-  beforeAll(async () => {
-    const authModule = await import('./authMiddleware');
-    withAuth = authModule.withAuth;
-  });
 
   beforeEach(() => {
     originalEnv = process.env;
@@ -34,6 +31,9 @@ describe('authMiddleware', () => {
     
     mockRequest = {
       headers: {},
+      socket: {
+        remoteAddress: '127.0.0.1',
+      } as any,
     };
     
     mockResponse = {
@@ -141,9 +141,11 @@ describe('authMiddleware', () => {
   });
 
   it('should call the handler when token is valid', async () => {
-    // Mock jwt.verify to succeed (no throw)
-    mockVerify.mockImplementation(() => {
-      // Do nothing, just succeed
+    // Mock jwt.verify to return a valid decoded token
+    mockVerify.mockReturnValue({
+      particle_user_id: 'testuser123',
+      exp: Date.now() / 1000 + 3600, // Expires in 1 hour
+      iat: Date.now() / 1000,
     });
     
     mockRequest.headers = {
@@ -161,5 +163,25 @@ describe('authMiddleware', () => {
     expect(mockVerify).toHaveBeenCalledWith('valid-token', 'test-secret');
     // Check that the handler was called
     expect(mockHandler).toHaveBeenCalled();
+  });
+});
+
+describe('isValidParticleUserId', () => {
+  it('should return true for valid user IDs', () => {
+    expect(isValidParticleUserId('testuser123')).toBe(true);
+    expect(isValidParticleUserId('anotheruser')).toBe(true);
+    expect(isValidParticleUserId('1234567890')).toBe(true);
+  });
+
+  it('should return false for user IDs with special characters', () => {
+    expect(isValidParticleUserId('test-user')).toBe(false);
+    expect(isValidParticleUserId('test_user')).toBe(false);
+    expect(isValidParticleUserId('test.user')).toBe(false);
+    expect(isValidParticleUserId('test user')).toBe(false);
+  });
+
+  it('should return false for empty or long user IDs', () => {
+    expect(isValidParticleUserId('')).toBe(false);
+    expect(isValidParticleUserId('a'.repeat(101))).toBe(false);
   });
 });
