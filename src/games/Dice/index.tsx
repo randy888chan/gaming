@@ -23,21 +23,15 @@ const SOUND_TICK = "/games/dice/tick.mp3";
 
 const DICE_SIDES = 100;
 
-export const outcomes = (
-  length: number,
-  multiplierCallback: (resultIndex: number) => number | undefined
-) => {
-  const payoutArray = Array.from({ length }).map((_, resultIndex) => {
-    const payout = multiplierCallback(resultIndex) ?? 0;
-    return payout;
-  });
-  const totalValue = payoutArray.reduce((p, x) => p + x, 0);
-  return payoutArray.map(
-    (x) =>
-      Number(
-        (BigInt(x * BPS_PER_WHOLE) / BigInt(totalValue || 1)) * BigInt(length)
-      ) / BPS_PER_WHOLE
-  );
+const calculateMultiplierAndBet = (rollUnderIndex: number) => {
+  if (rollUnderIndex <= 0 || rollUnderIndex >= DICE_SIDES) {
+    return { multiplier: 0, bet: [] };
+  }
+
+  const multiplier = DICE_SIDES / rollUnderIndex;
+  const bet = Array(DICE_SIDES).fill(0).map((_, i) => (i < rollUnderIndex ? multiplier : 0));
+
+  return { multiplier, bet };
 };
 
 export default function Dice() {
@@ -55,17 +49,8 @@ export default function Dice() {
     tick: SOUND_TICK,
   });
 
-  const multiplier =
-    Number(BigInt(DICE_SIDES * BPS_PER_WHOLE) / BigInt(rollUnderIndex)) /
-    BPS_PER_WHOLE;
-
-  const bet = useMemo(
-    () =>
-      outcomes(DICE_SIDES, (resultIndex) => {
-        if (resultIndex < rollUnderIndex) {
-          return DICE_SIDES - rollUnderIndex;
-        }
-      }),
+  const { multiplier, bet } = useMemo(
+    () => calculateMultiplierAndBet(rollUnderIndex),
     [rollUnderIndex]
   );
 

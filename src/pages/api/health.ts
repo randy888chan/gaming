@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { D1Database } from "@cloudflare/workers-types";
 
 export default async function handler(
   req: NextApiRequest,
@@ -6,17 +7,13 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     try {
-      // TODO: Implement actual D1 database connection check here
-      const dbConnected = true; // Placeholder for database connection status
-
-      if (dbConnected) {
-        res.status(200).json({ status: "healthy", database: "connected" });
-      } else {
-        res.status(500).json({ status: "unhealthy", database: "disconnected" });
-      }
+      const db = process.env.DB as D1Database;
+      // Perform a simple query to check the database connection
+      await db.prepare("SELECT 1").first();
+      res.status(200).json({ status: "healthy", database: "connected" });
     } catch (error: any) {
       console.error("Health check failed:", error);
-      res.status(500).json({ status: "unhealthy", error: error.message });
+      res.status(500).json({ status: "unhealthy", database: "disconnected", error: error.message });
     }
   } else {
     res.setHeader("Allow", ["GET"]);

@@ -48,7 +48,7 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: [
-    "/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2|@react-three/drei|lucide-react|hardhat-gas-reporter)/)",
+    "/node_modules/(?!(@preact|gamba-react-v2|gamba-react-ui-v2|@react-three/drei|lucide-react|hardhat-gas-reporter|@solana/wallet-adapter-react|@solana/wallet-adapter-base)/)",
   ],
   verbose: true,
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js", "jest-styled-components"],

@@ -1,7 +1,7 @@
 import { BannerWithMessages, FlipBanner } from "./FlipBanner";
 // src/games/Flip/index.tsx
 import { GambaUi, useCurrentToken, useSound } from "gamba-react-ui-v2";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 
 import { Canvas } from "@react-three/fiber";
 import { Coin } from "./Coin";
@@ -23,6 +23,11 @@ const SOUND_LOSE = "/games/flip/lose.mp3";
 
 type Side = keyof typeof SIDES;
 
+interface GambaResult {
+  payout: number;
+  resultIndex: number;
+}
+
 function Flip() {
   const game = GambaUi.useGame();
   const token = useCurrentToken();
@@ -30,7 +35,7 @@ function Flip() {
   const [flipping, setFlipping] = useState(false);
   const [win, setWin] = useState<boolean | undefined>(undefined);
   const [resultIndex, setResultIndex] = useState(0);
-  const [result, setResult] = useState([]);
+  const [result, setResult] = useState<GambaResult | null>(null);
   const [side, setSide] = useState<Side>("heads");
 
   const WAGER_OPTIONS = [1, 5, 10, 50, 100];
@@ -42,14 +47,19 @@ function Flip() {
     lose: SOUND_LOSE,
   });
 
-  let messages = ["Flip to win!"];
-  if (flipping) {
-    messages = ["Flipping!", "Good luck!"];
-  } else if (win === true) {
-    messages = ["You win!", "Congrats!"];
-  } else if (win === false) {
-    messages = ["You lose!"];
-  }
+  const [messages, setMessages] = useState(["Flip to win!"]);
+
+  useEffect(() => {
+    if (flipping) {
+      setMessages(["Flipping!", "Good luck!"]);
+    } else if (win === true) {
+      setMessages(["You win!", "Congrats!"]);
+    } else if (win === false) {
+      setMessages(["You lose!"]);
+    } else {
+      setMessages(["Flip to win!"]);
+    }
+  }, [flipping, win]);
 
   const play = async () => {
     try {
@@ -68,7 +78,7 @@ function Flip() {
       const result = await gamba.result();
       const win = result.payout > 0;
       setResultIndex(result.resultIndex);
-      setResult(result as any);
+      setResult(result);
       setWin(win ? true : false);
 
       if (win) {
@@ -77,8 +87,7 @@ function Flip() {
         sounds.play("lose");
       }
     } catch (err: any) {
-      messages = ["Flip to win!"];
-
+      setMessages([`An error occurred: ${err.message}`]);
       toast.error(`An error occurred: ${err.message}`);
     } finally {
       setFlipping(false);
