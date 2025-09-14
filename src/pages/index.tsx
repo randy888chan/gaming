@@ -12,7 +12,7 @@ import { useReferral } from "gamba-react-ui-v2";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
-export default function Home() {
+function HomeComponent() {
   return (
     <div>
       <h1>Gamba Platform</h1>
@@ -20,3 +20,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default dynamic(() => Promise.resolve(HomeComponent), { ssr: false });

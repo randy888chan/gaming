@@ -145,4 +145,18 @@ export class ZetaChainService {
     // Implement actual withdrawal from ZetaChain (e.g., via ZetaConnector)
     return {} as TransactionReceipt; // Placeholder
   }
+
+  async sendTransaction(
+    recipient: string,
+    asset: string,
+    amount: string,
+    sourceChain: string,
+    destinationChain: string
+  ): Promise<string> {
+    console.log(
+      `Sending ${amount} ${asset} from ${sourceChain} to ${destinationChain} for recipient ${recipient}`
+    );
+    // This is a placeholder implementation
+    return "0x-placeholder-cctx-hash";
+  }
 }

@@ -4,8 +4,9 @@ import { BASE_SEO_CONFIG } from "../constants";
 import { GambaButton } from "@/components/GambaPlayButton";
 import Link from "next/link";
 import { NextSeo } from "next-seo";
+import dynamic from "next/dynamic";
 
-export default function Custom500() {
+function Custom500Component() {
   return (
     <>
       <NextSeo title={`${BASE_SEO_CONFIG.defaultTitle} | 500`} />
@@ -35,3 +36,5 @@ export default function Custom500() {
     </>
   );
 }
+
+export default dynamic(() => Promise.resolve(Custom500Component), { ssr: false });

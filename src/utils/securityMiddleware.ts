@@ -45,25 +45,6 @@ const speedLimiter = slowDown({
   },
 });
 
-// Input validation middleware
-export function withInputValidation(
-  validator: (body: any, query: any, params: any) => { isValid: boolean; errors?: string[] }
-) {
-  return (req: NextApiRequest, res: NextApiResponse, next: () => void) => {
-    const validation = validator(req.body, req.query, req.params);
-    
-    if (!validation.isValid) {
-      return res.status(400).json({
-        success: false,
-        error: "Validation failed",
-        details: validation.errors
-      });
-    }
-    
-    next();
-  };
-}
-
 // Security headers middleware
 export function withSecurityHeaders(handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
@@ -137,17 +118,18 @@ export function withEnhancedAuth(
     
     // Additional security: Check if request is from a known suspicious IP
     const suspiciousIps = process.env.SUSPICIOUS_IPS?.split(',') || [];
-    if (suspiciousIps.includes(req.ip)) {
+    const clientIp = req.socket.remoteAddress;
+    if (clientIp && suspiciousIps.includes(clientIp)) {
       // Log suspicious activity
       logSecurityEvent({
         eventType: 'SUSPICIOUS_ACTIVITY',
-        ipAddress: req.ip,
+        ipAddress: clientIp,
         userAgent: req.headers['user-agent'],
         endpoint: req.url,
         details: 'Request from suspicious IP address'
       });
       
-      console.warn(`Blocked request from suspicious IP: ${req.ip}`);
+      console.warn(`Blocked request from suspicious IP: ${clientIp}`);
       return res
         .status(403)
         .json({ success: false, error: "Access denied." });
@@ -164,13 +146,18 @@ export function withEnhancedAuth(
     } catch (error) {
       console.error("Token verification failed:", error);
       
+      let details = "Token verification failed";
+      if (error instanceof Error) {
+        details += `: ${error.message}`;
+      }
+
       // Log authentication failure
       logSecurityEvent({
         eventType: 'AUTH_FAILURE',
         ipAddress: req.socket.remoteAddress,
         userAgent: req.headers['user-agent'],
         endpoint: req.url,
-        details: `Token verification failed: ${error.message}`
+        details
       });
       
       return res
@@ -185,41 +172,31 @@ export function withEnhancedAuth(
   };
 }
 
+const applyMiddleware = (middleware: any) => (req: NextApiRequest, res: NextApiResponse) =>
+  new Promise((resolve, reject) => {
+    middleware(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+
 // Combined middleware for enhanced security
 export function withEnhancedSecurity(
   handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 ) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
-    // Apply rate limiting and speed limiting
-    await new Promise<void>((resolve, reject) => {
-      enhancedLimiter(req, res, (result: any) => {
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        resolve(result);
-      });
-    }).catch((error) => {
+    try {
+      await applyMiddleware(enhancedLimiter)(req, res);
+      if (res.headersSent) return;
+      await applyMiddleware(speedLimiter)(req, res);
+      if (res.headersSent) return;
+    } catch (error) {
       console.error("Rate limit middleware error:", error);
-      return; // Exit the handler as response is already sent
-    });
-
-    if (res.headersSent) {
-      return;
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      speedLimiter(req, res, (result: any) => {
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        resolve(result);
-      });
-    }).catch((error) => {
-      console.error("Speed limit middleware error:", error);
-      return; // Exit the handler as response is already sent
-    });
-
-    if (res.headersSent) {
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, error: "Internal server error" });
+      }
       return;
     }
 

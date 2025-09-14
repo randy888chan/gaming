@@ -203,7 +203,7 @@ export default function Header() {
               </DialogHeader>
               {pool.jackpotBalance > 0 && (
                 <div className="flex text-[#003c00] rounded-lg bg-[#03ffa4] px-2.5 py-0.5 uppercase font-bold">
-                  <TokenValue amount={pool.jackpotBalance} />
+                <span><TokenValue amount={pool.jackpotBalance} /></span>
                 </div>
               )}
               <div className="mt-4">
@@ -245,7 +245,7 @@ export default function Header() {
               onClick={() => setShowJackpotHelp(true)}
               className="hidden md:flex all-unset cursor-pointer text-[#003c00] rounded-lg bg-[#03ffa4] px-2.5 py-0.5 text-xs uppercase font-bold transition-colors duration-200 hover:bg-white"
             >
-              <TokenValue amount={pool.jackpotBalance} />
+              <span><TokenValue amount={pool.jackpotBalance} /></span>
             </button>
           )}
           {balance.bonusBalance > 0 && (
@@ -253,7 +253,7 @@ export default function Header() {
               onClick={() => setShowBonusHelp(true)}
               className="hidden md:flex all-unset cursor-pointer text-[#003c00] rounded-lg bg-[#03ffa4] px-2.5 py-0.5 text-xs uppercase font-bold transition-colors duration-200 hover:bg-white"
             >
-              +<TokenValue amount={balance.bonusBalance} />
+              +<span><TokenValue amount={balance.bonusBalance} /></span>
             </button>
           )}
           {isConnected ? (
@@ -268,10 +268,10 @@ export default function Header() {
                           src={token.image || "/placeholder.svg"}
                           alt="Token"
                         />
-                        <TokenValue amount={balance.balance} />
+                        <span><TokenValue amount={balance.balance} /></span>
                         {balance.bonusBalance > 0 && (
                           <span className="text-xs">
-                            +<TokenValue amount={balance.bonusBalance} />{" "}
+                            +<span><TokenValue amount={balance.bonusBalance} /></span>{" "}
                             {"Bonus"}
                           </span>
                         )}
@@ -313,11 +313,11 @@ export default function Header() {
                           alt="Token"
                         />
                         <p className="text-2xl font-bold">
-                          <TokenValue amount={balance.balance} />
+                          <span><TokenValue amount={balance.balance} /></span>
                           {balance.bonusBalance > 0 && (
                             <span className="text-sm ml-1">
                               (+
-                              <TokenValue amount={balance.bonusBalance} />{" "}
+                              <span><TokenValue amount={balance.bonusBalance} /></span>{" "}
                               {"Bonus"})
                             </span>
                           )}

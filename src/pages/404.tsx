@@ -4,8 +4,9 @@ import { BASE_SEO_CONFIG } from "../constants";
 import { GambaButton } from "@/components/GambaPlayButton";
 import Link from "next/link";
 import { NextSeo } from "next-seo";
+import dynamic from "next/dynamic";
 
-export default function Custom404() {
+function Custom404Component() {
   return (
     <>
       <NextSeo title={`${BASE_SEO_CONFIG.defaultTitle} | 404`} />
@@ -34,3 +35,5 @@ export default function Custom404() {
     </>
   );
 }
+
+export default dynamic(() => Promise.resolve(Custom404Component), { ssr: false });
