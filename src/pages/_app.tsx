@@ -3,7 +3,6 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 import { appWithTranslation } from 'next-i18next';
 import { useEffect, useState, useMemo } from 'react';
 import Head from 'next/head';
-import { DefaultSeo } from 'next-seo';
 import type { AppProps } from 'next/app';
 import { GambaProvider } from 'gamba-react-v2';
 import { GambaPlatformProvider, TokenMetaProvider } from 'gamba-react-ui-v2';
@@ -18,7 +17,6 @@ import {
 } from '@/constants';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
-import { ParticleProviderWrapper } from '@/components/ParticleProviderWrapper';
 import { ThemeProvider } from 'next-themes';
 import OnboardingModal from '@/components/onboarding/OnboardingModal';
 import { 
@@ -38,7 +36,12 @@ import {
   Solana
 } from "@particle-network/chains";
 import { Toaster } from "sonner";
-import { PublicKey } from "@solana/web3.js";
+import dynamic from 'next/dynamic';
+
+const DynamicParticleProviderWrapper = dynamic(
+  () => import('@/components/ParticleProviderWrapper').then(mod => mod.ParticleProviderWrapper),
+  { ssr: false }
+);
 
 function MyApp({ Component, pageProps }: AppProps) {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
@@ -83,7 +86,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </Head>
       <ThemeProvider attribute="class" defaultTheme="dark">
-        <ParticleProviderWrapper
+        <DynamicParticleProviderWrapper
           wallets={wallets}
           sendTransactionConfig={{
             priorityFee: 200000
@@ -143,7 +146,7 @@ function MyApp({ Component, pageProps }: AppProps) {
               </TokenMetaProvider>
             </WalletModalProvider>
           </ConnectionProvider>
-        </ParticleProviderWrapper>
+        </DynamicParticleProviderWrapper>
       </ThemeProvider>
     </>
   );

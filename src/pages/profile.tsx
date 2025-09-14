@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Copy, Share2 } from "lucide-react";
+import dynamic from "next/dynamic";
 
-const ProfilePage: React.FC = () => {
+const ProfilePageComponent: React.FC = () => {
   const { address, isConnected } = useAccount();
   const [referralLink, setReferralLink] = useState<string>("");
   const [referralStats, setReferralStats] = useState<any>(null);
@@ -182,4 +183,4 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage;
+export default dynamic(() => Promise.resolve(ProfilePageComponent), { ssr: false });

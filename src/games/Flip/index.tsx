@@ -65,7 +65,7 @@ function Flip() {
     try {
       setWin(undefined);
       setFlipping(true);
-      setResult([]);
+      setResult(null);
       sounds.play("coin", { playbackRate: 0.5 });
 
       await game.play({

@@ -1,10 +1,10 @@
 import { createMocks } from 'node-mocks-http';
 import handler from './cron';
-import * as pSeoGenerator from '../../../workers/pSeoGenerator';
+import * as aiAdapter from '../../../services/aiAdapter';
 
-// Mock the pSeoGenerator
-jest.mock('../../../workers/pSeoGenerator', () => ({
-  generatePSeoContent: jest.fn()
+// Mock the aiAdapter
+jest.mock('../../../services/aiAdapter', () => ({
+  generatePSEOContent: jest.fn()
 }));
 
 describe('/api/pSeo/cron', () => {
@@ -13,7 +13,7 @@ describe('/api/pSeo/cron', () => {
   });
 
   it('should trigger pSEO content generation for POST request', async () => {
-    (pSeoGenerator.generatePSeoContent as jest.Mock).mockResolvedValue(undefined);
+    (aiAdapter.generatePSEOContent as jest.Mock).mockResolvedValue(undefined);
 
     const { req, res } = createMocks({
       method: 'POST',
@@ -25,11 +25,11 @@ describe('/api/pSeo/cron', () => {
     expect(JSON.parse(res._getData())).toEqual({
       message: 'Daily pSEO content generation triggered successfully.',
     });
-    expect(pSeoGenerator.generatePSeoContent).toHaveBeenCalled();
+    expect(aiAdapter.generatePSEOContent).toHaveBeenCalled();
   });
 
   it('should return 500 if pSEO content generation fails', async () => {
-    (pSeoGenerator.generatePSeoContent as jest.Mock).mockRejectedValue(new Error('Generation failed'));
+    (aiAdapter.generatePSEOContent as jest.Mock).mockRejectedValue(new Error('Generation failed'));
 
     const { req, res } = createMocks({
       method: 'POST',

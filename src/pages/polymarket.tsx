@@ -1,9 +1,9 @@
 import React from "react";
 import MarketList from "@/components/polymarket/MarketList";
-import { NextPage } from "next";
 import { NextSeo } from "next-seo";
+import dynamic from "next/dynamic";
 
-const PolymarketPage: NextPage = () => {
+const PolymarketPageComponent = () => {
   return (
     <>
       <NextSeo
@@ -18,4 +18,4 @@ const PolymarketPage: NextPage = () => {
   );
 };
 
-export default PolymarketPage;
+export default dynamic(() => Promise.resolve(PolymarketPageComponent), { ssr: false });

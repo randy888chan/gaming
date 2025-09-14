@@ -3,10 +3,19 @@
  * This worker runs on a CRON schedule to process referral payouts.
  */
 
-import { zetaChainService } from "../../services/zetaChainService";
+import { ZetaChainService } from "../../services/zetaChainService";
+import type {
+  D1Database,
+  ScheduledController,
+  ExecutionContext,
+  MessageBatch,
+} from "@cloudflare/workers-types";
 
 export interface Env {
   DB: D1Database;
+  ZETACHAIN_RPC_URL: string;
+  CROSS_CHAIN_SETTLEMENT_ADDRESS: string;
+  ZETACHAIN_PRIVATE_KEY: string;
   // Add other bindings as needed
 }
 
@@ -20,7 +29,7 @@ export default {
 
     try {
       // Process referral payouts
-      await processReferralPayouts(env.DB);
+      await processReferralPayouts(env);
     } catch (error: any) {
       console.error("Error in Referral Payout Worker:", error);
     }
@@ -40,13 +49,17 @@ export default {
  * Process referral payouts for users with sufficient unpaid balances.
  * @param db The D1 database binding
  */
-async function processReferralPayouts(db: D1Database): Promise<void> {
+async function processReferralPayouts(env: Env): Promise<void> {
   try {
+    const zetaChainService = new ZetaChainService({
+      zetaChainRpcUrl: env.ZETACHAIN_RPC_URL,
+      crossChainSettlementAddress: env.CROSS_CHAIN_SETTLEMENT_ADDRESS,
+    });
     // Define the minimum payout threshold (e.g., 1 USDC)
     const PAYOUT_THRESHOLD = 1.0;
     
     // Find users with unpaid balances above the threshold
-    const stmt = db.prepare(
+    const stmt = env.DB.prepare(
       "SELECT particle_user_id, unpaid_balance_usd FROM referral_earnings WHERE unpaid_balance_usd >= ?"
     );
     
@@ -60,7 +73,7 @@ async function processReferralPayouts(db: D1Database): Promise<void> {
     for (const earnings of result.results) {
       try {
         // Get the user's wallet address
-        const userStmt = db.prepare(
+        const userStmt = env.DB.prepare(
           "SELECT wallet_address FROM user_preferences WHERE particle_user_id = ?"
         );
         
@@ -84,7 +97,7 @@ async function processReferralPayouts(db: D1Database): Promise<void> {
         
         if (cctxHash) {
           // Record the payout in the zetachain_cctx_log table
-          const logStmt = db.prepare(`
+          const logStmt = env.DB.prepare(`
             INSERT INTO zetachain_cctx_log 
             (cctx_hash, source_chain, destination_chain, asset, amount, status)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -100,7 +113,7 @@ async function processReferralPayouts(db: D1Database): Promise<void> {
           ).run();
           
           // Update the referral_earnings table to reflect the paid out balance
-          const updateStmt = db.prepare(`
+          const updateStmt = env.DB.prepare(`
             UPDATE referral_earnings 
             SET unpaid_balance_usd = 0, last_updated = datetime('now')
             WHERE particle_user_id = ?

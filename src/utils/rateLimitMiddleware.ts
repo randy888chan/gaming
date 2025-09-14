@@ -59,8 +59,8 @@ const sensitiveLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false, // Count all requests, even successful ones
-  keyGenerator: (req: NextApiRequest) => {
-    const authHeader = req.headers.authorization;
+  keyGenerator: (req) => {
+    const authHeader = (req as unknown as NextApiRequest).headers.authorization;
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
       try {

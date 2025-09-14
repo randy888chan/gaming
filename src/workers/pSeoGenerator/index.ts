@@ -4,10 +4,20 @@
  */
 
 import { generatePSEOContent } from "../../services/aiAdapter";
+import type {
+  D1Database,
+  Queue,
+  ScheduledController,
+  ExecutionContext,
+  MessageBatch,
+} from "@cloudflare/workers-types";
 
 export interface Env {
   DB: D1Database;
   SOCIAL_POST_QUEUE: Queue;
+  ZETACHAIN_RPC_URL: string;
+  CROSS_CHAIN_SETTLEMENT_ADDRESS: string;
+  ZETACHAIN_PRIVATE_KEY: string;
   // Add other bindings as needed
 }
 
